@@ -1,4 +1,4 @@
-package org.example.app
+package bambamboole.pdf.api
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -10,8 +10,8 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
-import org.example.app.routes.healthRoutes
-import org.example.app.routes.convertRoutes
+import bambamboole.pdf.api.routes.healthRoutes
+import bambamboole.pdf.api.routes.convertRoutes
 import org.slf4j.event.Level
 
 fun main() {

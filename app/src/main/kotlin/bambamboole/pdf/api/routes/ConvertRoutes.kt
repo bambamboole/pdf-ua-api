@@ -1,19 +1,17 @@
-package org.example.app.routes
+package bambamboole.pdf.api.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.example.app.models.ConvertRequest
-import org.example.app.services.PdfService
+import bambamboole.pdf.api.models.ConvertRequest
+import bambamboole.pdf.api.services.PdfService
 
 fun Route.convertRoutes() {
     post("/convert") {
         try {
-            println("Received request to /convert")
             val request = call.receive<ConvertRequest>()
-            println("Successfully deserialized request with HTML length: ${request.html.length}")
 
             // Validate request
             if (request.html.isBlank()) {

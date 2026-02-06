@@ -11,9 +11,6 @@ plugins {
 }
 
 dependencies {
-    // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
-    implementation(project(":utils"))
-
     // Ktor Server
     implementation(libs.ktorServerCore)
     implementation(libs.ktorServerNetty)
@@ -34,9 +31,10 @@ dependencies {
 
     // Testing
     testImplementation(libs.ktorServerTestHost)
+    testImplementation(libs.kotlinTest)
 }
 
 application {
     // Define the Fully Qualified Name for the application main class
-    mainClass = "org.example.app.ApplicationKt"
+    mainClass = "bambamboole.pdf.api.ApplicationKt"
 }

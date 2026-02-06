@@ -1,4 +1,4 @@
-package org.example.app.routes
+package bambamboole.pdf.api.routes
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*

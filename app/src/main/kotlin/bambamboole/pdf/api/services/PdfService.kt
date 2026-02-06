@@ -1,4 +1,4 @@
-package org.example.app.services
+package bambamboole.pdf.api.services
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import java.io.ByteArrayOutputStream

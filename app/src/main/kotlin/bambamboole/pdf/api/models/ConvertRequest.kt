@@ -1,4 +1,4 @@
-package org.example.app.models
+package bambamboole.pdf.api.models
 
 import kotlinx.serialization.Serializable
 

@@ -4,18 +4,14 @@
 
 [versions]
 kotlin = "2.3.0"
-kotlinxDatetime = "0.7.1"
 kotlinxSerializationJSON = "1.9.0"
-kotlinxCoroutines = "1.10.2"
 ktor = "3.1.1"
 openhtmltopdf = "1.1.37"
 logback = "1.5.16"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
-kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 
 # Ktor Server
 ktorServerCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
@@ -34,10 +30,7 @@ logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "log
 
 # Testing
 ktorServerTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
-
-# Libraries can be bundled together for easier import
-[bundles]
-kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
+kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
