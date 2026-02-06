@@ -12,6 +12,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.convertRoutes
+import bambamboole.pdf.api.routes.validationRoutes
 import org.slf4j.event.Level
 
 fun main() {
@@ -43,5 +44,6 @@ fun Application.module() {
     routing {
         healthRoutes()
         convertRoutes()
+        validationRoutes()
     }
 }

@@ -1,11 +1,16 @@
 package bambamboole.pdf.api.services
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
+import java.io.File
 
 object PdfService {
+    private val logger = LoggerFactory.getLogger(PdfService::class.java)
+
     /**
-     * Converts HTML string to PDF bytes
+     * Converts HTML string to PDF bytes with PDF/UA accessibility compliance
      * @param html Well-formed XHTML string
      * @return PDF as byte array
      * @throws Exception if HTML is malformed or conversion fails
@@ -16,11 +21,102 @@ object PdfService {
         }
 
         return ByteArrayOutputStream().use { outputStream ->
-            PdfRendererBuilder()
-                .withHtmlContent(html, "file:///")  // Base URL required for resolving relative resources
-                .toStream(outputStream)
-                .run()
+            val builder = PdfRendererBuilder()
+
+            // Always configure PDF/UA accessibility compliance
+            configurePdfUA(builder)
+
+            builder.withHtmlContent(html, "file:///")  // Base URL required for resolving relative resources
+            builder.toStream(outputStream)
+            builder.run()
             outputStream.toByteArray()
         }
+    }
+
+    /**
+     * Configure PdfRendererBuilder for PDF/UA accessibility compliance
+     */
+    private fun configurePdfUA(builder: PdfRendererBuilder) {
+        logger.info("Configuring PDF/UA accessibility compliance")
+        // Add fonts for PDF/UA compliance
+        // Built-in PDF fonts are not allowed in PDF/UA
+        addFonts(builder)
+
+        // Enable PDF/UA accessibility
+        builder.usePdfUaAccessibility(true)
+
+        // Use PDF/A-3a for full accessibility compliance
+        // PDF/A ensures long-term preservation and accessibility
+        builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_A)
+
+        // Set color profile for PDF/A compliance
+        // Required to prevent DeviceRGB color space validation errors
+        setColorProfile(builder)
+
+
+
+        logger.info("PDF/UA configuration complete")
+    }
+
+    /**
+     * Load and set sRGB color profile for PDF/A compliance
+     */
+    private fun setColorProfile(builder: PdfRendererBuilder) {
+        try {
+            val colorProfileStream = PdfService::class.java.getResourceAsStream("/colorspaces/sRGB.icc")
+                ?: throw IllegalStateException("sRGB.icc color profile not found in resources")
+
+            colorProfileStream.use { stream ->
+                val colorProfileBytes = stream.readBytes()
+                builder.useColorProfile(colorProfileBytes)
+                logger.debug("Loaded sRGB color profile (${colorProfileBytes.size} bytes)")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to load color profile: ${e.message}", e)
+            throw IllegalStateException("PDF/A requires a color profile, but it could not be loaded", e)
+        }
+    }
+
+    /**
+     * Load and add fonts from resources for PDF/UA compliance
+     * Built-in PDF fonts are prohibited in PDF/UA standard
+     */
+    private fun addFonts(builder: PdfRendererBuilder) {
+        // Liberation fonts bundled with the application
+        // These are metrically compatible with Arial, Times New Roman, and Courier New
+        data class FontConfig(val path: String, val family: String)
+
+        val fonts = listOf(
+            FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans"),
+            FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif"),
+            FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono")
+        )
+
+        val fontsAdded = mutableListOf<String>()
+
+        fonts.forEach { font ->
+            try {
+                val fontStream = PdfService::class.java.getResourceAsStream(font.path)
+                    ?: throw IllegalStateException("Font not found: ${font.path}")
+
+                fontStream.use { stream ->
+                    val fontBytes = stream.readBytes()
+                    // Write to temp file as openhtmltopdf requires a File object
+                    val tempFile = java.io.File.createTempFile("font-", ".ttf")
+                    tempFile.deleteOnExit()
+                    tempFile.writeBytes(fontBytes)
+
+                    // Register font with normal weight and style
+                    builder.useFont(tempFile, font.family, 400, FontStyle.NORMAL, true)
+                    fontsAdded.add(font.family)
+                    logger.debug("Loaded font: ${font.family} (${fontBytes.size} bytes)")
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to load font ${font.family}: ${e.message}", e)
+                throw IllegalStateException("Failed to load required font: ${font.family}", e)
+            }
+        }
+
+        logger.info("Successfully loaded ${fontsAdded.size} fonts: ${fontsAdded.joinToString(", ")}")
     }
 }

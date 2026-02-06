@@ -29,6 +29,9 @@ dependencies {
     // Logging
     implementation(libs.logbackClassic)
 
+    // PDF Validation
+    implementation(libs.verapdfValidation)
+
     // Testing
     testImplementation(libs.ktorServerTestHost)
     testImplementation(libs.kotlinTest)
@@ -37,4 +40,9 @@ dependencies {
 application {
     // Define the Fully Qualified Name for the application main class
     mainClass = "bambamboole.pdf.api.ApplicationKt"
+}
+
+tasks.test {
+    // Suppress Java 21+ warnings about restricted native access
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
 }

@@ -11,4 +11,9 @@
 
     <logger name="io.ktor" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+
+    <!-- Suppress harmless openhtmltopdf font warnings in PDF/UA mode -->
+    <logger name="com.openhtmltopdf.render" level="ERROR"/>
+    <logger name="com.openhtmltopdf.load" level="INFO"/>
+    <logger name="com.openhtmltopdf.general" level="INFO"/>
 </configuration>

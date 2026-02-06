@@ -22,7 +22,7 @@ fun Route.convertRoutes() {
                 return@post
             }
 
-            // Convert HTML to PDF
+            // Convert HTML to PDF with PDF/UA accessibility
             val pdfBytes = PdfService.convertHtmlToPdf(request.html)
 
             // Return PDF with proper headers
