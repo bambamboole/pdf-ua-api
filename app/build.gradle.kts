@@ -5,6 +5,9 @@ plugins {
 
     // Apply the Application plugin to add support for building an executable JVM application.
     application
+
+    // Apply the Kotlin serialization plugin
+    alias(libs.plugins.kotlinPluginSerialization)
 }
 
 dependencies {
@@ -18,6 +21,9 @@ dependencies {
     implementation(libs.ktorServerCallLogging)
     implementation(libs.ktorServerStatusPages)
     implementation(libs.ktorSerializationJson)
+
+    // Kotlinx Serialization
+    implementation(libs.kotlinxSerialization)
 
     // OpenHTMLToPDF
     implementation(libs.openhtmltopdfCore)
