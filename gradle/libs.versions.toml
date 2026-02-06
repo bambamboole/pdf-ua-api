@@ -1,0 +1,43 @@
+# Version catalog is a central place for you to declare and version dependencies
+# https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
+# https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
+
+[versions]
+kotlin = "2.3.0"
+kotlinxDatetime = "0.7.1"
+kotlinxSerializationJSON = "1.9.0"
+kotlinxCoroutines = "1.10.2"
+ktor = "3.1.1"
+openhtmltopdf = "1.1.37"
+logback = "1.5.16"
+
+[libraries]
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
+kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+
+# Ktor Server
+ktorServerCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktorServerNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktorServerContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktorServerCallLogging = { module = "io.ktor:ktor-server-call-logging-jvm", version.ref = "ktor" }
+ktorServerStatusPages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+ktorSerializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+
+# OpenHTMLToPDF
+openhtmltopdfCore = { module = "io.github.openhtmltopdf:openhtmltopdf-core", version.ref = "openhtmltopdf" }
+openhtmltopdfPdfbox = { module = "io.github.openhtmltopdf:openhtmltopdf-pdfbox", version.ref = "openhtmltopdf" }
+
+# Logging
+logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+# Testing
+ktorServerTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
+
+# Libraries can be bundled together for easier import
+[bundles]
+kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
+
+[plugins]
+kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
