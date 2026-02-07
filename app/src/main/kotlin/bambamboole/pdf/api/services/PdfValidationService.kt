@@ -13,31 +13,19 @@ import java.io.ByteArrayInputStream
 
 object PdfValidationService {
     private val logger = LoggerFactory.getLogger(PdfValidationService::class.java)
-    private var initialized = false
 
-    /**
-     * Initialize veraPDF library (should be called once)
-     */
-    private fun initialize() {
-        if (!initialized) {
-            try {
-                VeraGreenfieldFoundryProvider.initialise()
-                initialized = true
-                logger.info("veraPDF validation library initialized")
-            } catch (e: Exception) {
-                logger.error("Failed to initialize veraPDF: ${e.message}", e)
-                throw IllegalStateException("Failed to initialize PDF validation library", e)
-            }
+    private val initialized: Unit by lazy {
+        try {
+            VeraGreenfieldFoundryProvider.initialise()
+            logger.info("veraPDF validation library initialized")
+        } catch (e: Exception) {
+            logger.error("Failed to initialize veraPDF: ${e.message}", e)
+            throw IllegalStateException("Failed to initialize PDF validation library", e)
         }
     }
 
-    /**
-     * Validate PDF bytes for PDF/UA and PDF/A compliance
-     * @param pdfBytes PDF document as byte array
-     * @return ValidationResponse with compliance results and metadata
-     */
     fun validatePdf(pdfBytes: ByteArray): ValidationResponse {
-        initialize()
+        initialized
 
         try {
             ByteArrayInputStream(pdfBytes).use { inputStream ->
