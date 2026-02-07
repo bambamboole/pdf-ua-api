@@ -11,8 +11,8 @@ docker run -p 8080:8080 bambamboole/pdf-ua-api:latest
 # Or from GitHub Container Registry
 docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
 
-# Test the API
-curl http://localhost:8080/health
+# Open the Web UI
+open http://localhost:8080
 ```
 
 ## Features
