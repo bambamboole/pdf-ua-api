@@ -1,0 +1,17 @@
+# Build outputs
+**/build/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+
+# Documentation
+*.md
+
+# OS
+.DS_Store

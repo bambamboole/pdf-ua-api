@@ -10,7 +10,7 @@ plugins {
 }
 
 kotlin {
-    // Use a specific Java version to make it easier to work in different environments.
+    // Use Java 25 for modern features and performance
     jvmToolchain(25)
 }
 

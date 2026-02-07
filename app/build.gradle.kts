@@ -42,7 +42,21 @@ application {
     mainClass = "bambamboole.pdf.api.ApplicationKt"
 }
 
+// Create fat JAR with all dependencies for Docker
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "bambamboole.pdf.api.ApplicationKt"
+    }
+
+    // Include all dependencies in the JAR
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
+        // Exclude signature files to avoid conflicts
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    }
+}
+
 tasks.test {
-    // Suppress Java 21+ warnings about restricted native access
+    // Suppress Java 25 warnings about restricted native access
     jvmArgs("--enable-native-access=ALL-UNNAMED")
 }

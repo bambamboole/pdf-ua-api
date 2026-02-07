@@ -9,6 +9,7 @@ ktor = "3.1.1"
 openhtmltopdf = "1.1.37"
 logback = "1.5.16"
 verapdf = "1.28.1"
+shadow = "8.1.1"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -38,3 +39,4 @@ verapdfValidation = { module = "org.verapdf:validation-model", version.ref = "ve
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

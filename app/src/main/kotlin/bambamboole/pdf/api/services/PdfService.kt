@@ -1,10 +1,14 @@
 package bambamboole.pdf.api.services
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
+import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
+import java.io.InputStream
+import java.util.EnumSet
 
 object PdfService {
     private val logger = LoggerFactory.getLogger(PdfService::class.java)
@@ -38,9 +42,10 @@ object PdfService {
      */
     private fun configurePdfUA(builder: PdfRendererBuilder) {
         logger.info("Configuring PDF/UA accessibility compliance")
-        // Add fonts for PDF/UA compliance
-        // Built-in PDF fonts are not allowed in PDF/UA
-        addFonts(builder)
+
+        // Add fonts for PDF/UA compliance with FALLBACK configuration
+        // This ensures fonts are used even when HTML doesn't specify font-family
+        addFallbackFonts(builder)
 
         // Enable PDF/UA accessibility
         builder.usePdfUaAccessibility(true)
@@ -52,8 +57,6 @@ object PdfService {
         // Set color profile for PDF/A compliance
         // Required to prevent DeviceRGB color space validation errors
         setColorProfile(builder)
-
-
 
         logger.info("PDF/UA configuration complete")
     }
@@ -78,14 +81,15 @@ object PdfService {
     }
 
     /**
-     * Load and add fonts from resources for PDF/UA compliance
-     * Built-in PDF fonts are prohibited in PDF/UA standard
+     * Load and add fonts from resources as FALLBACK fonts for PDF/UA compliance.
+     * FALLBACK fonts are used even when HTML doesn't specify font-family in CSS.
+     * Built-in PDF fonts are prohibited in PDF/UA standard.
      */
-    private fun addFonts(builder: PdfRendererBuilder) {
-        // Liberation fonts bundled with the application
-        // These are metrically compatible with Arial, Times New Roman, and Courier New
+    private fun addFallbackFonts(builder: PdfRendererBuilder) {
         data class FontConfig(val path: String, val family: String)
 
+        // Liberation fonts bundled with the application
+        // These are metrically compatible with Arial, Times New Roman, and Courier New
         val fonts = listOf(
             FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans"),
             FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif"),
@@ -101,15 +105,23 @@ object PdfService {
 
                 fontStream.use { stream ->
                     val fontBytes = stream.readBytes()
-                    // Write to temp file as openhtmltopdf requires a File object
-                    val tempFile = java.io.File.createTempFile("font-", ".ttf")
-                    tempFile.deleteOnExit()
-                    tempFile.writeBytes(fontBytes)
 
-                    // Register font with normal weight and style
-                    builder.useFont(tempFile, font.family, 400, FontStyle.NORMAL, true)
+                    // Create font supplier that loads from byte array as InputStream
+                    val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(fontBytes) }
+
+                    // Register font as FALLBACK_FINAL - will be used even without font-family in CSS
+                    // PDF/A disables built-in fonts, so we need fallback fonts to render any text
+                    builder.useFont(
+                        fontSupplier,
+                        font.family,
+                        400,
+                        FontStyle.NORMAL,
+                        true,
+                        EnumSet.of(FSFontUseCase.FALLBACK_FINAL)
+                    )
+
                     fontsAdded.add(font.family)
-                    logger.debug("Loaded font: ${font.family} (${fontBytes.size} bytes)")
+                    logger.debug("Loaded fallback font: ${font.family} (${fontBytes.size} bytes)")
                 }
             } catch (e: Exception) {
                 logger.error("Failed to load font ${font.family}: ${e.message}", e)
@@ -117,6 +129,6 @@ object PdfService {
             }
         }
 
-        logger.info("Successfully loaded ${fontsAdded.size} fonts: ${fontsAdded.joinToString(", ")}")
+        logger.info("Successfully loaded ${fontsAdded.size} fallback fonts: ${fontsAdded.joinToString(", ")}")
     }
 }
