@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Font Variations Test</title>
+    <meta name="subject" content="Testing bold, italic, and bold-italic font variations" />
+    <meta name="author" content="PDF API Test Suite" />
+    <meta name="description" content="Document testing all font weight and style combinations" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.8;
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        h2 {
+            color: #34495e;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .sans {
+            font-family: "Liberation Sans", Arial, sans-serif;
+        }
+        .serif {
+            font-family: "Liberation Serif", "Times New Roman", serif;
+        }
+        .mono {
+            font-family: "Liberation Mono", "Courier New", monospace;
+        }
+        .normal {
+            font-weight: normal;
+            font-style: normal;
+        }
+        .bold {
+            font-weight: bold;
+            font-style: normal;
+        }
+        .italic {
+            font-weight: normal;
+            font-style: italic;
+        }
+        .bold-italic {
+            font-weight: bold;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .sample {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Font Variations Test Document</h1>
+    <p>This document tests all font weight and style combinations across different font families.</p>
+
+    <h2>Liberation Sans (Arial Replacement)</h2>
+    <table class="sans">
+        <thead>
+            <tr>
+                <th>Style</th>
+                <th>Sample Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Regular</strong></td>
+                <td class="sample normal">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold</strong></td>
+                <td class="sample bold">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Italic</strong></td>
+                <td class="sample italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold Italic</strong></td>
+                <td class="sample bold-italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Liberation Serif (Times New Roman Replacement)</h2>
+    <table class="serif">
+        <thead>
+            <tr>
+                <th>Style</th>
+                <th>Sample Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Regular</strong></td>
+                <td class="sample normal">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold</strong></td>
+                <td class="sample bold">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Italic</strong></td>
+                <td class="sample italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold Italic</strong></td>
+                <td class="sample bold-italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Liberation Mono (Courier New Replacement)</h2>
+    <table class="mono">
+        <thead>
+            <tr>
+                <th>Style</th>
+                <th>Sample Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Regular</strong></td>
+                <td class="sample normal">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold</strong></td>
+                <td class="sample bold">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Italic</strong></td>
+                <td class="sample italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+            <tr>
+                <td><strong>Bold Italic</strong></td>
+                <td class="sample bold-italic">The quick brown fox jumps over the lazy dog. 0123456789</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>HTML Tags with Semantic Styling</h2>
+    <p class="sans">
+        This is regular text. <strong>This is bold text.</strong> <em>This is italic text.</em>
+        <strong><em>This is bold italic text.</em></strong>
+    </p>
+    <p class="serif">
+        This is regular text. <strong>This is bold text.</strong> <em>This is italic text.</em>
+        <strong><em>This is bold italic text.</em></strong>
+    </p>
+    <p class="mono">
+        This is regular text. <strong>This is bold text.</strong> <em>This is italic text.</em>
+        <strong><em>This is bold italic text.</em></strong>
+    </p>
+</body>
+</html>
