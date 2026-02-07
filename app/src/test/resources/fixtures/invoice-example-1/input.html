@@ -9,7 +9,7 @@
             }
         }
 
-        #invoice{
+        #invoice {
             padding: 0px;
         }
 
@@ -81,7 +81,7 @@
             margin-bottom: 20px
         }
 
-        .invoice table td,.invoice table th {
+        .invoice table td, .invoice table th {
             padding: 15px;
             background: #eee;
             border-bottom: 1px solid #fff
@@ -100,7 +100,7 @@
             font-size: 1.2em
         }
 
-        .invoice table .qty,.invoice table .total,.invoice table .unit {
+        .invoice table .qty, .invoice table .total, .invoice table .unit {
             text-align: right;
             font-size: 1.2em
         }
@@ -155,26 +155,30 @@
             border-top: 1px solid #aaa;
             padding: 8px 0
         }
+
         .invoice {
             font-size: 14px;
             line-height: 1.4;
             font-family: sans-serif;
         }
+
         a.logo {
             display: inline-block;
             text-decoration: none;
         }
+
         tr, tfoot {
             page-break-inside: avoid;
         }
+
         div.logo-container {
             float: left;
         }
     </style>
     <title>Invoice Example 1</title>
-    <meta name="subject" content="Testing table with line items" />
-    <meta name="author" content="PDF API Test Suite" />
-    <meta name="description" content="Document testing more complex html" />
+    <meta content="Testing table with line items" name="subject"/>
+    <meta content="PDF API Test Suite" name="author"/>
+    <meta content="Document testing more complex html" name="description"/>
 </head>
 <body>
 
@@ -186,7 +190,7 @@
                 <div class="row">
                     <div class="logo-container">
                         <a class="logo" href="http://example.com">
-                            <img src="images/flyingsaucer.png" alt="Business Logo" />
+                            <img alt="Business Logo" src="images/flyingsaucer.png"/>
                         </a>
                     </div>
                     <div class="col company-details">
@@ -222,7 +226,7 @@
                         <div class="date">Due Date: 2025-May-25</div>
                     </div>
                 </div>
-                <table border="0" cellspacing="0" cellpadding="0">
+                <table border="0" cellpadding="0" cellspacing="0">
                     <thead>
                     <tr>
                         <th>#</th>

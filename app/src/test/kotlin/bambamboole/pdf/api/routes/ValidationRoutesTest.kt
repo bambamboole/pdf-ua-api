@@ -1,8 +1,8 @@
 package bambamboole.pdf.api.routes
 
-import bambamboole.pdf.api.module
 import bambamboole.pdf.api.models.ConvertRequest
 import bambamboole.pdf.api.models.ValidationResponse
+import bambamboole.pdf.api.module
 import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -29,13 +29,17 @@ class ValidationRoutesTest {
             println("\n=== Testing fixture validation: $fixtureName ===")
 
             val fixtureDir = File(getSourceFixturesDir(), fixtureName)
-            assertTrue(fixtureDir.exists() && fixtureDir.isDirectory,
-                "Fixture directory not found: ${fixtureDir.absolutePath}")
+            assertTrue(
+                fixtureDir.exists() && fixtureDir.isDirectory,
+                "Fixture directory not found: ${fixtureDir.absolutePath}"
+            )
 
             // Load fixture files
             val expectedPdfFile = File(fixtureDir, "expected.pdf")
-            assertTrue(expectedPdfFile.exists(),
-                "Fixture '$fixtureName': expected.pdf not found. Run ConvertRoutesTest to generate baselines.")
+            assertTrue(
+                expectedPdfFile.exists(),
+                "Fixture '$fixtureName': expected.pdf not found. Run ConvertRoutesTest to generate baselines."
+            )
 
             val expectedValidation = json.decodeFromString(
                 ValidationResponse.serializer(),
@@ -44,8 +48,10 @@ class ValidationRoutesTest {
 
             // Read expected.pdf baseline
             val pdfBytes = expectedPdfFile.readBytes()
-            assertTrue(pdfBytes.isNotEmpty(),
-                "Fixture '$fixtureName': expected.pdf should not be empty")
+            assertTrue(
+                pdfBytes.isNotEmpty(),
+                "Fixture '$fixtureName': expected.pdf should not be empty"
+            )
 
             // Validate the PDF via API endpoint
             val validateResponse = client.post("/validate") {
@@ -53,8 +59,10 @@ class ValidationRoutesTest {
                 setBody(pdfBytes)
             }
 
-            assertEquals(HttpStatusCode.OK, validateResponse.status,
-                "Fixture '$fixtureName': Validate endpoint should return 200 OK")
+            assertEquals(
+                HttpStatusCode.OK, validateResponse.status,
+                "Fixture '$fixtureName': Validate endpoint should return 200 OK"
+            )
 
             val actualValidation = Json.decodeFromString(
                 ValidationResponse.serializer(),
@@ -62,39 +70,69 @@ class ValidationRoutesTest {
             )
 
             // Step 3: Compare validation results
-            assertEquals(expectedValidation.isCompliant, actualValidation.isCompliant,
-                "Fixture '$fixtureName': Compliance status should match expected")
+            assertEquals(
+                expectedValidation.isCompliant, actualValidation.isCompliant,
+                "Fixture '$fixtureName': Compliance status should match expected"
+            )
 
-            assertEquals(expectedValidation.flavour, actualValidation.flavour,
-                "Fixture '$fixtureName': PDF/A flavour should match expected")
+            assertEquals(
+                expectedValidation.flavour, actualValidation.flavour,
+                "Fixture '$fixtureName': PDF/A flavour should match expected"
+            )
 
             if (expectedValidation.isCompliant) {
-                assertTrue(actualValidation.isCompliant,
-                    "Fixture '$fixtureName': PDF should be compliant")
-                assertEquals(0, actualValidation.failedChecks,
-                    "Fixture '$fixtureName': Should have 0 failed checks")
+                assertTrue(
+                    actualValidation.isCompliant,
+                    "Fixture '$fixtureName': PDF should be compliant"
+                )
+                assertEquals(
+                    0, actualValidation.failedChecks,
+                    "Fixture '$fixtureName': Should have 0 failed checks"
+                )
             }
 
             // Log validation summary
-            println("Fixture '$fixtureName' validation: " +
-                "compliant=${actualValidation.isCompliant}, " +
-                "flavour=${actualValidation.flavour}, " +
-                "checks=${actualValidation.totalChecks}, " +
-                "failed=${actualValidation.failedChecks}")
+            println(
+                "Fixture '$fixtureName' validation: " +
+                        "compliant=${actualValidation.isCompliant}, " +
+                        "flavour=${actualValidation.flavour}, " +
+                        "checks=${actualValidation.totalChecks}, " +
+                        "failed=${actualValidation.failedChecks}"
+            )
 
             // Validate metadata if provided
             if (actualValidation.metadata != null) {
-                println("  Metadata: title='${actualValidation.metadata.title}', " +
-                    "subject='${actualValidation.metadata.subject}', " +
-                    "author='${actualValidation.metadata.author}', " +
-                    "producer='${actualValidation.metadata.producer}'")
+                println(
+                    "  Metadata: title='${actualValidation.metadata.title}', " +
+                            "subject='${actualValidation.metadata.subject}', " +
+                            "author='${actualValidation.metadata.author}', " +
+                            "producer='${actualValidation.metadata.producer}'"
+                )
 
                 expectedValidation.metadata?.let { expected ->
                     val actual = actualValidation.metadata
                     expected.title?.let { assertEquals(it, actual.title, "Fixture '$fixtureName': Title should match") }
-                    expected.subject?.let { assertEquals(it, actual.subject, "Fixture '$fixtureName': Subject should match") }
-                    expected.author?.let { assertEquals(it, actual.author, "Fixture '$fixtureName': Author should match") }
-                    expected.producer?.let { assertEquals(it, actual.producer, "Fixture '$fixtureName': Producer should match") }
+                    expected.subject?.let {
+                        assertEquals(
+                            it,
+                            actual.subject,
+                            "Fixture '$fixtureName': Subject should match"
+                        )
+                    }
+                    expected.author?.let {
+                        assertEquals(
+                            it,
+                            actual.author,
+                            "Fixture '$fixtureName': Author should match"
+                        )
+                    }
+                    expected.producer?.let {
+                        assertEquals(
+                            it,
+                            actual.producer,
+                            "Fixture '$fixtureName': Producer should match"
+                        )
+                    }
                 }
             }
         }

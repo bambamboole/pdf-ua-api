@@ -80,6 +80,7 @@ object PdfValidationService {
                                     )
                                 )
                             }
+
                             TestAssertion.Status.PASSED -> passedChecks++
                             else -> {}
                         }
@@ -90,12 +91,16 @@ object PdfValidationService {
                     // Extract metadata using PDFBox
                     val metadata = extractMetadata(pdfBytes)
 
-                    logger.info("Validation complete: compliant=${validationResult.isCompliant}, " +
-                            "total=$totalChecks, passed=$passedChecks, failed=$failedChecks")
+                    logger.info(
+                        "Validation complete: compliant=${validationResult.isCompliant}, " +
+                                "total=$totalChecks, passed=$passedChecks, failed=$failedChecks"
+                    )
 
                     if (metadata != null) {
-                        logger.info("PDF metadata: title='${metadata.title}', subject='${metadata.subject}', " +
-                                "author='${metadata.author}', creator='${metadata.creator}'")
+                        logger.info(
+                            "PDF metadata: title='${metadata.title}', subject='${metadata.subject}', " +
+                                    "author='${metadata.author}', creator='${metadata.creator}'"
+                        )
                     }
 
                     return ValidationResponse(

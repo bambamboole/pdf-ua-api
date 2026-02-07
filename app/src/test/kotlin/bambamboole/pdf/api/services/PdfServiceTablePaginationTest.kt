@@ -72,12 +72,18 @@ class PdfServiceTablePaginationTest {
 
         // Verify critical properties are in the styles
         val styleContent = styleElements.first()?.html() ?: ""
-        assertTrue(styleContent.contains("-fs-table-paginate: paginate"),
-            "Should contain table pagination property")
-        assertTrue(styleContent.contains("-fs-page-break-min-height: 1.5cm"),
-            "Should contain page break min height")
-        assertTrue(styleContent.contains("page-break-inside: avoid"),
-            "Should contain page break avoidance for rows")
+        assertTrue(
+            styleContent.contains("-fs-table-paginate: paginate"),
+            "Should contain table pagination property"
+        )
+        assertTrue(
+            styleContent.contains("-fs-page-break-min-height: 1.5cm"),
+            "Should contain page break min height"
+        )
+        assertTrue(
+            styleContent.contains("page-break-inside: avoid"),
+            "Should contain page break avoidance for rows"
+        )
     }
 
     @Test
@@ -101,9 +107,11 @@ class PdfServiceTablePaginationTest {
                         </tr>
                     </thead>
                     <tbody>
-                        ${(1..50).joinToString("\n") { i ->
-                            "<tr><td>$i</td><td>Item $i</td><td>Description for item $i</td><td>\$${i * 10}.00</td></tr>"
-                        }}
+                        ${
+            (1..50).joinToString("\n") { i ->
+                "<tr><td>$i</td><td>Item $i</td><td>Description for item $i</td><td>\$${i * 10}.00</td></tr>"
+            }
+        }
                     </tbody>
                     <tfoot>
                         <tr>

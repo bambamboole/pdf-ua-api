@@ -1,19 +1,17 @@
 package bambamboole.pdf.api
 
+import bambamboole.pdf.api.routes.convertRoutes
+import bambamboole.pdf.api.routes.healthRoutes
+import bambamboole.pdf.api.routes.validationRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
-import bambamboole.pdf.api.routes.healthRoutes
-import bambamboole.pdf.api.routes.convertRoutes
-import bambamboole.pdf.api.routes.validationRoutes
 import org.slf4j.event.Level
 
 fun main(args: Array<String>) {

@@ -1,16 +1,16 @@
 package bambamboole.pdf.api.services
 
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.extend.FSSupplier
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.util.EnumSet
+import java.util.*
 
 object PdfService {
     private val logger = LoggerFactory.getLogger(PdfService::class.java)

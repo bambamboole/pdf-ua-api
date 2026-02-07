@@ -5,7 +5,6 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import org.slf4j.LoggerFactory
 import java.awt.Font
 import java.awt.FontFormatException
-import java.io.File
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
@@ -117,8 +116,10 @@ object AutoFont {
         }
 
         private fun onValidFont(font: CSSFont) {
-            logger.debug("Adding font: path='{}', name='{}', weight={}, style={}",
-                font.path, font.family, font.weight, font.style.name)
+            logger.debug(
+                "Adding font: path='{}', name='{}', weight={}, style={}",
+                font.path, font.family, font.weight, font.style.name
+            )
         }
 
         private fun onInvalidFont(font: Path, ffe: FontFormatException) {

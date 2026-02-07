@@ -45,5 +45,5 @@ bin/
 .DS_Store
 
 ### Test Fixtures ###
-# Auto-generated PDFs from fixture tests
 **/fixtures/**/generated.pdf
+**/fixtures/**/page-*-diff.png

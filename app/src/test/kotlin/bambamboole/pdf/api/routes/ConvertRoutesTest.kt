@@ -1,8 +1,7 @@
 package bambamboole.pdf.api.routes
 
-import bambamboole.pdf.api.module
 import bambamboole.pdf.api.models.ConvertRequest
-import bambamboole.pdf.api.services.PdfValidationService
+import bambamboole.pdf.api.module
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -10,10 +9,11 @@ import io.ktor.http.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
-import org.apache.pdfbox.Loader
-import org.apache.pdfbox.pdmodel.PDDocumentInformation
 import java.io.File
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.fail
 
 /**
  * Tests for the /convert endpoint, including visual regression testing using fixtures.
@@ -29,8 +29,10 @@ class ConvertRoutesTest {
             println("\n=== Testing fixture conversion: $fixtureName ===")
 
             val fixtureDir = File(getSourceFixturesDir(), fixtureName)
-            assertTrue(fixtureDir.exists() && fixtureDir.isDirectory,
-                "Fixture directory not found: ${fixtureDir.absolutePath}")
+            assertTrue(
+                fixtureDir.exists() && fixtureDir.isDirectory,
+                "Fixture directory not found: ${fixtureDir.absolutePath}"
+            )
 
             // Load fixture files
             val inputHtml = File(fixtureDir, "input.html").readText()
@@ -42,14 +44,20 @@ class ConvertRoutesTest {
                 setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(inputHtml)))
             }
 
-            assertEquals(HttpStatusCode.OK, convertResponse.status,
-                "Fixture '$fixtureName': Convert endpoint should return 200 OK")
-            assertEquals(ContentType.Application.Pdf, convertResponse.contentType(),
-                "Fixture '$fixtureName': Response should be a PDF")
+            assertEquals(
+                HttpStatusCode.OK, convertResponse.status,
+                "Fixture '$fixtureName': Convert endpoint should return 200 OK"
+            )
+            assertEquals(
+                ContentType.Application.Pdf, convertResponse.contentType(),
+                "Fixture '$fixtureName': Response should be a PDF"
+            )
 
             val actualPdfBytes = convertResponse.readRawBytes()
-            assertTrue(actualPdfBytes.isNotEmpty(),
-                "Fixture '$fixtureName': PDF should not be empty")
+            assertTrue(
+                actualPdfBytes.isNotEmpty(),
+                "Fixture '$fixtureName': PDF should not be empty"
+            )
 
             // Save generated PDF for inspection
             val generatedPdfFile = File(fixtureDir, "generated.pdf")

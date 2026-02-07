@@ -1,11 +1,10 @@
 package bambamboole.pdf.api.routes
 
+import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import bambamboole.pdf.api.services.PdfValidationService
 
 fun Route.validationRoutes() {
     post("/validate") {
