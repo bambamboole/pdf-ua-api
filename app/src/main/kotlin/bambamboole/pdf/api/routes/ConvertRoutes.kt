@@ -7,12 +7,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.convertRoutes() {
+fun Route.convertRoutes(pdfProducer: String = "pdf-ua-api.com") {
     post("/convert") {
         try {
             val request = call.receive<ConvertRequest>()
 
-            // Validate request
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
@@ -21,8 +20,7 @@ fun Route.convertRoutes() {
                 return@post
             }
 
-            // Convert HTML to PDF with PDF/UA accessibility
-            val pdfBytes = PdfService.convertHtmlToPdf(request.html)
+            val pdfBytes = PdfService.convertHtmlToPdf(request.html, pdfProducer)
 
             // Return PDF with proper headers
             call.response.header(

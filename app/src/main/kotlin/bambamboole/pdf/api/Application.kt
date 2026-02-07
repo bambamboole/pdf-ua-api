@@ -1,5 +1,6 @@
 package bambamboole.pdf.api
 
+import bambamboole.pdf.api.config.AppConfig
 import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.indexRoutes
@@ -15,15 +16,13 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
-import org.slf4j.event.Level
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {
-    val logger = log
-    val apiKey = environment.config.propertyOrNull("api.key")?.getString()
+    val config = AppConfig.load(environment)
 
     install(ContentNegotiation) {
         json(Json {
@@ -32,12 +31,14 @@ fun Application.module() {
         })
     }
 
-    install(Mustache) {
-        mustacheFactory = DefaultMustacheFactory("templates")
+    if (config.webUIEnabled) {
+        install(Mustache) {
+            mustacheFactory = DefaultMustacheFactory("templates")
+        }
     }
 
     install(CallLogging) {
-        level = Level.INFO
+        level = config.logLevel.slf4jLevel
     }
 
     install(StatusPages) {
@@ -49,12 +50,11 @@ fun Application.module() {
         }
     }
 
-    // Install authentication only if API key is configured
-    if (apiKey != null) {
+    if (config.isAuthenticationEnabled) {
         install(Authentication) {
             bearer("api-key-auth") {
                 authenticate { credential ->
-                    if (credential.token == apiKey) {
+                    if (credential.token == config.apiKey) {
                         UserIdPrincipal("api-user")
                     } else {
                         null
@@ -62,23 +62,21 @@ fun Application.module() {
                 }
             }
         }
-        logger.info("API key authentication enabled")
-    } else {
-        logger.warn("API key not configured - running without authentication")
     }
 
     routing {
-        indexRoutes()
+        if (config.webUIEnabled) {
+            indexRoutes()
+        }
         healthRoutes()
 
-        // Conditionally protect routes based on whether API key is configured
-        if (apiKey != null) {
+        if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
-                convertRoutes()
+                convertRoutes(config.pdfProducer)
                 validationRoutes()
             }
         } else {
-            convertRoutes()
+            convertRoutes(config.pdfProducer)
             validationRoutes()
         }
     }

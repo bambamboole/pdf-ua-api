@@ -17,6 +17,7 @@
             opacity: 0.2;
             line-height: 1.0;
         }
+
         .textLayer > span {
             color: transparent;
             position: absolute;
@@ -24,37 +25,41 @@
             cursor: text;
             transform-origin: 0% 0%;
         }
+
         .textLayer ::selection {
             background: rgb(0, 0, 255);
         }
+
         .page-wrapper {
             position: relative;
         }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50">
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-6 py-6">
-            <h1 class="text-2xl font-semibold text-slate-900">PDF UA API</h1>
-            <p class="text-sm text-slate-600 mt-1">HTML to PDF/A-3a converter with accessibility support</p>
-        </div>
-    </header>
+<!-- Header -->
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <h1 class="text-2xl font-semibold text-slate-900">PDF UA API</h1>
+        <p class="text-sm text-slate-600 mt-1">HTML to PDF/A-3a converter with accessibility support</p>
+    </div>
+</header>
 
-    <!-- Main Content -->
-    <main class="max-w-[1600px] mx-auto px-6 py-8">
-        <div class="grid lg:grid-cols-[500px_1fr] gap-6">
-            <!-- Left Column: Input & Templates -->
-            <div class="space-y-6">
-                <!-- HTML Input -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-medium text-slate-900">HTML Input</h2>
-                        <button id="convertBtn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                            Generate PDF
-                        </button>
-                    </div>
-                    <textarea id="htmlInput" placeholder="Enter your HTML here..." class="w-full h-96 p-3 border border-slate-300 rounded-md font-mono text-xs leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"><!DOCTYPE html>
+<!-- Main Content -->
+<main class="max-w-[1600px] mx-auto px-6 py-8">
+    <div class="grid lg:grid-cols-[500px_1fr] gap-6">
+        <!-- Left Column: Input & Templates -->
+        <div class="space-y-6">
+            <!-- HTML Input -->
+            <div class="bg-white rounded-lg border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-medium text-slate-900">HTML Input</h2>
+                    <button id="convertBtn"
+                            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        Generate PDF
+                    </button>
+                </div>
+                <textarea id="htmlInput" placeholder="Enter your HTML here..."
+                          class="w-full h-96 p-3 border border-slate-300 rounded-md font-mono text-xs leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"><!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Sample Document</title>
@@ -91,232 +96,239 @@
     </ul>
 </body>
 </html></textarea>
-                </div>
-
-                <!-- Templates -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h3 class="text-sm font-medium text-slate-900 mb-3">Example Templates</h3>
-                    <div class="flex gap-2 flex-wrap">
-                        {{#templates}}
-                        <button class="template-btn px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 hover:border-slate-400 transition-colors" data-template-html="{{html}}">{{name}}</button>
-                        {{/templates}}
-                    </div>
-                </div>
-
-                <!-- Upload PDF for Validation -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <h3 class="text-sm font-medium text-slate-900 mb-3">Upload PDF for Validation</h3>
-                    <div class="space-y-3">
-                        <input type="file" id="pdfUpload" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <button id="validateUploadBtn" class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                            Validate PDF
-                        </button>
-                    </div>
-                    <div id="uploadValidationResults" class="hidden mt-4 pt-4 border-t border-slate-200">
-                        <!-- Upload validation results will be shown here -->
-                    </div>
-                </div>
-
-                <!-- Status Message -->
-                <div id="status" class="hidden rounded-lg p-4 text-sm"></div>
             </div>
 
-            <!-- Right Column: Preview & Validation -->
-            <div class="space-y-6">
-                <!-- PDF Preview -->
-                <div class="bg-white rounded-lg border border-slate-200 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-medium text-slate-900">PDF Preview</h2>
-                        <button id="downloadBtn" class="hidden px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">
-                            Download
-                        </button>
-                    </div>
-                    <div id="pdfViewer" class="border border-slate-200 rounded-md bg-slate-50 overflow-y-auto" style="max-height: 800px;">
-                        <div id="pdfContainer" class="flex flex-col items-center gap-4 p-4">
-                            <!-- PDF pages will be rendered here -->
-                        </div>
+            <!-- Templates -->
+            <div class="bg-white rounded-lg border border-slate-200 p-6">
+                <h3 class="text-sm font-medium text-slate-900 mb-3">Example Templates</h3>
+                <div class="flex gap-2 flex-wrap">
+                    {{#templates}}
+                        <button class="template-btn px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 hover:border-slate-400 transition-colors"
+                                data-template-html="{{html}}">{{name}}</button>
+                    {{/templates}}
+                </div>
+            </div>
+
+            <!-- Upload PDF for Validation -->
+            <div class="bg-white rounded-lg border border-slate-200 p-6">
+                <h3 class="text-sm font-medium text-slate-900 mb-3">Upload PDF for Validation</h3>
+                <div class="space-y-3">
+                    <input type="file" id="pdfUpload" accept=".pdf"
+                           class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <button id="validateUploadBtn"
+                            class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        Validate PDF
+                    </button>
+                </div>
+                <div id="uploadValidationResults" class="hidden mt-4 pt-4 border-t border-slate-200">
+                    <!-- Upload validation results will be shown here -->
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="status" class="hidden rounded-lg p-4 text-sm"></div>
+        </div>
+
+        <!-- Right Column: Preview & Validation -->
+        <div class="space-y-6">
+            <!-- PDF Preview -->
+            <div class="bg-white rounded-lg border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-medium text-slate-900">PDF Preview</h2>
+                    <button id="downloadBtn"
+                            class="hidden px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">
+                        Download
+                    </button>
+                </div>
+                <div id="pdfViewer" class="border border-slate-200 rounded-md bg-slate-50 overflow-y-auto"
+                     style="max-height: 800px;">
+                    <div id="pdfContainer" class="flex flex-col items-center gap-4 p-4">
+                        <!-- PDF pages will be rendered here -->
                     </div>
                 </div>
+            </div>
 
-                <!-- Validation Results -->
-                <div id="validationSection" class="hidden bg-white rounded-lg border border-slate-200 p-6">
-                    <h2 class="text-lg font-medium text-slate-900 mb-4">Validation Results</h2>
-                    <div id="validationResults" class="space-y-3">
-                        <!-- Results will be inserted here -->
-                    </div>
+            <!-- Validation Results -->
+            <div id="validationSection" class="hidden bg-white rounded-lg border border-slate-200 p-6">
+                <h2 class="text-lg font-medium text-slate-900 mb-4">Validation Results</h2>
+                <div id="validationResults" class="space-y-3">
+                    <!-- Results will be inserted here -->
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <style>
-        #status.success {
-            @apply bg-emerald-50 text-emerald-800 border border-emerald-200 block;
+<style>
+    #status.success {
+        @apply bg-emerald-50 text-emerald-800 border border-emerald-200 block;
+    }
+
+    #status.error {
+        @apply bg-red-50 text-red-800 border border-red-200 block;
+    }
+
+    #status.loading {
+        @apply bg-blue-50 text-blue-800 border border-blue-200 block;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs" type="module"></script>
+<script type="module">
+    // Import PDF.js
+    import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
+
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+
+    const htmlInput = document.getElementById('htmlInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const status = document.getElementById('status');
+    const pdfContainer = document.getElementById('pdfContainer');
+    const validationSection = document.getElementById('validationSection');
+    const validationResults = document.getElementById('validationResults');
+    const pdfUpload = document.getElementById('pdfUpload');
+    const validateUploadBtn = document.getElementById('validateUploadBtn');
+    const uploadValidationResults = document.getElementById('uploadValidationResults');
+
+    let currentPdfBlob = null;
+
+    // Convert HTML to PDF
+    convertBtn.addEventListener('click', async () => {
+        const html = htmlInput.value.trim();
+
+        if (!html) {
+            showStatus('error', 'Please enter some HTML content');
+            return;
         }
-        #status.error {
-            @apply bg-red-50 text-red-800 border border-red-200 block;
-        }
-        #status.loading {
-            @apply bg-blue-50 text-blue-800 border border-blue-200 block;
-        }
-    </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs" type="module"></script>
-    <script type="module">
-        // Import PDF.js
-        import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
+        showStatus('loading', 'Converting HTML to PDF...');
+        convertBtn.disabled = true;
+        validationSection.classList.add('hidden');
 
-        // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+        try {
+            const response = await fetch('/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({html})
+            });
 
-        const htmlInput = document.getElementById('htmlInput');
-        const convertBtn = document.getElementById('convertBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const status = document.getElementById('status');
-        const pdfContainer = document.getElementById('pdfContainer');
-        const validationSection = document.getElementById('validationSection');
-        const validationResults = document.getElementById('validationResults');
-        const pdfUpload = document.getElementById('pdfUpload');
-        const validateUploadBtn = document.getElementById('validateUploadBtn');
-        const uploadValidationResults = document.getElementById('uploadValidationResults');
-
-        let currentPdfBlob = null;
-
-        // Convert HTML to PDF
-        convertBtn.addEventListener('click', async () => {
-            const html = htmlInput.value.trim();
-
-            if (!html) {
-                showStatus('error', 'Please enter some HTML content');
-                return;
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `HTTP error! status: ${response.status}`);
             }
 
-            showStatus('loading', 'Converting HTML to PDF...');
-            convertBtn.disabled = true;
-            validationSection.classList.add('hidden');
+            const pdfBlob = await response.blob();
+            currentPdfBlob = pdfBlob;
 
-            try {
-                const response = await fetch('/convert', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ html })
-                });
+            await renderPDF(pdfBlob);
+            await validatePDF(pdfBlob);
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
-                }
-
-                const pdfBlob = await response.blob();
-                currentPdfBlob = pdfBlob;
-
-                await renderPDF(pdfBlob);
-                await validatePDF(pdfBlob);
-
-                showStatus('success', `PDF generated successfully (${(pdfBlob.size / 1024).toFixed(2)} KB)`);
-                downloadBtn.classList.remove('hidden');
-            } catch (error) {
-                showStatus('error', `Error: ${error.message}`);
-                console.error('Conversion error:', error);
-            } finally {
-                convertBtn.disabled = false;
-            }
-        });
-
-        // Render PDF using PDF.js
-        async function renderPDF(pdfBlob) {
-            // Clear previous renders
-            pdfContainer.innerHTML = '';
-
-            const pdfData = await pdfBlob.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-
-            // Calculate scale to fit container width
-            const containerWidth = pdfContainer.parentElement.clientWidth - 48; // account for padding
-
-            // Render all pages
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-
-                // Create wrapper for page
-                const pageWrapper = document.createElement('div');
-                pageWrapper.className = 'page-wrapper shadow-sm';
-
-                // Create canvas for this page
-                const canvas = document.createElement('canvas');
-                canvas.className = 'border border-slate-200 rounded';
-                const ctx = canvas.getContext('2d');
-
-                // Calculate viewport at 1x scale
-                const viewport = page.getViewport({ scale: 1.0 });
-                const scale = containerWidth / viewport.width;
-                const scaledViewport = page.getViewport({ scale });
-
-                // Set canvas size
-                canvas.height = scaledViewport.height;
-                canvas.width = scaledViewport.width;
-
-                // Render page
-                await page.render({
-                    canvasContext: ctx,
-                    viewport: scaledViewport
-                }).promise;
-
-                pageWrapper.appendChild(canvas);
-
-                // Create text layer for selection
-                const textLayerDiv = document.createElement('div');
-                textLayerDiv.className = 'textLayer';
-                textLayerDiv.style.width = canvas.width + 'px';
-                textLayerDiv.style.height = canvas.height + 'px';
-
-                pageWrapper.appendChild(textLayerDiv);
-
-                // Render text layer
-                const textContent = await page.getTextContent();
-                pdfjsLib.renderTextLayer({
-                    textContentSource: textContent,
-                    container: textLayerDiv,
-                    viewport: scaledViewport,
-                    textDivs: []
-                });
-
-                pdfContainer.appendChild(pageWrapper);
-            }
+            showStatus('success', `PDF generated successfully (${(pdfBlob.size / 1024).toFixed(2)} KB)`);
+            downloadBtn.classList.remove('hidden');
+        } catch (error) {
+            showStatus('error', `Error: ${error.message}`);
+            console.error('Conversion error:', error);
+        } finally {
+            convertBtn.disabled = false;
         }
+    });
 
-        // Validate PDF
-        async function validatePDF(pdfBlob) {
-            try {
-                const response = await fetch('/validate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/pdf'
-                    },
-                    body: pdfBlob
-                });
+    // Render PDF using PDF.js
+    async function renderPDF(pdfBlob) {
+        // Clear previous renders
+        pdfContainer.innerHTML = '';
 
-                if (!response.ok) {
-                    throw new Error('Validation failed');
-                }
+        const pdfData = await pdfBlob.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
 
-                const validation = await response.json();
-                displayValidation(validation);
-            } catch (error) {
-                console.error('Validation error:', error);
-            }
+        // Calculate scale to fit container width
+        const containerWidth = pdfContainer.parentElement.clientWidth - 48; // account for padding
+
+        // Render all pages
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+
+            // Create wrapper for page
+            const pageWrapper = document.createElement('div');
+            pageWrapper.className = 'page-wrapper shadow-sm';
+
+            // Create canvas for this page
+            const canvas = document.createElement('canvas');
+            canvas.className = 'border border-slate-200 rounded';
+            const ctx = canvas.getContext('2d');
+
+            // Calculate viewport at 1x scale
+            const viewport = page.getViewport({scale: 1.0});
+            const scale = containerWidth / viewport.width;
+            const scaledViewport = page.getViewport({scale});
+
+            // Set canvas size
+            canvas.height = scaledViewport.height;
+            canvas.width = scaledViewport.width;
+
+            // Render page
+            await page.render({
+                canvasContext: ctx,
+                viewport: scaledViewport
+            }).promise;
+
+            pageWrapper.appendChild(canvas);
+
+            // Create text layer for selection
+            const textLayerDiv = document.createElement('div');
+            textLayerDiv.className = 'textLayer';
+            textLayerDiv.style.width = canvas.width + 'px';
+            textLayerDiv.style.height = canvas.height + 'px';
+
+            pageWrapper.appendChild(textLayerDiv);
+
+            // Render text layer
+            const textContent = await page.getTextContent();
+            pdfjsLib.renderTextLayer({
+                textContentSource: textContent,
+                container: textLayerDiv,
+                viewport: scaledViewport,
+                textDivs: []
+            });
+
+            pdfContainer.appendChild(pageWrapper);
         }
+    }
 
-        // Display validation results
-        function displayValidation(validation) {
-            validationSection.classList.remove('hidden');
+    // Validate PDF
+    async function validatePDF(pdfBlob) {
+        try {
+            const response = await fetch('/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/pdf'
+                },
+                body: pdfBlob
+            });
 
-            const statusColor = validation.isCompliant ? 'emerald' : 'red';
-            const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
+            if (!response.ok) {
+                throw new Error('Validation failed');
+            }
 
-            validationResults.innerHTML = `
+            const validation = await response.json();
+            displayValidation(validation);
+        } catch (error) {
+            console.error('Validation error:', error);
+        }
+    }
+
+    // Display validation results
+    function displayValidation(validation) {
+        validationSection.classList.remove('hidden');
+
+        const statusColor = validation.isCompliant ? 'emerald' : 'red';
+        const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
+
+        validationResults.innerHTML = `
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-medium text-slate-600">Status:</span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
@@ -383,79 +395,79 @@
                     </div>
                 ` : ''}
             `;
-        }
+    }
 
-        // Download PDF
-        downloadBtn.addEventListener('click', () => {
-            if (currentPdfBlob) {
-                const url = URL.createObjectURL(currentPdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'generated-document.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+    // Download PDF
+    downloadBtn.addEventListener('click', () => {
+        if (currentPdfBlob) {
+            const url = URL.createObjectURL(currentPdfBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated-document.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    });
+
+    // Show status message
+    function showStatus(type, message) {
+        status.className = `rounded-lg p-4 text-sm ${type}`;
+        status.textContent = message;
+    }
+
+    // Setup template button click handlers
+    document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const html = btn.dataset.templateHtml;
+            if (html) {
+                htmlInput.value = html;
             }
         });
+    });
 
-        // Show status message
-        function showStatus(type, message) {
-            status.className = `rounded-lg p-4 text-sm ${type}`;
-            status.textContent = message;
+    // Upload PDF validation
+    validateUploadBtn.addEventListener('click', async () => {
+        const file = pdfUpload.files[0];
+        if (!file) {
+            alert('Please select a PDF file');
+            return;
         }
 
-        // Setup template button click handlers
-        document.querySelectorAll('.template-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const html = btn.dataset.templateHtml;
-                if (html) {
-                    htmlInput.value = html;
-                }
+        validateUploadBtn.disabled = true;
+        uploadValidationResults.classList.add('hidden');
+
+        try {
+            const response = await fetch('/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/pdf'
+                },
+                body: file
             });
-        });
 
-        // Upload PDF validation
-        validateUploadBtn.addEventListener('click', async () => {
-            const file = pdfUpload.files[0];
-            if (!file) {
-                alert('Please select a PDF file');
-                return;
+            if (!response.ok) {
+                throw new Error('Validation failed');
             }
 
-            validateUploadBtn.disabled = true;
-            uploadValidationResults.classList.add('hidden');
+            const validation = await response.json();
+            displayUploadValidation(validation);
+        } catch (error) {
+            alert('Error validating PDF: ' + error.message);
+        } finally {
+            validateUploadBtn.disabled = false;
+        }
+    });
 
-            try {
-                const response = await fetch('/validate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/pdf'
-                    },
-                    body: file
-                });
+    // Display upload validation results
+    function displayUploadValidation(validation) {
+        uploadValidationResults.classList.remove('hidden');
 
-                if (!response.ok) {
-                    throw new Error('Validation failed');
-                }
+        const statusColor = validation.isCompliant ? 'emerald' : 'red';
+        const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
 
-                const validation = await response.json();
-                displayUploadValidation(validation);
-            } catch (error) {
-                alert('Error validating PDF: ' + error.message);
-            } finally {
-                validateUploadBtn.disabled = false;
-            }
-        });
-
-        // Display upload validation results
-        function displayUploadValidation(validation) {
-            uploadValidationResults.classList.remove('hidden');
-
-            const statusColor = validation.isCompliant ? 'emerald' : 'red';
-            const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
-
-            uploadValidationResults.innerHTML = `
+        uploadValidationResults.innerHTML = `
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-xs font-medium text-slate-600">Status:</span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
@@ -496,7 +508,7 @@
                     </div>
                 ` : ''}
             `;
-        }
-    </script>
+    }
+</script>
 </body>
 </html>

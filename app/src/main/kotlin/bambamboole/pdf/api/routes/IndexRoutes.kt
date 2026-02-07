@@ -11,9 +11,13 @@ import java.io.File
  */
 fun Route.indexRoutes() {
     get("/") {
-        call.respond(MustacheContent("index.mustache", mapOf(
-            "templates" to loadExampleTemplates()
-        )))
+        call.respond(
+            MustacheContent(
+                "index.mustache", mapOf(
+                    "templates" to loadExampleTemplates()
+                )
+            )
+        )
     }
 }
 

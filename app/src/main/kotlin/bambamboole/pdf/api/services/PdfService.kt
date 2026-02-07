@@ -60,10 +60,11 @@ object PdfService {
     /**
      * Converts HTML string to PDF bytes with PDF/UA accessibility compliance
      * @param html Well-formed HTML string
+     * @param producer PDF producer metadata (default: pdf-ua-api.com)
      * @return PDF as byte array
      * @throws Exception if HTML is malformed or conversion fails
      */
-    fun convertHtmlToPdf(html: String): ByteArray {
+    fun convertHtmlToPdf(html: String, producer: String = "pdf-ua-api.com"): ByteArray {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
         }
@@ -75,7 +76,7 @@ object PdfService {
         return ByteArrayOutputStream(512 * 1024).use { outputStream ->
             val builder = PdfRendererBuilder()
             configurePdfUA(builder)
-            builder.withProducer("pdf-ua-api.com")
+            builder.withProducer(producer)
             builder.withW3cDocument(w3cDoc, "file:///")
             builder.toStream(outputStream)
             builder.run()
