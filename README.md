@@ -5,7 +5,10 @@ A simple HTTP API for converting HTML to PDF with PDF/A-3a accessibility complia
 ## Quick Start
 
 ```bash
-# Run with Docker (from GitHub Container Registry)
+# Run with Docker (from Docker Hub)
+docker run -p 8080:8080 bambamboole/pdf-ua-api:latest
+
+# Or from GitHub Container Registry
 docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
 
 # Test the API
