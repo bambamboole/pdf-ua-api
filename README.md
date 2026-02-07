@@ -17,11 +17,15 @@ curl http://localhost:8080/health
 
 ## Features
 
-- **HTML to PDF Conversion** - Convert any HTML document to PDF
-- **PDF/UA Compliant** - All PDFs are PDF/A-3a accessible by default
+- **HTML to PDF Conversion** - Convert any HTML document to PDF/A-3a
+- **PDF/UA Compliant** - Full accessibility compliance built-in
+- **Thread-Safe** - Handles concurrent requests efficiently
 - **Bundled Fonts** - Liberation fonts included (no system dependencies)
-- **CSS Support** - Full CSS 2.1 styling
-- **Validation** - Built-in PDF/A compliance validation
+- **CSS Support** - Full CSS 2.1 styling with automatic table pagination
+- **Validation** - Built-in PDF/A compliance validation with veraPDF
+- **Flexible Configuration** - Environment variable-based configuration
+- **Optional Authentication** - API key support via Bearer token
+- **API-Only Mode** - Can run without web UI for production deployments
 
 ## API Endpoints
 
@@ -110,10 +114,42 @@ For full compliance, include these meta tags:
 
 ### Environment Variables
 
-| Variable  | Default | Description                                        |
-|-----------|---------|----------------------------------------------------|
-| `PORT`    | 8080    | Server port                                        |
-| `API_KEY` | (none)  | Optional API key for authentication (Bearer token) |
+| Variable           | Default          | Description                                                                                                     |
+|--------------------|------------------|-----------------------------------------------------------------------------------------------------------------|
+| `PORT`             | `8080`           | HTTP server port                                                                                                |
+| `API_KEY`          | (none)           | Optional API key for authentication (Bearer token). When set, `/convert` and `/validate` require authentication |
+| `WEB_UI_ENABLED`   | `true`           | Enable web UI at `/`. Set to `false` for API-only mode                                                          |
+| `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
+| `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
+| `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
+
+### Configuration Examples
+
+**API-only mode (no web UI)**:
+
+```bash
+docker run -p 8080:8080 -e WEB_UI_ENABLED=false bambamboole/pdf-ua-api:latest
+```
+
+**Production configuration**:
+
+```bash
+docker run -p 8080:8080 \
+  -e API_KEY=your-secret-key \
+  -e WEB_UI_ENABLED=false \
+  -e PDF_PRODUCER=my-company-v1.0 \
+  -e LOG_LEVEL=WARN \
+  bambamboole/pdf-ua-api:latest
+```
+
+**Development with debug logging**:
+
+```bash
+docker run -p 8080:8080 \
+  -e LOG_LEVEL=DEBUG \
+  -e PDF_PRODUCER=dev-build \
+  bambamboole/pdf-ua-api:latest
+```
 
 ## Authentication
 
@@ -163,26 +199,34 @@ curl -X POST http://localhost:8080/validate \
 - CSS 2.1 only (no CSS3 animations, transforms)
 - Maximum request size: 10MB
 
-## Building from source
+## Building from Source
 
-```bash
-# Build Docker image
-docker build -t pdf-api .
-
-
-### Prerequisites for Development
+### Prerequisites
 
 - Java 24
-- Gradle
+- Gradle (or use included wrapper `./gradlew`)
+
+### Development
 
 ```bash
-# Run tests (suppress Java 25 native access warnings)
+# Clone the repository
+git clone https://github.com/bambamboole/pdf-ua-api.git
+cd pdf-ua-api
+
+# Run tests (suppress Java native access warnings)
 export JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"
 ./gradlew test
 
-# Run locally
+# Run locally with default settings
+./gradlew run
+
+# Run with custom configuration
+WEB_UI_ENABLED=false \
+LOG_LEVEL=DEBUG \
+PDF_PRODUCER=dev-build \
 ./gradlew run
 ```
+
 
 ## License
 
