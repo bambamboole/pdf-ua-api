@@ -1,9 +1,9 @@
-# Build outputs
-**/build/
+.github
 .gradle/
+.idea/
+build/
 
 # IDE
-.idea/
 *.iml
 .vscode/
 

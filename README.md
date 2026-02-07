@@ -1,12 +1,12 @@
-# PDF API
+# PDF UA API
 
 A simple HTTP API for converting HTML to PDF with PDF/A-3a accessibility compliance. Built with Ktor and openhtmltopdf.
 
 ## Quick Start
 
 ```bash
-# Run with Docker
-docker run -p 8080:8080 pdf-api
+# Run with Docker (from GitHub Container Registry)
+docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
 
 # Test the API
 curl http://localhost:8080/health
@@ -23,11 +23,13 @@ curl http://localhost:8080/health
 ## API Endpoints
 
 ### Health Check
+
 ```bash
 GET /health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "ok"
@@ -35,6 +37,7 @@ GET /health
 ```
 
 ### Convert HTML to PDF
+
 ```bash
 POST /convert
 Content-Type: application/json
@@ -47,6 +50,7 @@ Content-Type: application/json
 **Response:** Binary PDF data
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:8080/convert \
   -H "Content-Type: application/json" \
@@ -55,6 +59,7 @@ curl -X POST http://localhost:8080/convert \
 ```
 
 ### Validate PDF
+
 ```bash
 POST /validate
 Content-Type: application/pdf
@@ -63,6 +68,7 @@ Content-Type: application/pdf
 ```
 
 **Response:**
+
 ```json
 {
   "isCompliant": true,
@@ -87,12 +93,12 @@ For full compliance, include these meta tags:
 <html lang="en">
 <head>
     <title>Document Title</title>
-    <meta name="subject" content="Document subject" />
-    <meta name="description" content="Document description" />
-    <meta name="author" content="Author Name" />
+    <meta name="subject" content="Document subject"/>
+    <meta name="description" content="Document description"/>
+    <meta name="author" content="Author Name"/>
 </head>
 <body>
-    <!-- Your content -->
+<!-- Your content -->
 </body>
 </html>
 ```
@@ -103,48 +109,35 @@ For full compliance, include these meta tags:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | 8080 | Server port |
-
-### Docker Run Options
-
-```bash
-# Custom port
-docker run -p 3000:8080 -e PORT=8080 pdf-api
-
-# With resource limits
-docker run -p 8080:8080 -m 512m --cpus="1" pdf-api
-
-# Background mode
-docker run -d -p 8080:8080 --name pdf-api pdf-api
-```
+| `PORT`   | 8080    | Server port |
 
 ## HTML Requirements
 
 ### ✅ Supported
+
 - HTML 4/5 standard tags
 - CSS 2.1 (inline and `<style>` tags)
 - Tables, lists, basic layout
 - Base64 encoded images
 
 ### ⚠️ Limitations
+
 - HTML must be well-formed (XHTML-style)
 - No external resources (images must be base64)
 - CSS 2.1 only (no CSS3 animations, transforms)
 - Maximum request size: 10MB
 
-## Building from Source
+## Building from source
 
 ```bash
 # Build Docker image
 docker build -t pdf-api .
 
-# Or use the build script
-./docker-build.sh
-```
 
 ### Prerequisites for Development
+
 - Java 25
-- Gradle (wrapper included)
+- Gradle
 
 ```bash
 # Run tests (suppress Java 25 native access warnings)
@@ -154,8 +147,6 @@ export JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"
 # Run locally
 ./gradlew run
 ```
-
-**Note:** Java 25 native access warnings are cosmetic and don't affect functionality.
 
 ## License
 
