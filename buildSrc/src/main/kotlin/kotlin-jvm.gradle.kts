@@ -10,8 +10,8 @@ plugins {
 }
 
 kotlin {
-    // Use Java 25 for modern features and performance
-    jvmToolchain(25)
+    // Use Java 24 (highest version supported by Kotlin 2.3.x)
+    jvmToolchain(24)
 }
 
 tasks.withType<Test>().configureEach {

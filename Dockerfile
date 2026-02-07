@@ -1,4 +1,4 @@
-FROM gradle:9-jdk25-alpine AS build
+FROM gradle:9-jdk24-alpine AS build
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY . .
 
 RUN ./gradlew installDist -x test --no-daemon
 
-FROM eclipse-temurin:25-alpine
+FROM eclipse-temurin:24-alpine
 
 WORKDIR /app
 

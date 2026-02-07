@@ -3,13 +3,13 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.3.0"
-kotlinxSerializationJSON = "1.9.0"
-ktor = "3.1.1"
+kotlin = "2.3.10"
+kotlinxSerializationJSON = "1.10.0"
+ktor = "3.4.0"
 openhtmltopdf = "1.1.37"
-logback = "1.5.16"
-verapdf = "1.28.1"
-shadow = "8.1.1"
+logback = "1.5.28"
+verapdf = "1.28.2"
+shadow = "9.3.1"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -39,4 +39,4 @@ verapdfValidation = { module = "org.verapdf:validation-model", version.ref = "ve
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

@@ -57,6 +57,6 @@ tasks.jar {
 }
 
 tasks.test {
-    // Suppress Java 25 warnings about restricted native access
+    // Suppress warnings about restricted native access
     jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
