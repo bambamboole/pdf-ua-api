@@ -86,14 +86,34 @@ object PdfService {
      * Built-in PDF fonts are prohibited in PDF/UA standard.
      */
     private fun addFallbackFonts(builder: PdfRendererBuilder) {
-        data class FontConfig(val path: String, val family: String)
+        data class FontConfig(
+            val path: String,
+            val family: String,
+            val weight: Int,
+            val style: FontStyle
+        )
 
         // Liberation fonts bundled with the application
         // These are metrically compatible with Arial, Times New Roman, and Courier New
+        // All variants (Regular, Bold, Italic, BoldItalic) for complete CSS font matching
         val fonts = listOf(
-            FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans"),
-            FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif"),
-            FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono")
+            // Liberation Sans (Arial replacement)
+            FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans", 400, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationSans-Bold.ttf", "Liberation Sans", 700, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationSans-Italic.ttf", "Liberation Sans", 400, FontStyle.ITALIC),
+            FontConfig("/fonts/LiberationSans-BoldItalic.ttf", "Liberation Sans", 700, FontStyle.ITALIC),
+
+            // Liberation Serif (Times New Roman replacement)
+            FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif", 400, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationSerif-Bold.ttf", "Liberation Serif", 700, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationSerif-Italic.ttf", "Liberation Serif", 400, FontStyle.ITALIC),
+            FontConfig("/fonts/LiberationSerif-BoldItalic.ttf", "Liberation Serif", 700, FontStyle.ITALIC),
+
+            // Liberation Mono (Courier New replacement)
+            FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono", 400, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationMono-Bold.ttf", "Liberation Mono", 700, FontStyle.NORMAL),
+            FontConfig("/fonts/LiberationMono-Italic.ttf", "Liberation Mono", 400, FontStyle.ITALIC),
+            FontConfig("/fonts/LiberationMono-BoldItalic.ttf", "Liberation Mono", 700, FontStyle.ITALIC)
         )
 
         val fontsAdded = mutableListOf<String>()
@@ -114,21 +134,26 @@ object PdfService {
                     builder.useFont(
                         fontSupplier,
                         font.family,
-                        400,
-                        FontStyle.NORMAL,
+                        font.weight,
+                        font.style,
                         true,
                         EnumSet.of(FSFontUseCase.FALLBACK_FINAL)
                     )
 
-                    fontsAdded.add(font.family)
-                    logger.debug("Loaded fallback font: ${font.family} (${fontBytes.size} bytes)")
+                    val styleDesc = when (font.style) {
+                        FontStyle.NORMAL -> if (font.weight == 700) "Bold" else "Regular"
+                        FontStyle.ITALIC -> if (font.weight == 700) "Bold Italic" else "Italic"
+                        else -> "Unknown"
+                    }
+                    fontsAdded.add("${font.family} $styleDesc")
+                    logger.debug("Loaded fallback font: ${font.family} $styleDesc (weight=${font.weight}, ${fontBytes.size} bytes)")
                 }
             } catch (e: Exception) {
-                logger.error("Failed to load font ${font.family}: ${e.message}", e)
+                logger.error("Failed to load font ${font.family} (${font.weight}, ${font.style}): ${e.message}", e)
                 throw IllegalStateException("Failed to load required font: ${font.family}", e)
             }
         }
 
-        logger.info("Successfully loaded ${fontsAdded.size} fallback fonts: ${fontsAdded.joinToString(", ")}")
+        logger.info("Successfully loaded ${fontsAdded.size} fallback font variants: ${fontsAdded.joinToString(", ")}")
     }
 }
