@@ -1,0 +1,14 @@
+{
+  "isCompliant": true,
+  "flavour": "3a",
+  "totalChecks": 0,
+  "passedChecks": 0,
+  "failedChecks": 0,
+  "failures": [],
+  "metadata": {
+    "title": "Table Pagination Demo",
+    "subject": "Demonstration of table pagination across multiple pages",
+    "author": "PDF API Test Suite",
+    "producer": "pdf-ua-api.com"
+  }
+}

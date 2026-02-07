@@ -4,6 +4,8 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
+import org.jsoup.Jsoup
+import org.jsoup.helper.W3CDom
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -15,7 +17,7 @@ object PdfService {
 
     /**
      * Converts HTML string to PDF bytes with PDF/UA accessibility compliance
-     * @param html Well-formed XHTML string
+     * @param html Well-formed HTML string
      * @return PDF as byte array
      * @throws Exception if HTML is malformed or conversion fails
      */
@@ -23,6 +25,15 @@ object PdfService {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
         }
+
+        // Parse HTML with jsoup
+        val jsoupDoc = Jsoup.parse(html)
+
+        // Inject table pagination styles
+        injectTablePaginationStyles(jsoupDoc)
+
+        // Convert jsoup Document to W3C Document
+        val w3cDoc = W3CDom().fromJsoup(jsoupDoc)
 
         return ByteArrayOutputStream().use { outputStream ->
             val builder = PdfRendererBuilder()
@@ -33,11 +44,43 @@ object PdfService {
             // Set producer to pdf-ua-api.com
             builder.withProducer("pdf-ua-api.com")
 
-            builder.withHtmlContent(html, "file:///")  // Base URL required for resolving relative resources
+            // Use W3C Document instead of raw HTML string
+            builder.withW3cDocument(w3cDoc, "file:///")  // Base URL required for resolving relative resources
             builder.toStream(outputStream)
             builder.run()
             outputStream.toByteArray()
         }
+    }
+
+    /**
+     * Injects CSS styles for proper table pagination across pages.
+     * This ensures tables are split correctly when spanning multiple pages.
+     */
+    private fun injectTablePaginationStyles(jsoupDoc: org.jsoup.nodes.Document) {
+        val styles = """
+            table {
+                width: 100%;
+                border-collapse: collapse;
+
+                /* The magical table pagination property. */
+                -fs-table-paginate: paginate;
+
+                /* Recommended to avoid leaving thead on a page by itself. */
+                -fs-page-break-min-height: 1.5cm;
+            }
+
+            tr, thead, tfoot {
+                page-break-inside: avoid;
+            }
+        """.trimIndent()
+
+        // Check if a style tag already exists, if not create one
+        val head = jsoupDoc.head()
+        val styleElement = head.appendElement("style")
+        styleElement.attr("type", "text/css")
+        styleElement.text(styles)
+
+        logger.debug("Injected table pagination styles into HTML document")
     }
 
     /**

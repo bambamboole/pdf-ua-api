@@ -27,6 +27,9 @@ dependencies {
     implementation(libs.openhtmltopdfCore)
     implementation(libs.openhtmltopdfPdfbox)
 
+    // HTML Parser
+    implementation(libs.jsoup)
+
     // Logging
     implementation(libs.logbackClassic)
 
