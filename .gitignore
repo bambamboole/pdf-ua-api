@@ -43,3 +43,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Test Fixtures ###
+# Auto-generated PDFs from fixture tests
+**/fixtures/**/generated.pdf

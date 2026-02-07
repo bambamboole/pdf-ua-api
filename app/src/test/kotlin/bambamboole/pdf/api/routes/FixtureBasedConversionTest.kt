@@ -94,6 +94,27 @@ class FixtureBasedConversionTest {
                 assertTrue(pdfBytes.isNotEmpty(),
                     "Fixture '${fixture.name}': PDF should not be empty")
 
+                // Save generated PDF to fixtures folder for inspection
+                // Find the source resources directory (not the build directory)
+                val fixturesUrl = FixtureBasedConversionTest::class.java.classLoader.getResource("fixtures")
+                if (fixturesUrl != null) {
+                    // Get the build resources path and derive the source path
+                    val buildFixturesDir = File(fixturesUrl.toURI())
+                    val projectRoot = buildFixturesDir.absolutePath
+                        .substringBefore("/app/build/")
+                    val sourceFixturesDir = File(projectRoot, "app/src/test/resources/fixtures")
+                    val fixtureDir = File(sourceFixturesDir, fixture.name)
+                    val generatedPdfFile = File(fixtureDir, "generated.pdf")
+
+                    // Delete existing generated.pdf if it exists
+                    if (generatedPdfFile.exists()) {
+                        generatedPdfFile.delete()
+                    }
+
+                    generatedPdfFile.writeBytes(pdfBytes)
+                    println("Fixture '${fixture.name}': Generated PDF saved to ${generatedPdfFile.absolutePath}")
+                }
+
                 // Verify PDF header
                 val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
                 assertTrue(pdfHeader.startsWith("%PDF-"),

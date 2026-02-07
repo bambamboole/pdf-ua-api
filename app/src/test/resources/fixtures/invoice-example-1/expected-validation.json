@@ -1,0 +1,14 @@
+{
+  "isCompliant": true,
+  "flavour": "3a",
+  "totalChecks": 0,
+  "passedChecks": 0,
+  "failedChecks": 0,
+  "failures": [],
+  "metadata": {
+    "title": "Invoice Example 1",
+    "subject": "Testing table with line items",
+    "author": "PDF API Test Suite",
+    "producer": "pdf-ua-api.com"
+  }
+}
