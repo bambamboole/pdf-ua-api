@@ -4,7 +4,6 @@ import io.ktor.server.mustache.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import java.io.File
 
 /**
  * Routes for the web UI
@@ -29,27 +28,38 @@ data class Template(
 
 /**
  * Load all example HTML files from resources
+ * Works both in development (filesystem) and production (JAR)
  */
 private fun loadExampleTemplates(): List<Template> {
-    val examplesPath = "examples"
-    val resourceUrl = object {}.javaClass.classLoader.getResource(examplesPath)
-        ?: return emptyList()
+    val exampleFiles = listOf(
+        "simple-document.html",
+        "invoice-example-1.html",
+        "styled-table.html",
+        "table-pagination.html",
+        "font-variations.html",
+        "custom-creator.html"
+    )
 
-    val examplesDir = File(resourceUrl.toURI())
-    if (!examplesDir.exists() || !examplesDir.isDirectory) {
-        return emptyList()
-    }
+    return exampleFiles.mapNotNull { fileName ->
+        try {
+            val resourcePath = "examples/$fileName"
+            val content = object {}.javaClass.classLoader
+                .getResourceAsStream(resourcePath)
+                ?.bufferedReader()
+                ?.use { it.readText() }
 
-    return examplesDir.listFiles()
-        ?.filter { it.isFile && it.extension == "html" }
-        ?.map { htmlFile ->
-            Template(
-                name = formatExampleName(htmlFile.nameWithoutExtension),
-                html = htmlFile.readText()
-            )
+            if (content != null) {
+                Template(
+                    name = formatExampleName(fileName.removeSuffix(".html")),
+                    html = content
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
-        ?.sortedBy { it.name }
-        ?: emptyList()
+    }.sortedBy { it.name }
 }
 
 /**
