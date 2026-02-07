@@ -110,9 +110,42 @@ For full compliance, include these meta tags:
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT`   | 8080    | Server port |
+| Variable  | Default | Description                                        |
+|-----------|---------|----------------------------------------------------|
+| `PORT`    | 8080    | Server port                                        |
+| `API_KEY` | (none)  | Optional API key for authentication (Bearer token) |
+
+## Authentication
+
+The API supports optional API key authentication. When configured, the `/convert` and `/validate` endpoints require a
+valid API key, while `/health` remains public.
+
+### Running with Authentication
+
+```bash
+docker run -p 8080:8080 -e API_KEY=your-secret-key bambamboole/pdf-ua-api:latest
+```
+
+### Making Authenticated Requests
+
+When authentication is enabled, include the API key as a Bearer token:
+
+```bash
+# Convert HTML to PDF with authentication
+curl -X POST http://localhost:8080/convert \
+  -H "Authorization: Bearer your-secret-key" \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html><body><h1>Hello</h1></body></html>"}' \
+  --output output.pdf
+
+# Validate PDF with authentication
+curl -X POST http://localhost:8080/validate \
+  -H "Authorization: Bearer your-secret-key" \
+  -H "Content-Type: application/pdf" \
+  --data-binary @output.pdf
+```
+
+**Note:** If `API_KEY` is not set, the API runs in public mode without authentication.
 
 ## HTML Requirements
 
@@ -139,7 +172,7 @@ docker build -t pdf-api .
 
 ### Prerequisites for Development
 
-- Java 25
+- Java 24
 - Gradle
 
 ```bash

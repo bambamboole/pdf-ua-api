@@ -2,6 +2,7 @@ package bambamboole.pdf.api
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.calllogging.*
@@ -15,12 +16,14 @@ import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.validationRoutes
 import org.slf4j.event.Level
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+fun main(args: Array<String>) {
+    io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {
+    val logger = log
+    val apiKey = environment.config.propertyOrNull("api.key")?.getString()
+
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = true
@@ -41,9 +44,36 @@ fun Application.module() {
         }
     }
 
+    // Install authentication only if API key is configured
+    if (apiKey != null) {
+        install(Authentication) {
+            bearer("api-key-auth") {
+                authenticate { credential ->
+                    if (credential.token == apiKey) {
+                        UserIdPrincipal("api-user")
+                    } else {
+                        null
+                    }
+                }
+            }
+        }
+        logger.info("API key authentication enabled")
+    } else {
+        logger.warn("API key not configured - running without authentication")
+    }
+
     routing {
         healthRoutes()
-        convertRoutes()
-        validationRoutes()
+
+        // Conditionally protect routes based on whether API key is configured
+        if (apiKey != null) {
+            authenticate("api-key-auth") {
+                convertRoutes()
+                validationRoutes()
+            }
+        } else {
+            convertRoutes()
+            validationRoutes()
+        }
     }
 }

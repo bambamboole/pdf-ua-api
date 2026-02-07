@@ -6,6 +6,7 @@ import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import org.apache.pdfbox.Loader
@@ -265,5 +266,86 @@ class ConvertRoutesTest {
             assertEquals(expectedAuthor, info.author, "PDF author should match HTML meta author tag")
             assertEquals("Author Test Document", info.title, "PDF title should match HTML title tag")
         }
+    }
+
+    @Test
+    fun testConvertEndpointWithValidApiKey() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.Authorization, "Bearer test-api-key")
+            setBody("""{"html":"$htmlContent"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+
+        val pdfBytes = response.readBytes()
+        assertTrue(pdfBytes.isNotEmpty())
+        val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
+        assertTrue(pdfHeader.startsWith("%PDF-"), "Response should be a valid PDF")
+    }
+
+    @Test
+    fun testConvertEndpointWithInvalidApiKey() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.Authorization, "Bearer wrong-key")
+            setBody("""{"html":"$htmlContent"}""")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun testConvertEndpointWithoutApiKeyWhenAuthEnabled() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"html":"$htmlContent"}""")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun testConvertEndpointWithMalformedAuthorizationHeader() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.Authorization, "InvalidFormat test-api-key")
+            setBody("""{"html":"$htmlContent"}""")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 }

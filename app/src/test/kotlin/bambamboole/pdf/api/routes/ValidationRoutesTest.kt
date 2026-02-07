@@ -7,6 +7,7 @@ import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlin.test.*
@@ -97,5 +98,87 @@ class ValidationRoutesTest {
 
         // PDFs with incomplete metadata may not be fully compliant
         println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, flavour=${validationResult.flavour}")
+    }
+
+    @Test
+    fun testValidateEndpointWithValidApiKey() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        // Generate a PDF first
+        val htmlContent = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>Test Document</title>
+                <meta name="subject" content="Auth Test" />
+            </head>
+            <body><h1>Test</h1></body>
+            </html>
+        """.trimIndent()
+
+        val convertResponse = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.Authorization, "Bearer test-api-key")
+            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+        }
+
+        assertEquals(HttpStatusCode.OK, convertResponse.status)
+        val pdfBytes = convertResponse.readBytes()
+
+        // Validate with valid API key
+        val validateResponse = client.post("/validate") {
+            contentType(ContentType.Application.Pdf)
+            header(HttpHeaders.Authorization, "Bearer test-api-key")
+            setBody(pdfBytes)
+        }
+
+        assertEquals(HttpStatusCode.OK, validateResponse.status)
+        val validationResult = Json.decodeFromString<ValidationResponse>(validateResponse.bodyAsText())
+        assertNotNull(validationResult.flavour)
+    }
+
+    @Test
+    fun testValidateEndpointWithInvalidApiKey() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        // Create a dummy PDF byte array
+        val dummyPdfBytes = "%PDF-1.4\n".toByteArray()
+
+        val response = client.post("/validate") {
+            contentType(ContentType.Application.Pdf)
+            header(HttpHeaders.Authorization, "Bearer wrong-key")
+            setBody(dummyPdfBytes)
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun testValidateEndpointWithoutApiKeyWhenAuthEnabled() = testApplication {
+        environment {
+            config = MapApplicationConfig("api.key" to "test-api-key")
+        }
+        application {
+            module()
+        }
+
+        val dummyPdfBytes = "%PDF-1.4\n".toByteArray()
+
+        val response = client.post("/validate") {
+            contentType(ContentType.Application.Pdf)
+            setBody(dummyPdfBytes)
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 }

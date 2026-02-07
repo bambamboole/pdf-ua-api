@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.ktorServerContentNegotiation)
     implementation(libs.ktorServerCallLogging)
     implementation(libs.ktorServerStatusPages)
+    implementation(libs.ktorServerAuth)
     implementation(libs.ktorSerializationJson)
 
     // Kotlinx Serialization
