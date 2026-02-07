@@ -6,9 +6,9 @@
   "failedChecks": 0,
   "failures": [],
   "metadata": {
-    "title": "Product Catalog",
-    "subject": "Sample product catalog with styled tables",
-    "author": "PDF API Test Suite",
+    "title": "Custom Creator Test",
+    "subject": "Testing custom creator metadata",
+    "author": "Test Author",
     "producer": "pdf-ua-api.com"
   }
 }

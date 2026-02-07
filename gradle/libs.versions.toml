@@ -37,6 +37,7 @@ kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotli
 
 # veraPDF Validation
 verapdfValidation = { module = "org.verapdf:validation-model", version.ref = "verapdf" }
+verapdfCore = { module = "org.verapdf:core", version.ref = "verapdf" }
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

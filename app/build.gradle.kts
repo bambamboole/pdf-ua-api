@@ -32,6 +32,7 @@ dependencies {
 
     // PDF Validation
     implementation(libs.verapdfValidation)
+    implementation(libs.verapdfCore)
 
     // Testing
     testImplementation(libs.ktorServerTestHost)

@@ -32,7 +32,7 @@ class ConvertRoutesTest {
         assertTrue(response.headers.contains(HttpHeaders.ContentDisposition))
 
         // Verify PDF content (PDF starts with %PDF-)
-        val pdfBytes = response.readBytes()
+        val pdfBytes = response.readRawBytes()
         assertTrue(pdfBytes.isNotEmpty())
         val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
         assertTrue(pdfHeader.startsWith("%PDF-"), "Response should be a valid PDF")
@@ -216,8 +216,10 @@ class ConvertRoutesTest {
         assertTrue(validationResult.isCompliant, "PDF/UA document should be compliant")
 
         // Log validation details for debugging
-        println("PDF/UA Validation: compliant=${validationResult.isCompliant}, " +
-                "checks=${validationResult.totalChecks}, failed=${validationResult.failedChecks}")
+        println(
+            "PDF/UA Validation: compliant=${validationResult.isCompliant}, " +
+                    "checks=${validationResult.totalChecks}, failed=${validationResult.failedChecks}"
+        )
 
         if (!validationResult.isCompliant && validationResult.failures.isNotEmpty()) {
             println("Validation failures:")

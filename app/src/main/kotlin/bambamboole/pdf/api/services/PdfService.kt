@@ -30,6 +30,9 @@ object PdfService {
             // Always configure PDF/UA accessibility compliance
             configurePdfUA(builder)
 
+            // Set producer to pdf-ua-api.com
+            builder.withProducer("pdf-ua-api.com")
+
             builder.withHtmlContent(html, "file:///")  // Base URL required for resolving relative resources
             builder.toStream(outputStream)
             builder.run()

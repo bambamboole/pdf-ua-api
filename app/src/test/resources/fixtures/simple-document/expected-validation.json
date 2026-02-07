@@ -4,5 +4,11 @@
   "totalChecks": 0,
   "passedChecks": 0,
   "failedChecks": 0,
-  "failures": []
+  "failures": [],
+  "metadata": {
+    "title": "Simple Document",
+    "subject": "A simple test document for PDF/A-3a compliance",
+    "author": "PDF API Test Suite",
+    "producer": "pdf-ua-api.com"
+  }
 }

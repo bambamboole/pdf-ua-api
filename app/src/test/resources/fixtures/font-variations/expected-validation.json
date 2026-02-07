@@ -4,5 +4,11 @@
   "totalChecks": 0,
   "passedChecks": 0,
   "failedChecks": 0,
-  "failures": []
+  "failures": [],
+  "metadata": {
+    "title": "Font Variations Test",
+    "subject": "Testing bold, italic, and bold-italic font variations",
+    "author": "PDF API Test Suite",
+    "producer": "pdf-ua-api.com"
+  }
 }

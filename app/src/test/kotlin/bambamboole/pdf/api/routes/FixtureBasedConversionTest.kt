@@ -128,12 +128,47 @@ class FixtureBasedConversionTest {
                         "Fixture '${fixture.name}': Should have 0 failed checks")
                 }
 
-                // Log validation summary
+                // Log validation summary with metadata
                 println("Fixture '${fixture.name}' validation: " +
                     "compliant=${actualValidation.isCompliant}, " +
                     "flavour=${actualValidation.flavour}, " +
                     "checks=${actualValidation.totalChecks}, " +
                     "failed=${actualValidation.failedChecks}")
+
+                if (actualValidation.metadata != null) {
+                    println("  Metadata: title='${actualValidation.metadata.title}', " +
+                        "subject='${actualValidation.metadata.subject}', " +
+                        "author='${actualValidation.metadata.author}', " +
+                        "creator='${actualValidation.metadata.creator}', " +
+                        "producer='${actualValidation.metadata.producer}'")
+
+                    // Validate expected metadata if provided
+                    if (fixture.expectedValidation.metadata != null) {
+                        val expected = fixture.expectedValidation.metadata
+                        val actual = actualValidation.metadata
+
+                        expected.title?.let { expectedTitle ->
+                            assertEquals(expectedTitle, actual.title,
+                                "Fixture '${fixture.name}': Title should match")
+                        }
+                        expected.subject?.let { expectedSubject ->
+                            assertEquals(expectedSubject, actual.subject,
+                                "Fixture '${fixture.name}': Subject should match")
+                        }
+                        expected.author?.let { expectedAuthor ->
+                            assertEquals(expectedAuthor, actual.author,
+                                "Fixture '${fixture.name}': Author should match")
+                        }
+                        expected.creator?.let { expectedCreator ->
+                            assertEquals(expectedCreator, actual.creator,
+                                "Fixture '${fixture.name}': Creator should match")
+                        }
+                        expected.producer?.let { expectedProducer ->
+                            assertEquals(expectedProducer, actual.producer,
+                                "Fixture '${fixture.name}': Producer should match")
+                        }
+                    }
+                }
 
                 if (!actualValidation.isCompliant && actualValidation.failures.isNotEmpty()) {
                     println("  Failures:")
