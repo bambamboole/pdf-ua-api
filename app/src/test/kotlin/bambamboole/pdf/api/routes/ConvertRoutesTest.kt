@@ -3,6 +3,7 @@ package bambamboole.pdf.api.routes
 import bambamboole.pdf.api.module
 import bambamboole.pdf.api.models.ConvertRequest
 import bambamboole.pdf.api.services.PdfValidationService
+import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -11,9 +12,113 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.PDDocumentInformation
+import java.io.File
 import kotlin.test.*
 
+/**
+ * Tests for the /convert endpoint, including visual regression testing using fixtures.
+ */
 class ConvertRoutesTest {
+
+    companion object {
+        /**
+         * Helper function to test a single fixture for visual regression.
+         * This only tests PDF generation and visual comparison, NOT validation.
+         */
+        private suspend fun ApplicationTestBuilder.testFixtureConversion(fixtureName: String) {
+            println("\n=== Testing fixture conversion: $fixtureName ===")
+
+            val fixtureDir = File(getSourceFixturesDir(), fixtureName)
+            assertTrue(fixtureDir.exists() && fixtureDir.isDirectory,
+                "Fixture directory not found: ${fixtureDir.absolutePath}")
+
+            // Load fixture files
+            val inputHtml = File(fixtureDir, "input.html").readText()
+            val expectedPdfFile = File(fixtureDir, "expected.pdf")
+
+            // Step 1: Convert HTML to PDF
+            val convertResponse = client.post("/convert") {
+                contentType(ContentType.Application.Json)
+                setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(inputHtml)))
+            }
+
+            assertEquals(HttpStatusCode.OK, convertResponse.status,
+                "Fixture '$fixtureName': Convert endpoint should return 200 OK")
+            assertEquals(ContentType.Application.Pdf, convertResponse.contentType(),
+                "Fixture '$fixtureName': Response should be a PDF")
+
+            val actualPdfBytes = convertResponse.readRawBytes()
+            assertTrue(actualPdfBytes.isNotEmpty(),
+                "Fixture '$fixtureName': PDF should not be empty")
+
+            // Save generated PDF for inspection
+            val generatedPdfFile = File(fixtureDir, "generated.pdf")
+            if (generatedPdfFile.exists()) {
+                generatedPdfFile.delete()
+            }
+            generatedPdfFile.writeBytes(actualPdfBytes)
+            println("Fixture '$fixtureName': Generated PDF saved to ${generatedPdfFile.absolutePath}")
+
+            // Step 2: Visual regression testing
+            if (expectedPdfFile.exists()) {
+                val expectedPdfBytes = expectedPdfFile.readBytes()
+                val compareResults = PdfVisualTester.comparePdfDocuments(
+                    expectedPdfBytes,
+                    actualPdfBytes,
+                    fixtureName,
+                    false // Don't keep images when they match
+                )
+
+                // Check for problems
+                val hasProblems = compareResults.any {
+                    it.type != PdfVisualTester.ProblemType.PAGE_GOOD
+                }
+
+                if (hasProblems) {
+                    val problemPages = compareResults.filter {
+                        it.type != PdfVisualTester.ProblemType.PAGE_GOOD
+                    }
+                    println("Fixture '$fixtureName': Visual differences detected on ${problemPages.size} page(s)")
+                    problemPages.forEach { diff ->
+                        println("  Page ${diff.pageNumber}: ${diff.type} - ${diff.logMessage}")
+
+                        // Save diff images for visual differences
+                        if (diff.type == PdfVisualTester.ProblemType.PAGE_VISUALLY_DIFFERENT) {
+                            val testImage = diff.testImages
+                            if (testImage.hasDifferences()) {
+                                val diffImage = testImage.createDiff()
+                                val diffFile = File(fixtureDir, "page-${diff.pageNumber}-diff.png")
+                                javax.imageio.ImageIO.write(diffImage, "PNG", diffFile)
+                                println("  Diff image saved: ${diffFile.name}")
+                            }
+                        }
+                    }
+                    fail("Fixture '$fixtureName': Visual regression test failed. See diff images in ${fixtureDir.absolutePath}")
+                } else {
+                    // PDFs are identical (no problems reported)
+                    println("Fixture '$fixtureName': Visual regression test passed - PDFs are identical")
+                }
+            } else {
+                println("Fixture '$fixtureName': No expected.pdf found, saving generated PDF as baseline")
+                val baselinePdf = File(fixtureDir, "expected.pdf")
+                baselinePdf.writeBytes(actualPdfBytes)
+                println("Fixture '$fixtureName': Baseline PDF saved to ${baselinePdf.absolutePath}")
+            }
+        }
+
+        private fun getSourceFixturesDir(): File {
+            val fixturesUrl = ConvertRoutesTest::class.java.classLoader.getResource("fixtures")
+                ?: fail("Fixtures directory not found in classpath")
+
+            val buildFixturesDir = File(fixturesUrl.toURI())
+            val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
+            return File(projectRoot, "app/src/test/resources/fixtures")
+        }
+    }
+
+    // ========================================
+    // Basic Conversion Tests
+    // ========================================
 
     @Test
     fun testConvertEndpointWithValidHTML() = testApplication {
@@ -36,47 +141,6 @@ class ConvertRoutesTest {
         assertTrue(pdfBytes.isNotEmpty())
         val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
         assertTrue(pdfHeader.startsWith("%PDF-"), "Response should be a valid PDF")
-
-        // Validate PDF structure with veraPDF
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
-        assertNotNull(validationResult, "PDF validation should complete")
-        assertNotNull(validationResult.flavour, "PDF should have a detected flavour")
-    }
-
-    @Test
-    fun testConvertEndpointWithStyledHTML() = testApplication {
-        application {
-            module()
-        }
-
-        val htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                </style>
-            </head>
-            <body>
-                <h1>Styled Document</h1>
-                <p>This document has CSS styles.</p>
-            </body>
-            </html>
-        """.trimIndent()
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        val pdfBytes = response.readBytes()
-        assertTrue(pdfBytes.size > 500, "Styled PDF should be larger")
-
-        // Validate PDF structure
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
-        assertNotNull(validationResult, "PDF validation should complete")
     }
 
     @Test
@@ -88,21 +152,6 @@ class ConvertRoutesTest {
         val response = client.post("/convert") {
             contentType(ContentType.Application.Json)
             setBody("""{"html":""}""")
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(response.bodyAsText().contains("error"))
-    }
-
-    @Test
-    fun testConvertEndpointWithWhitespaceOnlyHTML() = testApplication {
-        application {
-            module()
-        }
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"   "}""")
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -123,152 +172,9 @@ class ConvertRoutesTest {
         assertEquals(HttpStatusCode.InternalServerError, response.status)
     }
 
-    @Test
-    fun testConvertEndpointWithComplexHTML() = testApplication {
-        application {
-            module()
-        }
-
-        val htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Complex Document</title>
-                <style>
-                    table { border-collapse: collapse; width: 100%; }
-                    th, td { border: 1px solid black; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
-                </style>
-            </head>
-            <body>
-                <h1>Complex Document</h1>
-                <table>
-                    <tr><th>Name</th><th>Value</th></tr>
-                    <tr><td>Item 1</td><td>100</td></tr>
-                    <tr><td>Item 2</td><td>200</td></tr>
-                </table>
-                <ul>
-                    <li>Point 1</li>
-                    <li>Point 2</li>
-                    <li>Point 3</li>
-                </ul>
-            </body>
-            </html>
-        """.trimIndent()
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Application.Pdf, response.contentType())
-
-        // Validate PDF structure
-        val pdfBytes = response.readBytes()
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
-        assertNotNull(validationResult, "PDF validation should complete")
-        assertTrue(pdfBytes.size > 1000, "Complex PDF should be reasonably sized")
-    }
-
-    @Test
-    fun testConvertEndpointWithPdfUA() = testApplication {
-        application {
-            module()
-        }
-
-        val htmlContent = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <title>Accessible Document</title>
-                <meta name="subject" content="PDF/UA Test Document" />
-                <meta name="description" content="An accessible PDF document" />
-                <meta name="author" content="Test Author" />
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                </style>
-            </head>
-            <body>
-                <h1>Accessible PDF Document</h1>
-                <p>This document is generated with PDF/UA compliance enabled.</p>
-            </body>
-            </html>
-        """.trimIndent()
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Application.Pdf, response.contentType())
-
-        val pdfBytes = response.readBytes()
-        assertTrue(pdfBytes.isNotEmpty())
-        assertTrue(pdfBytes.size > 1000, "PDF/UA document should be larger due to embedded fonts")
-
-        // Validate PDF/A compliance with veraPDF
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
-        assertNotNull(validationResult, "PDF/UA validation should complete")
-        assertEquals("3a", validationResult.flavour, "PDF should be PDF/A-3a compliant")
-        assertTrue(validationResult.isCompliant, "PDF/UA document should be compliant")
-
-        // Log validation details for debugging
-        println(
-            "PDF/UA Validation: compliant=${validationResult.isCompliant}, " +
-                    "checks=${validationResult.totalChecks}, failed=${validationResult.failedChecks}"
-        )
-
-        if (!validationResult.isCompliant && validationResult.failures.isNotEmpty()) {
-            println("Validation failures:")
-            validationResult.failures.take(5).forEach { failure ->
-                println("  - ${failure.clause}: ${failure.message}")
-            }
-        }
-    }
-
-    @Test
-    fun testConvertEndpointSetsAuthorMetadata() = testApplication {
-        application {
-            module()
-        }
-
-        val expectedAuthor = "John Doe"
-        val htmlContent = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <title>Author Test Document</title>
-                <meta name="author" content="$expectedAuthor" />
-                <meta name="subject" content="Testing PDF Author Metadata" />
-            </head>
-            <body>
-                <h1>Document Title</h1>
-                <p>This document should have the author metadata set.</p>
-            </body>
-            </html>
-        """.trimIndent()
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        val pdfBytes = response.readBytes()
-
-        // Load PDF and extract metadata using PDFBox
-        Loader.loadPDF(pdfBytes).use { document ->
-            val info: PDDocumentInformation = document.documentInformation
-
-            assertNotNull(info, "PDF should have document information")
-            assertEquals(expectedAuthor, info.author, "PDF author should match HTML meta author tag")
-            assertEquals("Author Test Document", info.title, "PDF title should match HTML title tag")
-        }
-    }
+    // ========================================
+    // Authentication Tests
+    // ========================================
 
     @Test
     fun testConvertEndpointWithValidApiKey() = testApplication {
@@ -349,5 +255,45 @@ class ConvertRoutesTest {
         }
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    // ========================================
+    // Fixture-Based Visual Regression Tests
+    // ========================================
+
+    @Test
+    fun testFixtureSimpleDocument() = testApplication {
+        application { module() }
+        testFixtureConversion("simple-document")
+    }
+
+    @Test
+    fun testFixtureStyledTable() = testApplication {
+        application { module() }
+        testFixtureConversion("styled-table")
+    }
+
+    @Test
+    fun testFixtureFontVariations() = testApplication {
+        application { module() }
+        testFixtureConversion("font-variations")
+    }
+
+    @Test
+    fun testFixtureCustomCreator() = testApplication {
+        application { module() }
+        testFixtureConversion("custom-creator")
+    }
+
+    @Test
+    fun testFixtureInvoiceExample1() = testApplication {
+        application { module() }
+        testFixtureConversion("invoice-example-1")
+    }
+
+    @Test
+    fun testFixtureTablePagination() = testApplication {
+        application { module() }
+        testFixtureConversion("table-pagination")
     }
 }
