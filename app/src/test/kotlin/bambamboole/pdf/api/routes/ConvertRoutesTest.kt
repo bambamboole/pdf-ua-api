@@ -1,29 +1,18 @@
-package bambamboole.pdf.api
+package bambamboole.pdf.api.routes
 
+import bambamboole.pdf.api.module
+import bambamboole.pdf.api.models.ConvertRequest
+import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
-import bambamboole.pdf.api.models.ConvertRequest
-import bambamboole.pdf.api.models.ValidationResponse
-import bambamboole.pdf.api.services.PdfValidationService
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.pdmodel.PDDocumentInformation
 import kotlin.test.*
 
-class ApplicationTest {
-
-    @Test
-    fun testHealthEndpoint() = testApplication {
-        application {
-            module()
-        }
-
-        client.get("/health").apply {
-            assertEquals(HttpStatusCode.OK, status)
-            assertTrue(bodyAsText().contains("\"status\""))
-            assertTrue(bodyAsText().contains("\"ok\""))
-        }
-    }
+class ConvertRoutesTest {
 
     @Test
     fun testConvertEndpointWithValidHTML() = testApplication {
@@ -182,16 +171,6 @@ class ApplicationTest {
     }
 
     @Test
-    fun testHealthEndpointReturnType() = testApplication {
-        application {
-            module()
-        }
-
-        val response = client.get("/health")
-        assertEquals(ContentType.Application.Json, response.contentType()?.withoutParameters())
-    }
-
-    @Test
     fun testConvertEndpointWithPdfUA() = testApplication {
         application {
             module()
@@ -248,88 +227,43 @@ class ApplicationTest {
     }
 
     @Test
-    fun testValidateEndpoint() = testApplication {
+    fun testConvertEndpointSetsAuthorMetadata() = testApplication {
         application {
             module()
         }
 
-        // First, generate a PDF with PDF/UA enabled
+        val expectedAuthor = "John Doe"
         val htmlContent = """
             <!DOCTYPE html>
             <html lang="en">
             <head>
-                <title>Test Document</title>
-                <meta name="subject" content="PDF Validation Test" />
-                <meta name="description" content="A test document for validation" />
-                <meta name="author" content="Test Author" />
+                <title>Author Test Document</title>
+                <meta name="author" content="$expectedAuthor" />
+                <meta name="subject" content="Testing PDF Author Metadata" />
             </head>
             <body>
-                <h1>Validation Test</h1>
-                <p>This document is used for testing PDF validation.</p>
+                <h1>Document Title</h1>
+                <p>This document should have the author metadata set.</p>
             </body>
             </html>
         """.trimIndent()
 
-        val convertResponse = client.post("/convert") {
+        val response = client.post("/convert") {
             contentType(ContentType.Application.Json)
             setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
         }
 
-        assertEquals(HttpStatusCode.OK, convertResponse.status)
-        val pdfBytes = convertResponse.readBytes()
+        assertEquals(HttpStatusCode.OK, response.status)
 
-        // Now validate the generated PDF via the API endpoint
-        val validateResponse = client.post("/validate") {
-            contentType(ContentType.Application.Pdf)
-            setBody(pdfBytes)
+        val pdfBytes = response.readBytes()
+
+        // Load PDF and extract metadata using PDFBox
+        Loader.loadPDF(pdfBytes).use { document ->
+            val info: PDDocumentInformation = document.documentInformation
+
+            assertNotNull(info, "PDF should have document information")
+            assertEquals(expectedAuthor, info.author, "PDF author should match HTML meta author tag")
+            assertEquals("Author Test Document", info.title, "PDF title should match HTML title tag")
         }
-
-        assertEquals(HttpStatusCode.OK, validateResponse.status)
-
-        // Parse validation response
-        val validationResult = Json.decodeFromString<ValidationResponse>(validateResponse.bodyAsText())
-
-        // Check that we got a validation result
-        assertNotNull(validationResult.flavour, "Validation should detect PDF flavour")
-        assertTrue(validationResult.flavour.isNotEmpty(), "Flavour should not be empty")
-        assertEquals("3a", validationResult.flavour, "Should detect PDF/A-3a")
-        assertTrue(validationResult.isCompliant, "Generated PDF/UA document should be compliant")
-
-        // Note: totalChecks can be 0 for compliant documents in some PDF/A profiles
-        // The important thing is that validation completed successfully
-    }
-
-    @Test
-    fun testValidateEndpointWithIncompleteMetadata() = testApplication {
-        application {
-            module()
-        }
-
-        // Generate a PDF with minimal HTML (missing required metadata for full compliance)
-        val htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head><title>Basic Document</title></head>
-            <body><h1>Test</h1></body>
-            </html>
-        """.trimIndent()
-
-        val convertResponse = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
-        }
-
-        assertEquals(HttpStatusCode.OK, convertResponse.status)
-        val pdfBytes = convertResponse.readBytes()
-
-        // Validate the PDF
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
-
-        // Should still get a validation result, even if not fully compliant
-        assertNotNull(validationResult, "Validation should complete for any PDF")
-        assertNotNull(validationResult.flavour, "Should detect PDF/A flavour")
-
-        // PDFs with incomplete metadata may not be fully compliant
-        println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, flavour=${validationResult.flavour}")
     }
 }
