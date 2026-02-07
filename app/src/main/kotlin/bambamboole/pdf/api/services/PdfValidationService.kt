@@ -76,7 +76,7 @@ object PdfValidationService {
                                         testNumber = assertion.ruleId?.testNumber ?: 0,
                                         status = "FAILED",
                                         message = assertion.message ?: "No message provided",
-                                        location = assertion.location?.context ?: null
+                                        location = assertion.location?.context,
                                     )
                                 )
                             }

@@ -2,10 +2,13 @@ package bambamboole.pdf.api
 
 import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
+import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.validationRoutes
+import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.mustache.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
@@ -27,6 +30,10 @@ fun Application.module() {
             prettyPrint = true
             isLenient = true
         })
+    }
+
+    install(Mustache) {
+        mustacheFactory = DefaultMustacheFactory("templates")
     }
 
     install(CallLogging) {
@@ -61,6 +68,7 @@ fun Application.module() {
     }
 
     routing {
+        indexRoutes()
         healthRoutes()
 
         // Conditionally protect routes based on whether API key is configured

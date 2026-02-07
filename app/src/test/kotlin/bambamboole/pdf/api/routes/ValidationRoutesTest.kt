@@ -180,7 +180,7 @@ class ValidationRoutesTest {
         }
 
         assertEquals(HttpStatusCode.OK, convertResponse.status)
-        val pdfBytes = convertResponse.readBytes()
+        val pdfBytes = convertResponse.readRawBytes()
 
         // Validate the generated PDF via the API endpoint
         val validateResponse = client.post("/validate") {
@@ -221,7 +221,7 @@ class ValidationRoutesTest {
         }
 
         assertEquals(HttpStatusCode.OK, convertResponse.status)
-        val pdfBytes = convertResponse.readBytes()
+        val pdfBytes = convertResponse.readRawBytes()
 
         // Validate the PDF
         val validationResult = PdfValidationService.validatePdf(pdfBytes)
@@ -265,7 +265,7 @@ class ValidationRoutesTest {
         }
 
         assertEquals(HttpStatusCode.OK, convertResponse.status)
-        val pdfBytes = convertResponse.readBytes()
+        val pdfBytes = convertResponse.readRawBytes()
 
         // Validate with valid API key
         val validateResponse = client.post("/validate") {

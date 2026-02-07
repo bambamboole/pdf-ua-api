@@ -203,7 +203,7 @@ class ConvertRoutesTest {
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(ContentType.Application.Pdf, response.contentType())
 
-        val pdfBytes = response.readBytes()
+        val pdfBytes = response.readRawBytes()
         assertTrue(pdfBytes.isNotEmpty())
         val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
         assertTrue(pdfHeader.startsWith("%PDF-"), "Response should be a valid PDF")
