@@ -20,7 +20,7 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v5
       with:
-        gradle-version: '9.2'
+        gradle-version: '9.2.0'
 
     - name: Run tests
       run: ./gradlew test --no-daemon
