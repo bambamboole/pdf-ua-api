@@ -4,6 +4,7 @@ import bambamboole.pdf.api.config.AppConfig
 import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.indexRoutes
+import bambamboole.pdf.api.routes.convertAndValidateRoutes
 import bambamboole.pdf.api.routes.validationRoutes
 import bambamboole.pdf.api.services.PdfService
 import bambamboole.pdf.api.services.PdfValidationService
@@ -79,10 +80,12 @@ fun Application.module() {
             authenticate("api-key-auth") {
                 convertRoutes(config.pdfProducer)
                 validationRoutes()
+                convertAndValidateRoutes(config.pdfProducer)
             }
         } else {
             convertRoutes(config.pdfProducer)
             validationRoutes()
+            convertAndValidateRoutes(config.pdfProducer)
         }
     }
 }
