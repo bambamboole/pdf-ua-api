@@ -14,6 +14,7 @@ import java.util.*
 
 object PdfService {
     private val logger = LoggerFactory.getLogger(PdfService::class.java)
+    private val w3cDom = W3CDom()
 
     private data class FontConfig(
         val path: String,
@@ -57,6 +58,13 @@ object PdfService {
     private fun loadResource(path: String): ByteArray? =
         PdfService::class.java.getResourceAsStream(path)?.use { it.readBytes() }
 
+    fun warmup() {
+        logger.info("Warming up PdfService...")
+        colorProfileBytes
+        fontByteArrays
+        logger.info("PdfService warmup complete")
+    }
+
     /**
      * Converts HTML string to PDF bytes with PDF/UA accessibility compliance
      * @param html Well-formed HTML string
@@ -71,7 +79,7 @@ object PdfService {
 
         val jsoupDoc = Jsoup.parse(html)
         injectTablePaginationStyles(jsoupDoc)
-        val w3cDoc = W3CDom().fromJsoup(jsoupDoc)
+        val w3cDoc = w3cDom.fromJsoup(jsoupDoc)
 
         return ByteArrayOutputStream(512 * 1024).use { outputStream ->
             val builder = PdfRendererBuilder()

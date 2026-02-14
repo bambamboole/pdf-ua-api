@@ -5,6 +5,8 @@ import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.validationRoutes
+import bambamboole.pdf.api.services.PdfService
+import bambamboole.pdf.api.services.PdfValidationService
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -23,6 +25,9 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     val config = AppConfig.load(environment)
+
+    PdfService.warmup()
+    PdfValidationService.warmup()
 
     install(ContentNegotiation) {
         json(Json {

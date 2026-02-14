@@ -24,6 +24,12 @@ object PdfValidationService {
         }
     }
 
+    fun warmup() {
+        logger.info("Warming up PdfValidationService...")
+        initialized
+        logger.info("PdfValidationService warmup complete")
+    }
+
     fun validatePdf(pdfBytes: ByteArray): ValidationResponse {
         initialized
 
