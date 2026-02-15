@@ -70,6 +70,6 @@ jobs:
     - name: Update repo description
       uses: peter-evans/dockerhub-description@v5
       with:
-        username: ${{ vars.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         repository: bambamboole/pdf-ua-api
