@@ -34,7 +34,6 @@ class ValidationRoutesTest {
                 "Fixture directory not found: ${fixtureDir.absolutePath}"
             )
 
-            // Load fixture files
             val expectedPdfFile = File(fixtureDir, "expected.pdf")
             assertTrue(
                 expectedPdfFile.exists(),
@@ -46,14 +45,12 @@ class ValidationRoutesTest {
                 File(fixtureDir, "expected-validation.json").readText()
             )
 
-            // Read expected.pdf baseline
             val pdfBytes = expectedPdfFile.readBytes()
             assertTrue(
                 pdfBytes.isNotEmpty(),
                 "Fixture '$fixtureName': expected.pdf should not be empty"
             )
 
-            // Validate the PDF via API endpoint
             val validateResponse = client.post("/validate") {
                 contentType(ContentType.Application.Pdf)
                 setBody(pdfBytes)
@@ -69,15 +66,9 @@ class ValidationRoutesTest {
                 validateResponse.bodyAsText()
             )
 
-            // Step 3: Compare validation results
             assertEquals(
                 expectedValidation.isCompliant, actualValidation.isCompliant,
                 "Fixture '$fixtureName': Compliance status should match expected"
-            )
-
-            assertEquals(
-                expectedValidation.flavour, actualValidation.flavour,
-                "Fixture '$fixtureName': PDF/A flavour should match expected"
             )
 
             if (expectedValidation.isCompliant) {
@@ -86,21 +77,24 @@ class ValidationRoutesTest {
                     "Fixture '$fixtureName': PDF should be compliant"
                 )
                 assertEquals(
-                    0, actualValidation.failedChecks,
+                    0, actualValidation.summary.failedChecks,
                     "Fixture '$fixtureName': Should have 0 failed checks"
                 )
             }
 
-            // Log validation summary
+            assertTrue(
+                actualValidation.profiles.isNotEmpty(),
+                "Fixture '$fixtureName': Should have profile results"
+            )
+
             println(
                 "Fixture '$fixtureName' validation: " +
                         "compliant=${actualValidation.isCompliant}, " +
-                        "flavour=${actualValidation.flavour}, " +
-                        "checks=${actualValidation.totalChecks}, " +
-                        "failed=${actualValidation.failedChecks}"
+                        "profiles=${actualValidation.profiles.map { "${it.profile}=${it.isCompliant}" }}, " +
+                        "checks=${actualValidation.summary.totalChecks}, " +
+                        "failed=${actualValidation.summary.failedChecks}"
             )
 
-            // Validate metadata if provided
             if (actualValidation.metadata != null) {
                 println(
                     "  Metadata: title='${actualValidation.metadata.title}', " +
@@ -113,25 +107,13 @@ class ValidationRoutesTest {
                     val actual = actualValidation.metadata
                     expected.title?.let { assertEquals(it, actual.title, "Fixture '$fixtureName': Title should match") }
                     expected.subject?.let {
-                        assertEquals(
-                            it,
-                            actual.subject,
-                            "Fixture '$fixtureName': Subject should match"
-                        )
+                        assertEquals(it, actual.subject, "Fixture '$fixtureName': Subject should match")
                     }
                     expected.author?.let {
-                        assertEquals(
-                            it,
-                            actual.author,
-                            "Fixture '$fixtureName': Author should match"
-                        )
+                        assertEquals(it, actual.author, "Fixture '$fixtureName': Author should match")
                     }
                     expected.producer?.let {
-                        assertEquals(
-                            it,
-                            actual.producer,
-                            "Fixture '$fixtureName': Producer should match"
-                        )
+                        assertEquals(it, actual.producer, "Fixture '$fixtureName': Producer should match")
                     }
                 }
             }
@@ -193,11 +175,16 @@ class ValidationRoutesTest {
         // Parse validation response
         val validationResult = Json.decodeFromString<ValidationResponse>(validateResponse.bodyAsText())
 
-        // Check validation result
-        assertNotNull(validationResult.flavour, "Validation should detect PDF flavour")
-        assertTrue(validationResult.flavour.isNotEmpty(), "Flavour should not be empty")
-        assertEquals("3a", validationResult.flavour, "Should detect PDF/A-3a")
-        assertTrue(validationResult.isCompliant, "Generated PDF/UA document should be compliant")
+        assertTrue(validationResult.isCompliant, "Generated PDF should be compliant")
+        assertTrue(validationResult.profiles.isNotEmpty(), "Should have profile results")
+        assertTrue(
+            validationResult.profiles.any { it.profile == "PDF/A-3a" },
+            "Should include PDF/A-3a profile"
+        )
+        assertTrue(
+            validationResult.profiles.any { it.profile == "PDF/UA-1" },
+            "Should include PDF/UA-1 profile"
+        )
     }
 
     @Test
@@ -226,11 +213,10 @@ class ValidationRoutesTest {
         // Validate the PDF
         val validationResult = PdfValidationService.validatePdf(pdfBytes)
 
-        // Should still get a validation result
         assertNotNull(validationResult, "Validation should complete for any PDF")
-        assertNotNull(validationResult.flavour, "Should detect PDF/A flavour")
+        assertTrue(validationResult.profiles.isNotEmpty(), "Should have profile results")
 
-        println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, flavour=${validationResult.flavour}")
+        println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, profiles=${validationResult.profiles.map { it.profile }}")
     }
 
     // ========================================
@@ -276,7 +262,7 @@ class ValidationRoutesTest {
 
         assertEquals(HttpStatusCode.OK, validateResponse.status)
         val validationResult = Json.decodeFromString<ValidationResponse>(validateResponse.bodyAsText())
-        assertNotNull(validationResult.flavour)
+        assertTrue(validationResult.profiles.isNotEmpty())
     }
 
     @Test

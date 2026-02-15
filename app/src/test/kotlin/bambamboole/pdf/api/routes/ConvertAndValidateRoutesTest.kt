@@ -42,7 +42,9 @@ class ConvertAndValidateRoutesTest {
         val result = Json.decodeFromString<ConvertAndValidateResponse>(response.bodyAsText())
 
         assertTrue(result.validation.isCompliant)
-        assertEquals("3a", result.validation.flavour)
+        assertTrue(result.validation.profiles.isNotEmpty())
+        assertTrue(result.validation.profiles.any { it.profile == "PDF/A-3a" })
+        assertTrue(result.validation.profiles.any { it.profile == "PDF/UA-1" })
         assertTrue(result.pdf.isNotEmpty())
 
         val pdfBytes = Base64.getDecoder().decode(result.pdf)

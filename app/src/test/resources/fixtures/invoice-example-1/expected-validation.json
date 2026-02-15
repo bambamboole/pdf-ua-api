@@ -1,10 +1,10 @@
 {
-  "isCompliant": true,
-  "flavour": "3a",
-  "totalChecks": 0,
-  "passedChecks": 0,
-  "failedChecks": 0,
-  "failures": [],
+  "isCompliant": false,
+  "profiles": [
+    { "profile": "PDF/A-3a", "specification": "ISO 19005-3", "isCompliant": true, "totalChecks": 0, "passedChecks": 0, "failedChecks": 0 },
+    { "profile": "PDF/UA-1", "specification": "ISO 14289-1", "isCompliant": false, "totalChecks": 7, "passedChecks": 0, "failedChecks": 7 }
+  ],
+  "summary": { "totalChecks": 7, "passedChecks": 0, "failedChecks": 7 },
   "metadata": {
     "title": "Invoice Example 1",
     "subject": "Testing table with line items",

@@ -1,9 +1,10 @@
 {
   "isCompliant": true,
-  "flavour": "3a",
-  "totalChecks": 0,
-  "passedChecks": 0,
-  "failedChecks": 0,
+  "profiles": [
+    { "profile": "PDF/A-3a", "specification": "ISO 19005-3", "isCompliant": true, "totalChecks": 0, "passedChecks": 0, "failedChecks": 0 },
+    { "profile": "PDF/UA-1", "specification": "ISO 14289-1", "isCompliant": true, "totalChecks": 0, "passedChecks": 0, "failedChecks": 0 }
+  ],
+  "summary": { "totalChecks": 0, "passedChecks": 0, "failedChecks": 0, "categories": [] },
   "failures": [],
   "metadata": {
     "title": "Table Pagination Demo",

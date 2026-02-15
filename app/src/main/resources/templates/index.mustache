@@ -321,80 +321,170 @@
         }
     }
 
-    // Display validation results
-    function displayValidation(validation) {
-        validationSection.classList.remove('hidden');
-
+    function renderValidationHTML(validation) {
         const statusColor = validation.isCompliant ? 'emerald' : 'red';
         const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
 
-        validationResults.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-slate-600">Status:</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
-                        ${statusText}
-                    </span>
-                </div>
+        return `
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-600">Status:</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
+                    ${statusText}
+                </span>
+            </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200">
-                    <div>
-                        <div class="text-xs text-slate-600">Flavour</div>
-                        <div class="text-sm font-medium text-slate-900">${validation.flavour}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-600">Total Checks</div>
-                        <div class="text-sm font-medium text-slate-900">${validation.totalChecks}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-600">Passed</div>
-                        <div class="text-sm font-medium text-emerald-600">${validation.passedChecks}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-600">Failed</div>
-                        <div class="text-sm font-medium text-red-600">${validation.failedChecks}</div>
+            ${validation.profiles && validation.profiles.length > 0 ? `
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-xs font-medium text-slate-900 mb-2">Profiles:</div>
+                    <div class="space-y-2">
+                        ${validation.profiles.map(p => {
+                            const pColor = p.isCompliant ? 'emerald' : 'red';
+                            return `
+                                <div class="flex items-center justify-between text-xs bg-slate-50 border border-slate-200 rounded p-2">
+                                    <div>
+                                        <span class="font-medium text-slate-900">${p.profile}</span>
+                                        <span class="text-slate-500 ml-1">(${p.specification})</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-slate-500">${p.totalChecks} checks</span>
+                                        ${p.failedChecks > 0 ? `<span class="text-red-600">${p.failedChecks} failed</span>` : ''}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-${pColor}-100 text-${pColor}-800">
+                                            ${p.isCompliant ? 'Pass' : 'Fail'}
+                                        </span>
+                                    </div>
+                                </div>`;
+                        }).join('')}
                     </div>
                 </div>
+            ` : ''}
 
-                ${validation.failures && validation.failures.length > 0 ? `
-                    <div class="pt-3 border-t border-slate-200">
-                        <div class="text-xs font-medium text-slate-900 mb-2">Failures:</div>
-                        <div class="space-y-2">
-                            ${validation.failures.map(f => `
-                                <div class="text-xs bg-red-50 border border-red-200 rounded p-2">
-                                    <div class="font-medium text-red-900">${f.clause || 'Unknown'}</div>
-                                    <div class="text-red-700 mt-1">${f.description || 'No description'}</div>
+            ${validation.documentInfo ? `
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-xs font-medium text-slate-900 mb-2">Document Info:</div>
+                    <div class="grid grid-cols-3 gap-3 text-xs">
+                        <div>
+                            <div class="text-slate-500">Pages</div>
+                            <div class="font-medium text-slate-900">${validation.documentInfo.pages}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500">Tagged</div>
+                            <div class="font-medium ${validation.documentInfo.tagged ? 'text-emerald-600' : 'text-red-600'}">${validation.documentInfo.tagged ? 'Yes' : 'No'}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500">Language</div>
+                            <div class="font-medium text-slate-900">${validation.documentInfo.language || 'None'}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500">Structure Tags</div>
+                            <div class="font-medium text-slate-900">${validation.documentInfo.structureElements}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500">Fonts</div>
+                            <div class="font-medium text-slate-900">${validation.documentInfo.fonts.length}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500">Images</div>
+                            <div class="font-medium text-slate-900">${validation.documentInfo.images}</div>
+                        </div>
+                    </div>
+                    ${validation.documentInfo.fonts.length > 0 ? `
+                        <div class="mt-2 space-y-1">
+                            ${validation.documentInfo.fonts.map(f => `
+                                <div class="flex items-center justify-between text-xs py-0.5">
+                                    <span class="text-slate-700 font-mono">${f.name}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-slate-400">${f.type}</span>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs ${f.embedded ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}">${f.embedded ? 'Embedded' : 'Not embedded'}</span>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                ` : ''}
+                    ` : ''}
+                </div>
+            ` : ''}
 
-                ${validation.metadata ? `
-                    <div class="pt-3 border-t border-slate-200">
-                        <div class="text-xs font-medium text-slate-900 mb-2">Metadata:</div>
-                        <div class="grid grid-cols-2 gap-2 text-xs">
-                            ${validation.metadata.title ? `
-                                <div class="col-span-2">
-                                    <span class="text-slate-600">Title:</span>
-                                    <span class="text-slate-900">${validation.metadata.title}</span>
-                                </div>
-                            ` : ''}
-                            ${validation.metadata.author ? `
-                                <div>
-                                    <span class="text-slate-600">Author:</span>
-                                    <span class="text-slate-900">${validation.metadata.author}</span>
-                                </div>
-                            ` : ''}
-                            ${validation.metadata.creator ? `
-                                <div>
-                                    <span class="text-slate-600">Creator:</span>
-                                    <span class="text-slate-900">${validation.metadata.creator}</span>
-                                </div>
-                            ` : ''}
-                        </div>
+            <div class="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200">
+                <div>
+                    <div class="text-xs text-slate-600">Total Checks</div>
+                    <div class="text-sm font-medium text-slate-900">${validation.summary.totalChecks}</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-600">Passed</div>
+                    <div class="text-sm font-medium text-emerald-600">${validation.summary.passedChecks}</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-600">Failed</div>
+                    <div class="text-sm font-medium text-red-600">${validation.summary.failedChecks}</div>
+                </div>
+            </div>
+
+            ${validation.summary.categories && validation.summary.categories.length > 0 ? `
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-xs font-medium text-slate-900 mb-2">Failures by Category:</div>
+                    <div class="space-y-1">
+                        ${validation.summary.categories.map(c => `
+                            <div class="flex items-center justify-between text-xs py-1">
+                                <span class="text-slate-700">${c.category}</span>
+                                <span class="font-medium text-red-600">${c.failedChecks} failed</span>
+                            </div>
+                        `).join('')}
                     </div>
-                ` : ''}
-            `;
+                </div>
+            ` : ''}
+
+            ${validation.failures && validation.failures.length > 0 ? `
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-xs font-medium text-slate-900 mb-2">Failures (${validation.failures.length}):</div>
+                    <div class="space-y-2 max-h-96 overflow-y-auto">
+                        ${validation.failures.map(f => `
+                            <div class="text-xs bg-red-50 border border-red-200 rounded p-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-red-900">${f.clause}</span>
+                                    <span class="text-red-400">|</span>
+                                    <span class="text-red-700">${f.profile}</span>
+                                    <span class="text-red-400">|</span>
+                                    <span class="text-red-500">${f.category}</span>
+                                </div>
+                                <div class="text-red-700 mt-1">${f.message}</div>
+                                ${f.errorDetails ? `<div class="text-red-500 mt-1 font-mono">${f.errorDetails}</div>` : ''}
+                                ${f.location ? `<div class="text-red-400 mt-1 font-mono truncate">${f.location}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            ${validation.metadata ? `
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-xs font-medium text-slate-900 mb-2">Metadata:</div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        ${validation.metadata.title ? `
+                            <div class="col-span-2">
+                                <span class="text-slate-600">Title:</span>
+                                <span class="text-slate-900">${validation.metadata.title}</span>
+                            </div>
+                        ` : ''}
+                        ${validation.metadata.author ? `
+                            <div>
+                                <span class="text-slate-600">Author:</span>
+                                <span class="text-slate-900">${validation.metadata.author}</span>
+                            </div>
+                        ` : ''}
+                        ${validation.metadata.creator ? `
+                            <div>
+                                <span class="text-slate-600">Creator:</span>
+                                <span class="text-slate-900">${validation.metadata.creator}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+    }
+
+    function displayValidation(validation) {
+        validationSection.classList.remove('hidden');
+        validationResults.innerHTML = renderValidationHTML(validation);
     }
 
     // Download PDF
@@ -460,54 +550,9 @@
         }
     });
 
-    // Display upload validation results
     function displayUploadValidation(validation) {
         uploadValidationResults.classList.remove('hidden');
-
-        const statusColor = validation.isCompliant ? 'emerald' : 'red';
-        const statusText = validation.isCompliant ? 'Compliant' : 'Not Compliant';
-
-        uploadValidationResults.innerHTML = `
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-xs font-medium text-slate-600">Status:</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
-                        ${statusText}
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                        <div class="text-slate-600">Flavour</div>
-                        <div class="font-medium text-slate-900">${validation.flavour}</div>
-                    </div>
-                    <div>
-                        <div class="text-slate-600">Total Checks</div>
-                        <div class="font-medium text-slate-900">${validation.totalChecks}</div>
-                    </div>
-                    <div>
-                        <div class="text-slate-600">Passed</div>
-                        <div class="font-medium text-emerald-600">${validation.passedChecks}</div>
-                    </div>
-                    <div>
-                        <div class="text-slate-600">Failed</div>
-                        <div class="font-medium text-red-600">${validation.failedChecks}</div>
-                    </div>
-                </div>
-
-                ${validation.failures && validation.failures.length > 0 ? `
-                    <div class="mt-3 pt-3 border-t border-slate-200">
-                        <div class="text-xs font-medium text-slate-900 mb-2">Failures:</div>
-                        <div class="space-y-2">
-                            ${validation.failures.map(f => `
-                                <div class="text-xs bg-red-50 border border-red-200 rounded p-2">
-                                    <div class="font-medium text-red-900">${f.clause || 'Unknown'}</div>
-                                    <div class="text-red-700 mt-1">${f.description || 'No description'}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-            `;
+        uploadValidationResults.innerHTML = renderValidationHTML(validation);
     }
 </script>
 </body>
