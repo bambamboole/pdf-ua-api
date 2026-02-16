@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>External Image Test</title>
+    <meta content="Testing external image fetching via AssetResolver" name="subject"/>
+    <meta content="PDF API Test Suite" name="author"/>
+    <meta content="Verifies that external images are fetched and embedded in the PDF" name="description"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 200px;
+            border: 1px solid #ddd;
+            padding: 4px;
+        }
+
+        .caption {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<h1>External Image Embedding Test</h1>
+<p>This document tests that external images are fetched by the AssetResolver and properly embedded into the generated PDF.</p>
+
+<div class="image-container">
+    <img src="https://www.w3.org/Icons/w3c_home.png" alt="W3C Logo"/>
+    <p class="caption">W3C Logo (fetched from w3.org)</p>
+</div>
+
+<p>If this PDF contains the image above, the AssetResolver is working correctly.</p>
+</body>
+</html>

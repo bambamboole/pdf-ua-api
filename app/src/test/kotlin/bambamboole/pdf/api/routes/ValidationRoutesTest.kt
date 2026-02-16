@@ -343,4 +343,10 @@ class ValidationRoutesTest {
         application { module() }
         testFixtureValidation("table-pagination")
     }
+
+    @Test
+    fun testFixtureExternalImageValidation() = testApplication {
+        application { module() }
+        testFixtureValidation("external-image")
+    }
 }

@@ -1,5 +1,6 @@
 package bambamboole.pdf.api.services
 
+import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
@@ -72,7 +73,12 @@ object PdfService {
      * @return PDF as byte array
      * @throws Exception if HTML is malformed or conversion fails
      */
-    fun convertHtmlToPdf(html: String, producer: String = "pdf-ua-api.com"): ByteArray {
+    fun convertHtmlToPdf(
+        html: String,
+        producer: String = "pdf-ua-api.com",
+        assetResolver: FSStreamFactory? = null,
+        baseUrl: String = ""
+    ): ByteArray {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
         }
@@ -85,7 +91,10 @@ object PdfService {
             val builder = PdfRendererBuilder()
             configurePdfUA(builder)
             builder.withProducer(producer)
-            builder.withW3cDocument(w3cDoc, "file:///")
+            if (assetResolver != null) {
+                builder.useHttpStreamImplementation(assetResolver)
+            }
+            builder.withW3cDocument(w3cDoc, baseUrl)
             builder.toStream(outputStream)
             builder.run()
             outputStream.toByteArray()

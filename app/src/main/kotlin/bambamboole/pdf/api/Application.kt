@@ -6,6 +6,7 @@ import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.convertAndValidateRoutes
 import bambamboole.pdf.api.routes.validationRoutes
+import bambamboole.pdf.api.services.AssetResolver
 import bambamboole.pdf.api.services.PdfService
 import bambamboole.pdf.api.services.PdfValidationService
 import com.github.mustachejava.DefaultMustacheFactory
@@ -29,6 +30,14 @@ fun Application.module() {
 
     PdfService.warmup()
     PdfValidationService.warmup()
+
+    val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
+    val assetResolver = AssetResolver(
+        httpClient = httpClient,
+        timeoutMs = config.assetTimeoutMs,
+        maxSizeBytes = config.assetMaxSizeBytes,
+        allowedDomains = config.assetAllowedDomains
+    )
 
     install(ContentNegotiation) {
         json(Json {
@@ -78,14 +87,14 @@ fun Application.module() {
 
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
-                convertRoutes(config.pdfProducer)
+                convertRoutes(config.pdfProducer, assetResolver)
                 validationRoutes()
-                convertAndValidateRoutes(config.pdfProducer)
+                convertAndValidateRoutes(config.pdfProducer, assetResolver)
             }
         } else {
-            convertRoutes(config.pdfProducer)
+            convertRoutes(config.pdfProducer, assetResolver)
             validationRoutes()
-            convertAndValidateRoutes(config.pdfProducer)
+            convertAndValidateRoutes(config.pdfProducer, assetResolver)
         }
     }
 }

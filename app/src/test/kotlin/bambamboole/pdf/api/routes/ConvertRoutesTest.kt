@@ -266,6 +266,64 @@ class ConvertRoutesTest {
     }
 
     // ========================================
+    // baseUrl Validation Tests
+    // ========================================
+
+    @Test
+    fun testConvertEndpointWithBaseUrl() = testApplication {
+        application { module() }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent, "https://example.com")))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+    }
+
+    @Test
+    fun testConvertEndpointRejectsFileBaseUrl() = testApplication {
+        application { module() }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"html":"$htmlContent","baseUrl":"file:///etc/passwd"}""")
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("error"))
+    }
+
+    @Test
+    fun testConvertEndpointRejectsJavascriptBaseUrl() = testApplication {
+        application { module() }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"html":"$htmlContent","baseUrl":"javascript:alert(1)"}""")
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun testConvertEndpointWithoutBaseUrl() = testApplication {
+        application { module() }
+
+        val htmlContent = "<html><body><h1>Test</h1></body></html>"
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"html":"$htmlContent"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    // ========================================
     // Fixture-Based Visual Regression Tests
     // ========================================
 
@@ -303,5 +361,11 @@ class ConvertRoutesTest {
     fun testFixtureTablePagination() = testApplication {
         application { module() }
         testFixtureConversion("table-pagination")
+    }
+
+    @Test
+    fun testFixtureExternalImage() = testApplication {
+        application { module() }
+        testFixtureConversion("external-image")
     }
 }

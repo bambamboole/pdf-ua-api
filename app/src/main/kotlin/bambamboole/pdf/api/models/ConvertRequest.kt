@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ConvertRequest(
-    val html: String
+    val html: String,
+    val baseUrl: String? = null
 )

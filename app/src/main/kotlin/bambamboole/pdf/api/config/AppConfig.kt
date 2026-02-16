@@ -7,7 +7,10 @@ data class AppConfig(
     val webUIEnabled: Boolean,
     val pdfProducer: String,
     val maxRequestSizeBytes: Long,
-    val logLevel: LogLevel
+    val logLevel: LogLevel,
+    val assetTimeoutMs: Long,
+    val assetMaxSizeBytes: Long,
+    val assetAllowedDomains: Set<String>
 ) {
     companion object {
         fun load(environment: ApplicationEnvironment): AppConfig {
@@ -31,7 +34,12 @@ data class AppConfig(
                 webUIEnabled = getBoolean("ui.enabled", true),
                 pdfProducer = getRequired("pdf.producer", "pdf-ua-api.com"),
                 maxRequestSizeBytes = getLong("pdf.maxRequestSize", 10 * 1024 * 1024),
-                logLevel = getLogLevel("logging.level", LogLevel.INFO)
+                logLevel = getLogLevel("logging.level", LogLevel.INFO),
+                assetTimeoutMs = getLong("assets.timeout", 5000),
+                assetMaxSizeBytes = getLong("assets.maxSize", 5 * 1024 * 1024),
+                assetAllowedDomains = getOptional("assets.allowedDomains")
+                    ?.split(",")?.map { it.trim().lowercase() }?.filter { it.isNotBlank() }?.toSet()
+                    ?: emptySet()
             )
         }
     }
