@@ -31,7 +31,8 @@ fun Route.convertRoutes(
                 html = request.html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,
-                baseUrl = baseUrl
+                baseUrl = baseUrl,
+                attachments = request.attachments
             )
 
             call.response.header(

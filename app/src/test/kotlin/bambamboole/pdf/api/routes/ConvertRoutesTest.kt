@@ -1,7 +1,9 @@
 package bambamboole.pdf.api.routes
 
 import bambamboole.pdf.api.models.ConvertRequest
+import bambamboole.pdf.api.models.FileAttachment
 import bambamboole.pdf.api.module
+import bambamboole.pdf.api.services.PdfValidationService
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -9,9 +11,13 @@ import io.ktor.http.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.cos.COSName
 import java.io.File
+import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -367,5 +373,153 @@ class ConvertRoutesTest {
     fun testFixtureExternalImage() = testApplication {
         application { module() }
         testFixtureConversion("external-image")
+    }
+
+    // ========================================
+    // File Attachment Tests
+    // ========================================
+
+    @Test
+    fun testConvertWithXmlAttachment() = testApplication {
+        application { module() }
+
+        val html = """<!DOCTYPE html><html lang="en"><head><title>Invoice</title>
+            <meta name="subject" content="Invoice"/></head>
+            <body><h1>Invoice</h1></body></html>"""
+
+        val xmlContent = """<?xml version="1.0" encoding="UTF-8"?>
+            <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100">
+            <rsm:ExchangedDocument>
+            <ram:ID xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">INV-001</ram:ID>
+            </rsm:ExchangedDocument>
+            </rsm:CrossIndustryInvoice>"""
+
+        val base64Xml = Base64.getEncoder().encodeToString(xmlContent.toByteArray())
+
+        val request = ConvertRequest(
+            html = html,
+            attachments = listOf(
+                FileAttachment(
+                    name = "factur-x.xml",
+                    content = base64Xml,
+                    mimeType = "text/xml",
+                    description = "Factur-X XML invoice",
+                    relationship = "Alternative"
+                )
+            )
+        )
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val pdfBytes = response.readRawBytes()
+
+        Loader.loadPDF(pdfBytes).use { document ->
+            val names = document.documentCatalog.names
+            assertNotNull(names)
+            val efTree = names.embeddedFiles
+            assertNotNull(efTree)
+            val embeddedFiles = efTree.names
+            assertNotNull(embeddedFiles)
+            assertTrue(embeddedFiles.containsKey("factur-x.xml"))
+
+            val fileSpec = embeddedFiles["factur-x.xml"]!!
+            assertEquals("factur-x.xml", fileSpec.file)
+            assertEquals("Factur-X XML invoice", fileSpec.fileDescription)
+            assertEquals("Alternative", fileSpec.cosObject.getNameAsString(COSName.AF_RELATIONSHIP))
+        }
+
+        val validation = PdfValidationService.validatePdf(pdfBytes)
+        assertTrue(validation.isCompliant, "PDF with attachment must remain PDF/A-3a compliant")
+    }
+
+    @Test
+    fun testConvertWithMultipleAttachments() = testApplication {
+        application { module() }
+
+        val html = """<!DOCTYPE html><html lang="en"><head><title>Doc</title>
+            <meta name="subject" content="Multi"/></head><body><h1>Test</h1></body></html>"""
+
+        val request = ConvertRequest(
+            html = html,
+            attachments = listOf(
+                FileAttachment(
+                    name = "factur-x.xml",
+                    content = Base64.getEncoder().encodeToString("<invoice/>".toByteArray()),
+                    mimeType = "text/xml",
+                    relationship = "Alternative"
+                ),
+                FileAttachment(
+                    name = "additional-data.csv",
+                    content = Base64.getEncoder().encodeToString("col1,col2\nval1,val2".toByteArray()),
+                    mimeType = "text/csv",
+                    relationship = "Supplement"
+                )
+            )
+        )
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val pdfBytes = response.readRawBytes()
+
+        Loader.loadPDF(pdfBytes).use { document ->
+            val embeddedFiles = document.documentCatalog.names.embeddedFiles.names
+            assertEquals(2, embeddedFiles.size)
+            assertTrue(embeddedFiles.containsKey("factur-x.xml"))
+            assertTrue(embeddedFiles.containsKey("additional-data.csv"))
+        }
+
+        val validation = PdfValidationService.validatePdf(pdfBytes)
+        assertTrue(validation.isCompliant)
+    }
+
+    @Test
+    fun testConvertWithInvalidBase64Attachment() = testApplication {
+        application { module() }
+
+        val request = ConvertRequest(
+            html = "<html><body><h1>Test</h1></body></html>",
+            attachments = listOf(
+                FileAttachment(name = "test.xml", content = "not-valid-base64!!!", mimeType = "text/xml")
+            )
+        )
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun testConvertWithInvalidRelationship() = testApplication {
+        application { module() }
+
+        val request = ConvertRequest(
+            html = "<html><body><h1>Test</h1></body></html>",
+            attachments = listOf(
+                FileAttachment(
+                    name = "test.xml",
+                    content = Base64.getEncoder().encodeToString("<xml/>".toByteArray()),
+                    mimeType = "text/xml",
+                    relationship = "InvalidValue"
+                )
+            )
+        )
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
 }

@@ -33,7 +33,8 @@ fun Route.convertAndValidateRoutes(
                 html = request.html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,
-                baseUrl = baseUrl
+                baseUrl = baseUrl,
+                attachments = request.attachments
             )
             val validation = PdfValidationService.validatePdf(pdfBytes)
             val pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes)
