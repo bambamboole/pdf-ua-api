@@ -3,6 +3,13 @@
 // It is also used for some aspects of project-wide configuration, like managing plugins, dependencies, etc.
 // https://docs.gradle.org/current/userguide/settings_file_basics.html
 
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 dependencyResolutionManagement {
     // Use Maven Central as the default repository (where Gradle will download dependencies) in all subprojects.
     @Suppress("UnstableApiUsage")

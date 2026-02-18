@@ -18,6 +18,7 @@ import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
@@ -80,6 +81,7 @@ fun Application.module() {
     }
 
     routing {
+        swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.yaml")
         if (config.webUIEnabled) {
             indexRoutes()
         }

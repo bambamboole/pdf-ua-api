@@ -8,6 +8,8 @@ plugins {
 
     // Apply the Kotlin serialization plugin
     alias(libs.plugins.kotlinPluginSerialization)
+
+    id("io.github.tabilzad.inspektor") version "0.10.0-alpha"
 }
 
 dependencies {
@@ -20,6 +22,7 @@ dependencies {
     implementation(libs.ktorServerAuth)
     implementation(libs.ktorServerMustache)
     implementation(libs.ktorSerializationJson)
+    implementation(libs.ktorServerSwagger)
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)
@@ -37,6 +40,9 @@ dependencies {
     // PDF Validation
     implementation(libs.verapdfValidation)
     implementation(libs.verapdfCore)
+
+    // OpenAPI annotations
+    implementation("io.github.tabilzad.inspektor:annotations:0.10.0-alpha")
 
     // Testing
     testImplementation(libs.ktorServerTestHost)
@@ -65,4 +71,18 @@ tasks.jar {
 tasks.test {
     // Suppress warnings about restricted native access
     jvmArgs("--enable-native-access=ALL-UNNAMED")
+}
+
+swagger {
+    documentation {
+        info {
+            title = "PDF API"
+            description = "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation"
+            version = "1.0.0"
+        }
+        servers = listOf("http://localhost:8080")
+    }
+    pluginOptions {
+        format = "yaml"
+    }
 }
