@@ -375,6 +375,106 @@ class ConvertRoutesTest {
         testFixtureConversion("external-image")
     }
 
+    @Test
+    fun testFixtureExternalFont() = testApplication {
+        application { module() }
+        testFixtureConversion("external-font")
+    }
+
+    // ========================================
+    // External Font Tests
+    // ========================================
+
+    @Test
+    fun testConvertWithFontFaceDeclaration() = testApplication {
+        application { module() }
+
+        val html = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>Font Face Test</title>
+                <meta name="subject" content="Custom font test"/>
+                <meta name="author" content="Test"/>
+                <style>
+                    @font-face {
+                        font-family: 'Pacifico';
+                        src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf');
+                        font-weight: 400;
+                        font-style: normal;
+                    }
+                    .custom { font-family: 'Pacifico', serif; font-size: 20px; }
+                </style>
+            </head>
+            <body>
+                <h1>Custom Font</h1>
+                <p class="custom">This text uses Pacifico font.</p>
+            </body>
+            </html>
+        """.trimIndent()
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html)))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val pdfBytes = response.readRawBytes()
+
+        val validation = PdfValidationService.validatePdf(pdfBytes)
+        assertTrue(validation.isCompliant, "PDF with @font-face should be PDF/A-3a compliant")
+
+        assertNotNull(validation.documentInfo)
+        val fontNames = validation.documentInfo!!.fonts.map { it.name }
+        assertTrue(
+            fontNames.any { it.contains("Pacifico", ignoreCase = true) },
+            "Pacifico font should be embedded in PDF. Found fonts: $fontNames"
+        )
+        assertTrue(
+            validation.documentInfo!!.fonts.all { it.embedded },
+            "All fonts should be embedded for PDF/A compliance"
+        )
+    }
+
+    @Test
+    fun testConvertWithUnreachableFontUrl() = testApplication {
+        application { module() }
+
+        val html = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>Unreachable Font Test</title>
+                <meta name="subject" content="Fallback font test"/>
+                <meta name="author" content="Test"/>
+                <style>
+                    @font-face {
+                        font-family: 'NonExistentFont';
+                        src: url('https://invalid.example.com/nonexistent-font.ttf');
+                    }
+                    .custom { font-family: 'NonExistentFont', sans-serif; }
+                </style>
+            </head>
+            <body>
+                <h1>Fallback Font Test</h1>
+                <p class="custom">This text should fall back to Liberation fonts.</p>
+            </body>
+            </html>
+        """.trimIndent()
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html)))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val pdfBytes = response.readRawBytes()
+        assertTrue(pdfBytes.size > 1000, "PDF should not be blank (fallback fonts should render text)")
+
+        val validation = PdfValidationService.validatePdf(pdfBytes)
+        assertTrue(validation.isCompliant, "PDF with unreachable font URL should still be compliant via fallback fonts")
+    }
+
     // ========================================
     // File Attachment Tests
     // ========================================

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>External Font Test</title>
+    <meta content="Testing custom font loading via @font-face URL resolution" name="subject"/>
+    <meta content="PDF API Test Suite" name="author"/>
+    <meta content="Verifies that external TTF fonts are fetched and embedded in the PDF" name="description"/>
+    <style>
+        @font-face {
+            font-family: 'Pacifico';
+            src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .custom-font {
+            font-family: 'Pacifico', serif;
+            font-size: 24px;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+
+        .fallback-font {
+            font-family: Arial, sans-serif;
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+<h1>External Font Embedding Test</h1>
+<p class="custom-font">This text uses the Pacifico custom font loaded via @font-face URL.</p>
+<p class="fallback-font">This text uses the standard Liberation Sans fallback font.</p>
+<p>If the PDF contains the Pacifico font above, the @font-face URL resolution is working correctly.</p>
+</body>
+</html>

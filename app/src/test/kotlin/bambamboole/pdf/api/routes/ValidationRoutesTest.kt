@@ -349,4 +349,10 @@ class ValidationRoutesTest {
         application { module() }
         testFixtureValidation("external-image")
     }
+
+    @Test
+    fun testFixtureExternalFontValidation() = testApplication {
+        application { module() }
+        testFixtureValidation("external-font")
+    }
 }
