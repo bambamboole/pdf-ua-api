@@ -21,8 +21,6 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development server
-  - url: https://api.example.com
-    description: Production server
 
 security:
   - BearerAuth: []
@@ -33,7 +31,6 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
       description: Optional API key authentication (Bearer token). Only required when API_KEY is configured.
   
   schemas:
