@@ -1,10 +1,12 @@
 FROM gradle:9-jdk24-alpine AS build
 
+ARG APP_VERSION=dev
+
 WORKDIR /app
 
 COPY . .
 
-RUN ./gradlew installDist -x test --no-daemon
+RUN ./gradlew installDist -x test --no-daemon -Papp.version=${APP_VERSION}
 
 FROM eclipse-temurin:24-alpine
 

@@ -21,13 +21,26 @@ import io.ktor.server.response.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
+import java.util.Properties
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 
+private fun loadVersion(): String {
+    val props = Properties()
+    Thread.currentThread().contextClassLoader
+        .getResourceAsStream("version.properties")
+        ?.use { props.load(it) }
+    return props.getProperty("version", "dev")
+}
+
 fun Application.module() {
     val config = AppConfig.load(environment)
+    val version = loadVersion()
+    LoggerFactory.getLogger("bambamboole.pdf.api.Application")
+        .info("PDF API version {} started", version)
 
     PdfService.warmup()
     PdfValidationService.warmup()

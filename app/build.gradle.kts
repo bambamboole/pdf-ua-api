@@ -1,3 +1,5 @@
+import io.github.tabilzad.ktor.model.SecurityScheme
+
 plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
@@ -11,6 +13,8 @@ plugins {
 
     id("io.github.tabilzad.inspektor") version "0.10.0-alpha"
 }
+
+val appVersion = project.findProperty("app.version")?.toString() ?: "dev"
 
 dependencies {
     // Ktor Server
@@ -68,6 +72,23 @@ tasks.jar {
     }
 }
 
+val generateVersionProperties by tasks.registering {
+    val outputFile = layout.buildDirectory.file("generated-resources/version.properties")
+    val version = appVersion
+    inputs.property("version", version)
+    outputs.file(outputFile)
+    doLast {
+        outputFile.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText("version=$version\n")
+        }
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(generateVersionProperties.map { layout.buildDirectory.dir("generated-resources") })
+}
+
 tasks.test {
     // Suppress warnings about restricted native access
     jvmArgs("--enable-native-access=ALL-UNNAMED")
@@ -78,9 +99,17 @@ swagger {
         info {
             title = "PDF API"
             description = "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation"
-            version = "1.0.0"
+            version = appVersion
         }
         servers = listOf("http://localhost:8080")
+        security {
+            schemes {
+                "bearerAuth" to SecurityScheme(
+                    type = "http",
+                    scheme = "bearer"
+                )
+            }
+        }
     }
     pluginOptions {
         format = "yaml"
