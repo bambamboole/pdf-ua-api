@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: PDF UA API
+  description: |
+    A simple HTTP API for converting HTML to PDF with PDF/A-3a accessibility compliance. 
+    Built with Ktor and openhtmltopdf.
+    
+    ## Features
+    - HTML to PDF Conversion with PDF/A-3a compliance
+    - PDF/UA Compliant - Full accessibility compliance built-in
+    - Built-in PDF/A compliance validation with veraPDF
+    - Optional API key authentication
+  version: 1.0.0
+  contact:
+    name: PDF UA API
+    url: https://github.com/bambamboole/pdf-ua-api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - BearerAuth: []
+  - {}
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Optional API key authentication (Bearer token). Only required when API_KEY is configured.
+  
+  schemas:
+    ConvertRequest:
+      type: object
+      required:
+        - html
+      properties:
+        html:
+          type: string
+          description: HTML content to convert to PDF
+          example: "<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"
+        baseUrl:
+          type: string
+          format: uri
+          description: Optional base URL for resolving relative paths
+          example: "https://example.com"
+        attachments:
+          type: array
+          description: Optional file attachments to embed in the PDF
+          items:
+            $ref: '#/components/schemas/FileAttachment'
+    
+    FileAttachment:
+      type: object
+      required:
+        - name
+        - content
+      properties:
+        name:
+          type: string
+          description: Name of the file attachment
+          example: "invoice.xml"
+        content:
+          type: string
+          format: byte
+          description: Base64-encoded file content
+        mimeType:
+          type: string
+          description: MIME type of the attachment
+          default: "application/octet-stream"
+          example: "application/xml"
+        description:
+          type: string
+          description: Optional description of the attachment
+        relationship:
+          type: string
+          description: Relationship of the attachment to the PDF
+          default: "Alternative"
+          example: "Alternative"
+    
+    ValidationResponse:
+      type: object
+      required:
+        - isCompliant
+        - profiles
+        - summary
+      properties:
+        isCompliant:
+          type: boolean
+          description: Overall compliance status
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileResult'
+        summary:
+          $ref: '#/components/schemas/ValidationSummary'
+        documentInfo:
+          $ref: '#/components/schemas/DocumentInfo'
+        failures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFailure'
+        metadata:
+          $ref: '#/components/schemas/PdfMetadata'
+    
+    ProfileResult:
+      type: object
+      properties:
+        profile:
+          type: string
+          example: "PDF/A-3a"
+        specification:
+          type: string
+          example: "ISO 19005-3:2012"
+        isCompliant:
+          type: boolean
+        totalChecks:
+          type: integer
+        passedChecks:
+          type: integer
+        failedChecks:
+          type: integer
+    
+    ValidationSummary:
+      type: object
+      properties:
+        totalChecks:
+          type: integer
+        passedChecks:
+          type: integer
+        failedChecks:
+          type: integer
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResult'
+    
+    CategoryResult:
+      type: object
+      properties:
+        category:
+          type: string
+        passedChecks:
+          type: integer
+        failedChecks:
+          type: integer
+    
+    DocumentInfo:
+      type: object
+      properties:
+        pages:
+          type: integer
+        tagged:
+          type: boolean
+        language:
+          type: string
+        structureElements:
+          type: integer
+        fonts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FontInfo'
+        images:
+          type: integer
+    
+    FontInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        embedded:
+          type: boolean
+        type:
+          type: string
+    
+    PdfMetadata:
+      type: object
+      properties:
+        title:
+          type: string
+        subject:
+          type: string
+        author:
+          type: string
+        creator:
+          type: string
+        producer:
+          type: string
+        creationDate:
+          type: string
+    
+    ValidationFailure:
+      type: object
+      properties:
+        profile:
+          type: string
+        clause:
+          type: string
+        testNumber:
+          type: integer
+        category:
+          type: string
+        message:
+          type: string
+        location:
+          type: string
+        errorDetails:
+          type: string
+    
+    ConvertAndValidateResponse:
+      type: object
+      required:
+        - validation
+        - pdf
+      properties:
+        validation:
+          $ref: '#/components/schemas/ValidationResponse'
+        pdf:
+          type: string
+          format: byte
+          description: Base64-encoded PDF content
+    
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "HTML content cannot be empty"
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the API is running and responsive
+      operationId: getHealth
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  
+  /convert:
+    post:
+      summary: Convert HTML to PDF
+      description: |
+        Convert HTML content to PDF/A-3a compliant PDF with full accessibility support.
+        
+        ## Required HTML Meta Tags
+        For full compliance, include these meta tags:
+        ```html
+        <html lang="en">
+        <head>
+          <title>Document Title</title>
+          <meta name="subject" content="Document subject"/>
+          <meta name="description" content="Document description"/>
+          <meta name="author" content="Author Name"/>
+        </head>
+        ```
+      operationId: convertHtmlToPdf
+      tags:
+        - Conversion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertRequest'
+            examples:
+              simple:
+                summary: Simple HTML conversion
+                value:
+                  html: "<html><head><title>Document</title></head><body><h1>Hello World</h1><p>This is a test PDF.</p></body></html>"
+              withBaseUrl:
+                summary: HTML with base URL
+                value:
+                  html: "<html><head><title>Document</title></head><body><h1>Hello</h1></body></html>"
+                  baseUrl: "https://example.com"
+      responses:
+        '200':
+          description: PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - API key required when authentication is enabled
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /validate:
+    post:
+      summary: Validate PDF compliance
+      description: Validate a PDF file for PDF/A-3a compliance using veraPDF
+      operationId: validatePdf
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - API key required when authentication is enabled
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /convert-and-validate:
+    post:
+      summary: Convert HTML to PDF and validate
+      description: |
+        Convert HTML content to PDF and validate it in a single request.
+        Returns both the PDF (as base64) and validation results.
+      operationId: convertAndValidatePdf
+      tags:
+        - Conversion
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertRequest'
+      responses:
+        '200':
+          description: PDF generated and validated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertAndValidateResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - API key required when authentication is enabled
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: Health
+    description: Health check endpoint
+  - name: Conversion
+    description: HTML to PDF conversion endpoints
+  - name: Validation
+    description: PDF validation endpoints

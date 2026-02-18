@@ -20,6 +20,9 @@ dependencies {
     implementation(libs.ktorServerAuth)
     implementation(libs.ktorServerMustache)
     implementation(libs.ktorSerializationJson)
+    implementation(libs.ktorServerOpenApi)
+    implementation(libs.ktorServerSwagger)
+    implementation(libs.ktorServerRoutingOpenApi)
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)

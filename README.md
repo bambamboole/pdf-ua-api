@@ -26,6 +26,21 @@ open http://localhost:8080
 - **Flexible Configuration** - Environment variable-based configuration
 - **Optional Authentication** - API key support via Bearer token
 - **API-Only Mode** - Can run without web UI for production deployments
+- **OpenAPI Documentation** - Auto-generated OpenAPI 3.0 spec with Swagger UI
+
+## API Documentation
+
+Interactive API documentation is available at:
+
+```bash
+# Swagger UI (interactive API docs)
+http://localhost:8080/docs
+
+# OpenAPI specification (YAML)
+http://localhost:8080/docs/documentation.yaml
+```
+
+The OpenAPI specification provides a complete description of all API endpoints, request/response schemas, and authentication requirements. You can use this spec with any OpenAPI-compatible tool (Postman, Insomnia, etc.).
 
 ## API Endpoints
 
