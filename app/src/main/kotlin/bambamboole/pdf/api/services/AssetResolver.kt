@@ -76,8 +76,13 @@ class AssetResolver(
         }
 
         val bytes = response.body().use { it.readNBytes(maxSizeBytes.toInt()) }
-        logger.debug("Fetched asset: {} ({} bytes)", uri, bytes.size)
-        return AssetStream(bytes)
+        val optimized = ImageOptimizer.optimizeImage(bytes)
+        if (optimized.size < bytes.size) {
+            logger.debug("Fetched and optimized asset: {} ({} -> {} bytes)", uri, bytes.size, optimized.size)
+        } else {
+            logger.debug("Fetched asset: {} ({} bytes)", uri, bytes.size)
+        }
+        return AssetStream(optimized)
     }
 
     private class AssetStream(private val bytes: ByteArray) : FSStream {
