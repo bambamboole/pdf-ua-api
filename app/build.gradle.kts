@@ -90,8 +90,7 @@ sourceSets.main {
 }
 
 tasks.test {
-    // Suppress warnings about restricted native access
-    jvmArgs("--enable-native-access=ALL-UNNAMED")
+    jvmArgs("--enable-native-access=ALL-UNNAMED", "-Xmx4g")
 }
 
 swagger {
