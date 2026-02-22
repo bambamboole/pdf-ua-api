@@ -14,6 +14,8 @@ WORKDIR /app
 
 RUN apk add --no-cache \
     fontconfig \
+    curl \
+    bash \
     ttf-liberation
 
 RUN addgroup -g 1000 appuser && \
