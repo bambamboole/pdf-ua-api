@@ -34,6 +34,7 @@ object PdfService {
     )
 
     private val fontConfigs = listOf(
+        // Liberation family (metrically compatible with Arial/Times/Courier)
         FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans", 400, FontStyle.NORMAL),
         FontConfig("/fonts/LiberationSans-Bold.ttf", "Liberation Sans", 700, FontStyle.NORMAL),
         FontConfig("/fonts/LiberationSans-Italic.ttf", "Liberation Sans", 400, FontStyle.ITALIC),
@@ -45,7 +46,67 @@ object PdfService {
         FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono", 400, FontStyle.NORMAL),
         FontConfig("/fonts/LiberationMono-Bold.ttf", "Liberation Mono", 700, FontStyle.NORMAL),
         FontConfig("/fonts/LiberationMono-Italic.ttf", "Liberation Mono", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationMono-BoldItalic.ttf", "Liberation Mono", 700, FontStyle.ITALIC)
+        FontConfig("/fonts/LiberationMono-BoldItalic.ttf", "Liberation Mono", 700, FontStyle.ITALIC),
+
+        // Inter — modern geometric sans-serif (OFL)
+        FontConfig("/fonts/Inter-Regular.ttf", "Inter", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/Inter-Bold.ttf", "Inter", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/Inter-Italic.ttf", "Inter", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/Inter-BoldItalic.ttf", "Inter", 700, FontStyle.ITALIC),
+
+        // Open Sans — clean, highly readable sans-serif (OFL)
+        FontConfig("/fonts/OpenSans-Regular.ttf", "Open Sans", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/OpenSans-Bold.ttf", "Open Sans", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/OpenSans-Italic.ttf", "Open Sans", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/OpenSans-BoldItalic.ttf", "Open Sans", 700, FontStyle.ITALIC),
+
+        // Roboto — Google's signature sans-serif (OFL)
+        FontConfig("/fonts/Roboto-Regular.ttf", "Roboto", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/Roboto-Bold.ttf", "Roboto", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/Roboto-Italic.ttf", "Roboto", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/Roboto-BoldItalic.ttf", "Roboto", 700, FontStyle.ITALIC),
+
+        // Lato — elegant, professional sans-serif (OFL)
+        FontConfig("/fonts/Lato-Regular.ttf", "Lato", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/Lato-Bold.ttf", "Lato", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/Lato-Italic.ttf", "Lato", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/Lato-BoldItalic.ttf", "Lato", 700, FontStyle.ITALIC),
+
+        // Source Sans 3 — Adobe's open-source sans-serif (OFL)
+        FontConfig("/fonts/SourceSans3-Regular.ttf", "Source Sans 3", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/SourceSans3-Bold.ttf", "Source Sans 3", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/SourceSans3-Italic.ttf", "Source Sans 3", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/SourceSans3-BoldItalic.ttf", "Source Sans 3", 700, FontStyle.ITALIC),
+
+        // Nunito — rounded, friendly sans-serif (OFL)
+        FontConfig("/fonts/Nunito-Regular.ttf", "Nunito", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/Nunito-Bold.ttf", "Nunito", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/Nunito-Italic.ttf", "Nunito", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/Nunito-BoldItalic.ttf", "Nunito", 700, FontStyle.ITALIC),
+
+        // Merriweather — professional serif, great for body text (OFL)
+        FontConfig("/fonts/Merriweather-Regular.ttf", "Merriweather", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/Merriweather-Bold.ttf", "Merriweather", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/Merriweather-Italic.ttf", "Merriweather", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/Merriweather-BoldItalic.ttf", "Merriweather", 700, FontStyle.ITALIC),
+
+        // PT Sans — excellent multilingual support (OFL)
+        FontConfig("/fonts/PTSans-Regular.ttf", "PT Sans", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/PTSans-Bold.ttf", "PT Sans", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/PTSans-Italic.ttf", "PT Sans", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/PTSans-BoldItalic.ttf", "PT Sans", 700, FontStyle.ITALIC),
+
+        // Noto Sans — Google's universal font, massive language coverage (OFL)
+        FontConfig("/fonts/NotoSans-Regular.ttf", "Noto Sans", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/NotoSans-Bold.ttf", "Noto Sans", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/NotoSans-Italic.ttf", "Noto Sans", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/NotoSans-BoldItalic.ttf", "Noto Sans", 700, FontStyle.ITALIC),
+
+        // Fira Sans — Mozilla's clean, professional sans-serif (OFL)
+        FontConfig("/fonts/FiraSans-Regular.ttf", "Fira Sans", 400, FontStyle.NORMAL),
+        FontConfig("/fonts/FiraSans-Bold.ttf", "Fira Sans", 700, FontStyle.NORMAL),
+        FontConfig("/fonts/FiraSans-Italic.ttf", "Fira Sans", 400, FontStyle.ITALIC),
+        FontConfig("/fonts/FiraSans-BoldItalic.ttf", "Fira Sans", 700, FontStyle.ITALIC)
     )
 
     private val colorProfileBytes: ByteArray by lazy {
