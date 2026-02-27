@@ -8,6 +8,7 @@ data class AppConfig(
     val pdfProducer: String,
     val maxRequestSizeBytes: Long,
     val logLevel: LogLevel,
+    val logFormat: String,
     val assetTimeoutMs: Long,
     val assetMaxSizeBytes: Long,
     val assetAllowedDomains: Set<String>
@@ -35,6 +36,7 @@ data class AppConfig(
                 pdfProducer = getRequired("pdf.producer", "pdf-ua-api.com"),
                 maxRequestSizeBytes = getLong("pdf.maxRequestSize", 10 * 1024 * 1024),
                 logLevel = getLogLevel("logging.level", LogLevel.INFO),
+                logFormat = getRequired("logging.format", "text"),
                 assetTimeoutMs = getLong("assets.timeout", 5000),
                 assetMaxSizeBytes = getLong("assets.maxSize", 5 * 1024 * 1024),
                 assetAllowedDomains = getOptional("assets.allowedDomains")

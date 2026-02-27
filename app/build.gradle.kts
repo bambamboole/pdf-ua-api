@@ -40,6 +40,7 @@ dependencies {
 
     // Logging
     implementation(libs.logbackClassic)
+    implementation(libs.logstashLogbackEncoder)
 
     // PDF Validation
     implementation(libs.verapdfValidation)

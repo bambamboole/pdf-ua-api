@@ -8,6 +8,7 @@ kotlinxSerializationJSON = "1.10.0"
 ktor = "3.4.0"
 openhtmltopdf = "1.1.37"
 logback = "1.5.28"
+logstashLogbackEncoder = "8.1"
 verapdf = "1.28.2"
 jsoup = "1.18.3"
 
@@ -35,6 +36,7 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Logging
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logstashLogbackEncoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogbackEncoder" }
 
 # Testing
 ktorServerTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
