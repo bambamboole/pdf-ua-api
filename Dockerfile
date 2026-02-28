@@ -32,4 +32,4 @@ EXPOSE 8080
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" \
     JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"
 
-ENTRYPOINT ["/app/bin/app"]
+CMD ["/app/bin/app"]
