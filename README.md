@@ -199,6 +199,45 @@ curl -X POST http://localhost:8080/validate \
 - CSS 2.1 only (no CSS3 animations, transforms)
 - Maximum request size: 10MB
 
+## Observability (OpenTelemetry)
+
+The API ships with the [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation) bundled in the Docker image. It auto-instruments Ktor/Netty HTTP spans and JVM metrics with **zero code changes** — just set an environment variable to enable it.
+
+### Enable OpenTelemetry
+
+```bash
+docker run -p 8080:8080 \
+  -e OTEL_ENABLED=true \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://your-otel-collector:4318 \
+  bambamboole/pdf-ua-api:latest
+```
+
+### OTel Environment Variables
+
+| Variable                        | Default                 | Description                                  |
+|---------------------------------|-------------------------|----------------------------------------------|
+| `OTEL_ENABLED`                  | `false`                 | Set to `true` to attach the OTel Java agent  |
+| `OTEL_SERVICE_NAME`             | `pdf-ua-api`            | Service name reported to your tracing backend |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`  | `http://localhost:4318` | OTLP collector endpoint                      |
+| `OTEL_LOGS_EXPORTER`           | `none`                  | Log exporter (disabled by default)           |
+
+All other [OTel Java agent configuration](https://opentelemetry.io/docs/zero-code/java/agent/configuration/) environment variables are supported.
+
+### Example with Jaeger
+
+```bash
+# Start Jaeger
+docker run -d --name jaeger -p 16686:16686 -p 4318:4318 jaegertracing/all-in-one:latest
+
+# Start pdf-api with OTel pointing to Jaeger
+docker run -p 8080:8080 \
+  -e OTEL_ENABLED=true \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318 \
+  bambamboole/pdf-ua-api:latest
+
+# View traces at http://localhost:16686
+```
+
 ## Building from Source
 
 ### Prerequisites
