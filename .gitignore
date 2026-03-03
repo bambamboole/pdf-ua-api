@@ -47,3 +47,5 @@ bin/
 ### Test Fixtures ###
 **/fixtures/**/generated.pdf
 **/fixtures/**/page-*-diff.png
+**/image-fixtures/**/generated.png
+**/image-fixtures/**/diff.png

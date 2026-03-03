@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Colored Boxes</title>
+    <style>
+        body {
+            font-family: 'Liberation Sans', Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+        }
+        .box {
+            width: 120px;
+            height: 80px;
+            margin: 10px;
+            display: inline-block;
+            text-align: center;
+            line-height: 80px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .red { background-color: #e74c3c; }
+        .green { background-color: #27ae60; }
+        .blue { background-color: #2980b9; }
+        .purple { background-color: #8e44ad; }
+        h2 {
+            color: #333;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Color Rendering Test</h2>
+    <div>
+        <div class="box red">Red</div>
+        <div class="box green">Green</div>
+        <div class="box blue">Blue</div>
+        <div class="box purple">Purple</div>
+    </div>
+</body>
+</html>

@@ -5,8 +5,10 @@ import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.convertAndValidateRoutes
+import bambamboole.pdf.api.routes.renderImageRoutes
 import bambamboole.pdf.api.routes.validationRoutes
 import bambamboole.pdf.api.services.AssetResolver
+import bambamboole.pdf.api.services.ImageRenderService
 import bambamboole.pdf.api.services.PdfService
 import bambamboole.pdf.api.services.PdfValidationService
 import com.github.mustachejava.DefaultMustacheFactory
@@ -44,6 +46,7 @@ fun Application.module() {
 
     PdfService.warmup()
     PdfValidationService.warmup()
+    ImageRenderService.warmup()
 
     val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
     val assetResolver = AssetResolver(
@@ -105,11 +108,13 @@ fun Application.module() {
                 convertRoutes(config.pdfProducer, assetResolver)
                 validationRoutes()
                 convertAndValidateRoutes(config.pdfProducer, assetResolver)
+                renderImageRoutes(assetResolver)
             }
         } else {
             convertRoutes(config.pdfProducer, assetResolver)
             validationRoutes()
             convertAndValidateRoutes(config.pdfProducer, assetResolver)
+            renderImageRoutes(assetResolver)
         }
     }
 }

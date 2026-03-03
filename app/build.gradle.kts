@@ -34,6 +34,7 @@ dependencies {
     // OpenHTMLToPDF
     implementation(libs.openhtmltopdfCore)
     implementation(libs.openhtmltopdfPdfbox)
+    implementation(libs.openhtmltopdfJava2d)
 
     // HTML Parser
     implementation(libs.jsoup)
