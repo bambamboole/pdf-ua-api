@@ -18,6 +18,12 @@
         table {
             width: 100%;
             border: 1px solid #ddd;
+            -fs-table-paginate: paginate;
+            -fs-page-break-min-height: 1.5cm;
+        }
+
+        tr, thead, tfoot {
+            page-break-inside: avoid;
         }
 
         thead {

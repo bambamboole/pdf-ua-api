@@ -90,7 +90,6 @@ object PdfService {
         }
 
         val jsoupDoc = Jsoup.parse(html)
-        injectTablePaginationStyles(jsoupDoc)
         val w3cDoc = w3cDom.fromJsoup(jsoupDoc)
 
         val pdfBytes = ByteArrayOutputStream(512 * 1024).use { outputStream ->
@@ -185,37 +184,6 @@ object PdfService {
                 outputStream.toByteArray()
             }
         }
-    }
-
-    /**
-     * Injects CSS styles for proper table pagination across pages.
-     * This ensures tables are split correctly when spanning multiple pages.
-     */
-    private fun injectTablePaginationStyles(jsoupDoc: org.jsoup.nodes.Document) {
-        val styles = """
-            table {
-                width: 100%;
-                border-collapse: collapse;
-
-                /* The magical table pagination property. */
-                -fs-table-paginate: paginate;
-
-                /* Recommended to avoid leaving thead on a page by itself. */
-                -fs-page-break-min-height: 1.5cm;
-            }
-
-            tr, thead, tfoot {
-                page-break-inside: avoid;
-            }
-        """.trimIndent()
-
-        // Check if a style tag already exists, if not create one
-        val head = jsoupDoc.head()
-        val styleElement = head.appendElement("style")
-        styleElement.attr("type", "text/css")
-        styleElement.text(styles)
-
-        logger.debug("Injected table pagination styles into HTML document")
     }
 
     private fun configurePdfUA(builder: PdfRendererBuilder) {
