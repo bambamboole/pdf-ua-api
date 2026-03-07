@@ -45,16 +45,17 @@ fun Route.convertAndValidateRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val pdfBytes = PdfService.convertHtmlToPdf(
+            val result = PdfService.convertHtmlToPdf(
                 html = request.html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,
                 baseUrl = baseUrl,
                 attachments = request.attachments
             )
-            val validation = PdfValidationService.validatePdf(pdfBytes)
-            val pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes)
+            val validation = PdfValidationService.validatePdf(result.bytes)
+            val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
 
+            call.response.header("X-Document-UUID", result.documentId)
             call.respond(
                 HttpStatusCode.OK,
                 ConvertAndValidateResponse(

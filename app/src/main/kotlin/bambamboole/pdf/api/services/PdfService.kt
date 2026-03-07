@@ -81,7 +81,7 @@ object PdfService {
         assetResolver: FSStreamFactory? = null,
         baseUrl: String = "",
         attachments: List<FileAttachment>? = null
-    ): ByteArray {
+    ): PdfResult {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
         }
@@ -106,7 +106,19 @@ object PdfService {
             outputStream.toByteArray()
         }
 
-        return if (attachments.isNullOrEmpty()) pdfBytes else addAttachments(pdfBytes, attachments)
+        val finalBytes = if (attachments.isNullOrEmpty()) pdfBytes else addAttachments(pdfBytes, attachments)
+        return embedDocumentId(finalBytes)
+    }
+
+    private fun embedDocumentId(pdfBytes: ByteArray): PdfResult {
+        val documentId = UUID.randomUUID().toString()
+        Loader.loadPDF(pdfBytes).use { document ->
+            document.documentInformation.setCustomMetadataValue("X-Document-UUID", documentId)
+            return ByteArrayOutputStream(pdfBytes.size + 256).use { outputStream ->
+                document.save(outputStream)
+                PdfResult(outputStream.toByteArray(), documentId)
+            }
+        }
     }
 
     private fun validateAttachments(attachments: List<FileAttachment>) {

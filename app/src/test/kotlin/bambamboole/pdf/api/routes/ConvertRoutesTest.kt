@@ -186,6 +186,24 @@ class ConvertRoutesTest {
         assertEquals(HttpStatusCode.InternalServerError, response.status)
     }
 
+    @Test
+    fun testConvertEndpointReturnsDocumentUUID() = testApplication {
+        application { module() }
+
+        val response = client.post("/convert") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"html":"<html><body><h1>Test</h1></body></html>"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val uuid = response.headers["X-Document-UUID"]
+        assertNotNull(uuid, "X-Document-UUID header should be present")
+        assertTrue(
+            uuid.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")),
+            "X-Document-UUID should be a valid UUID format, got: $uuid"
+        )
+    }
+
     // ========================================
     // Authentication Tests
     // ========================================

@@ -33,14 +33,14 @@ class PdfServiceTablePaginationTest {
         """.trimIndent()
 
         // Convert to PDF (which internally injects styles)
-        val pdfBytes = PdfService.convertHtmlToPdf(html)
+        val result = PdfService.convertHtmlToPdf(html)
 
         // Verify PDF was generated
-        assertTrue(pdfBytes.isNotEmpty())
-        assertTrue(pdfBytes.size > 1000, "PDF should be larger than 1KB")
+        assertTrue(result.bytes.isNotEmpty())
+        assertTrue(result.bytes.size > 1000, "PDF should be larger than 1KB")
 
         // Verify PDF header
-        val pdfHeader = pdfBytes.take(5).toByteArray().decodeToString()
+        val pdfHeader = result.bytes.take(5).toByteArray().decodeToString()
         assertTrue(pdfHeader.startsWith("%PDF-"))
     }
 
@@ -125,11 +125,11 @@ class PdfServiceTablePaginationTest {
         """.trimIndent()
 
         // Convert to PDF with table pagination
-        val pdfBytes = PdfService.convertHtmlToPdf(html)
+        val result = PdfService.convertHtmlToPdf(html)
 
         // Verify PDF was generated successfully
-        assertTrue(pdfBytes.isNotEmpty())
+        assertTrue(result.bytes.isNotEmpty())
         // Large table should produce a PDF larger than simple documents
-        assertTrue(pdfBytes.size > 10000, "PDF with large table should be substantial in size")
+        assertTrue(result.bytes.size > 10000, "PDF with large table should be substantial in size")
     }
 }

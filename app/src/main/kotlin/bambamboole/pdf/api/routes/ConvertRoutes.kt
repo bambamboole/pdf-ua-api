@@ -43,7 +43,7 @@ fun Route.convertRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val pdfBytes = PdfService.convertHtmlToPdf(
+            val result = PdfService.convertHtmlToPdf(
                 html = request.html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,
@@ -51,6 +51,7 @@ fun Route.convertRoutes(
                 attachments = request.attachments
             )
 
+            call.response.header("X-Document-UUID", result.documentId)
             call.response.header(
                 HttpHeaders.ContentDisposition,
                 ContentDisposition.Attachment.withParameter(
@@ -60,7 +61,7 @@ fun Route.convertRoutes(
             )
 
             call.respondBytes(
-                bytes = pdfBytes,
+                bytes = result.bytes,
                 contentType = ContentType.Application.Pdf,
                 status = HttpStatusCode.OK
             )

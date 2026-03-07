@@ -3,6 +3,7 @@ package bambamboole.pdf.api
 import bambamboole.pdf.api.config.AppConfig
 import bambamboole.pdf.api.routes.convertRoutes
 import bambamboole.pdf.api.routes.healthRoutes
+import bambamboole.pdf.api.routes.identifyRoutes
 import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.convertAndValidateRoutes
 import bambamboole.pdf.api.routes.renderImageRoutes
@@ -109,12 +110,14 @@ fun Application.module() {
                 validationRoutes()
                 convertAndValidateRoutes(config.pdfProducer, assetResolver)
                 renderImageRoutes(assetResolver)
+                identifyRoutes()
             }
         } else {
             convertRoutes(config.pdfProducer, assetResolver)
             validationRoutes()
             convertAndValidateRoutes(config.pdfProducer, assetResolver)
             renderImageRoutes(assetResolver)
+            identifyRoutes()
         }
     }
 }
