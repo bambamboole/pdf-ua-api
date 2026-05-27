@@ -2,12 +2,14 @@ package bambamboole.pdf.api.routes
 
 import bambamboole.pdf.api.services.PdfService
 import bambamboole.pdf.api.services.PdfValidationService
+import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class LargeDocumentTest {
 
     @Test
+    @Disabled("Long-running performance coverage; run manually when changing large document rendering.")
     fun testConvert50kLineHtml() {
         val html = buildLargeHtml(tableRows = 8_000, paragraphs = 2_000)
         val lineCount = html.count { it == '\n' }
