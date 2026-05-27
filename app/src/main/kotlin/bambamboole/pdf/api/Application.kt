@@ -2,6 +2,7 @@ package bambamboole.pdf.api
 
 import bambamboole.pdf.api.config.AppConfig
 import bambamboole.pdf.api.routes.convertRoutes
+import bambamboole.pdf.api.routes.renderRoutes
 import bambamboole.pdf.api.routes.healthRoutes
 import bambamboole.pdf.api.routes.identifyRoutes
 import bambamboole.pdf.api.routes.indexRoutes
@@ -107,6 +108,7 @@ fun Application.module() {
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
                 convertRoutes(config.pdfProducer, assetResolver)
+                renderRoutes(config.pdfProducer, assetResolver)
                 validationRoutes()
                 convertAndValidateRoutes(config.pdfProducer, assetResolver)
                 renderImageRoutes(assetResolver)
@@ -114,6 +116,7 @@ fun Application.module() {
             }
         } else {
             convertRoutes(config.pdfProducer, assetResolver)
+            renderRoutes(config.pdfProducer, assetResolver)
             validationRoutes()
             convertAndValidateRoutes(config.pdfProducer, assetResolver)
             renderImageRoutes(assetResolver)
