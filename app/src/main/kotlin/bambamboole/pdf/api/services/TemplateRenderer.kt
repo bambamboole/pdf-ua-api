@@ -175,6 +175,7 @@ $bodyHtml
 
     private fun baseCss(): String = """
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
+img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
 h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }

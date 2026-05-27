@@ -113,6 +113,16 @@ object TemplateSchema {
                     configFields = listOf("typography", "spacing", "width", "align"),
                 ),
                 BlockSchema(
+                    type = "heading",
+                    fields = listOf("id", "text", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "level"),
+                ),
+                BlockSchema(
+                    type = "image",
+                    fields = listOf("id", "src", "alt", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "maxHeight"),
+                ),
+                BlockSchema(
                     type = "spacer",
                     fields = listOf("id", "config"),
                     configFields = listOf("typography", "spacing", "width", "align", "height"),
