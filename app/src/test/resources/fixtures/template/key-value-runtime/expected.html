@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Document</title>
@@ -14,11 +14,12 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
 .row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
 .row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
-.block-2 { margin-left: auto; text-align: right; }
+body { font-family: 'Inter'; }
+.block-2 .key-value td:first-child { width: 22mm; }
 
 </style>
 </head>
 <body>
-<table class="row" role="presentation"><tr><td style="width: 60%;"><div class="block-1"><p>Invoice #2026-001</p></div></td><td style="width: 40%;"><div class="block-2"><p>Issued 2026-05-27</p></div></td></tr></table>
+<table class="row" role="presentation"><tr><td><div class="block-1"><h1>Delivery summary</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-2"><table class="key-value"><tbody><tr><td>Order</td><td>ORD-7788</td></tr><tr><td>Recipient</td><td>Musterfrau &amp; Co.</td></tr><tr><td>Reference</td><td>REF-2026-05</td></tr><tr><td>Missing value</td><td>Provided by runtime data</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-3"><p>Runtime data replaces every template value in this key-value block.</p></div></td></tr></table>
 </body>
 </html>

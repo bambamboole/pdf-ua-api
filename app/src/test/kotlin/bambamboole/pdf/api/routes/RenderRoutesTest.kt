@@ -84,6 +84,33 @@ class RenderRoutesTest {
     }
 
     @Test
+    fun rendersTemplateWithKeyValueBlock() = testApplication {
+        application { module() }
+
+        val body = """
+            {"template":{"version":1,"rows":[
+              {"blocks":[{"type":"key-value","id":"meta",
+                "values":{"invoice":"Original"},
+                "config":{"labelWidth":"28mm","fields":[
+                  {"key":"invoice","label":"Invoice"},
+                  {"key":"customer","label":"Customer"}
+                ]}
+              }]}
+            ]},
+            "data":{"meta":{"invoice":"INV-1","customer":"ACME GmbH"}}}
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+        assertTrue(response.readRawBytes().take(5).toByteArray().decodeToString().startsWith("%PDF-"))
+    }
+
+    @Test
     fun appliesDataOverride() = testApplication {
         application { module() }
 

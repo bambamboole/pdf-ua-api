@@ -15,14 +15,12 @@ import bambamboole.pdf.api.models.template.Row
 import bambamboole.pdf.api.models.template.SpacingConfig
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TypographyConfig
+import bambamboole.pdf.api.models.template.safeCssWidth
 import bambamboole.pdf.api.util.Html
 import kotlinx.serialization.json.JsonObject
 import java.net.URI
 
-private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
 private val UNSAFE_CSS = Regex("[;{}\"\\r\\n]")
-
-private fun safeWidth(width: String?): String? = width?.takeIf { SAFE_WIDTH.matches(it) }
 
 private fun safeColor(color: String?): String? = color?.takeIf { it.isNotBlank() && !UNSAFE_CSS.containsMatchIn(it) }
 
@@ -75,7 +73,7 @@ object TemplateRenderer {
 
         fun renderRow(row: Row): String {
             val cells = row.blocks.joinToString("") { block ->
-                val cellWidth = if (row.blocks.size > 1) safeWidth(block.config.width) else null
+                val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
                 val widthAttr = if (cellWidth != null) " style=\"width: $cellWidth;\"" else ""
                 "<td$widthAttr>${renderBlock(block, widthOnCell = cellWidth != null)}</td>"
             }
@@ -88,7 +86,7 @@ object TemplateRenderer {
 
     private fun emitPositioningCss(ctx: RenderContext, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
         val declarations = buildList {
-            val width = safeWidth(config.width)
+            val width = safeCssWidth(config.width)
             if (!widthOnCell && width != null) add("width: $width")
             when (config.align) {
                 Align.CENTER -> { add("margin-left: auto"); add("margin-right: auto") }
@@ -207,6 +205,9 @@ body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
 img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
 h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+.key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
+.key-value td { vertical-align: top; padding: 0 0 2mm; }
+.key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
 .row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
 .row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
 """.trim()

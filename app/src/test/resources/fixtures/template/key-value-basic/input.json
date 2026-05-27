@@ -1,0 +1,41 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": { "size": { "format": "A4" }, "locale": "en_US" },
+      "typography": { "family": "Inter" }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Invoice metadata", "config": { "level": 1 } }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "key-value",
+            "values": {
+              "invoiceNumber": "INV-2026-001",
+              "customerName": "ACME GmbH",
+              "paymentTerms": "Due within 14 days"
+            },
+            "config": {
+              "labelWidth": "34mm",
+              "fields": [
+                { "key": "invoiceNumber", "label": "Invoice number" },
+                { "key": "customerName", "label": "Customer" },
+                { "key": "paymentTerms", "label": "Payment terms" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "text", "text": "All values are supplied directly by the template." }
+        ]
+      }
+    ]
+  }
+}

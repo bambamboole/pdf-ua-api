@@ -14,6 +14,9 @@ import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.ImageBlock
 import bambamboole.pdf.api.models.template.ImageConfig
+import bambamboole.pdf.api.models.template.KeyValueBlock
+import bambamboole.pdf.api.models.template.KeyValueConfig
+import bambamboole.pdf.api.models.template.KeyValueField
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.Orientation
@@ -27,6 +30,7 @@ import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TemplateConfig
 import bambamboole.pdf.api.models.template.TextBlock
 import bambamboole.pdf.api.models.template.TypographyConfig
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
@@ -105,6 +109,63 @@ class TemplateRendererTest {
         assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
         assertTrue(html.contains(".block-1 img, .block-1 svg { max-height: 72px; }"))
         assertTrue(html.contains("img, svg { max-width: 100%; height: auto; }"))
+    }
+
+    @Test
+    fun rendersKeyValueWithRuntimeDataAndScopedLabelWidth() {
+        val block = KeyValueBlock(
+            id = "meta",
+            values = mapOf("invoice" to "Original", "customer" to "Original customer"),
+            config = KeyValueConfig(
+                labelWidth = "28mm",
+                fields = listOf(
+                    KeyValueField("customer", "Customer"),
+                    KeyValueField("invoice", "Invoice <no>"),
+                    KeyValueField("missing", "Missing"),
+                    KeyValueField("empty", "Empty"),
+                ),
+            ),
+        )
+        val data = mapOf(
+            "meta" to JsonObject(
+                mapOf(
+                    "invoice" to JsonPrimitive("INV-1"),
+                    "customer" to JsonPrimitive("<ACME>"),
+                    "empty" to JsonNull,
+                ),
+            ),
+        )
+
+        val html = TemplateRenderer.render(template(block), data)
+
+        assertTrue(
+            html.contains(
+                "<table class=\"key-value\"><tbody>" +
+                    "<tr><td>Customer</td><td>&lt;ACME&gt;</td></tr>" +
+                    "<tr><td>Invoice &lt;no&gt;</td><td>INV-1</td></tr>" +
+                    "<tr><td>Missing</td><td></td></tr>" +
+                    "<tr><td>Empty</td><td></td></tr>" +
+                    "</tbody></table>",
+            ),
+        )
+        assertTrue(!html.contains("Original"), "runtime values should replace template values")
+        assertTrue(html.contains(".block-1 .key-value td:first-child { width: 28mm; }"))
+        assertTrue(html.contains(".key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }"))
+    }
+
+    @Test
+    fun keyValueDropsUnsafeLabelWidth() {
+        val block = KeyValueBlock(
+            config = KeyValueConfig(
+                labelWidth = "1mm} body{display:none",
+                fields = listOf(KeyValueField("invoice", "Invoice")),
+            ),
+        )
+
+        val html = TemplateRenderer.render(template(block))
+
+        assertTrue(!html.contains("display:none"), "unsafe label width must not be emitted")
+        assertTrue(!html.contains(".block-1 .key-value td:first-child { width:"))
     }
 
     @Test

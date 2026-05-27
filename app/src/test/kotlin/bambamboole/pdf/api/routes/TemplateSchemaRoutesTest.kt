@@ -54,7 +54,7 @@ class TemplateSchemaRoutesTest {
         assertTrue("Inter" in bundledFamilies)
         assertEquals(listOf("src", "weight", "style"), metadata["externalFontFields"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals(
-            listOf("text", "html", "heading", "image", "spacer", "divider"),
+            listOf("text", "html", "heading", "image", "key-value", "spacer", "divider"),
             metadata["blockOrder"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
 
@@ -65,6 +65,7 @@ class TemplateSchemaRoutesTest {
                 "#/\$defs/htmlBlock",
                 "#/\$defs/headingBlock",
                 "#/\$defs/imageBlock",
+                "#/\$defs/keyValueBlock",
                 "#/\$defs/spacerBlock",
                 "#/\$defs/dividerBlock",
             ),
@@ -120,6 +121,30 @@ class TemplateSchemaRoutesTest {
         val textBlock = definitions["textBlock"]!!.jsonObject
         assertEquals(listOf("type", "text"), textBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals("text", textBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)
+
+        val keyValueField = definitions["keyValueField"]!!.jsonObject
+        assertEquals(listOf("key", "label"), keyValueField["required"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(
+            "^[A-Za-z][A-Za-z0-9_]*$",
+            keyValueField["properties"]!!.jsonObject["key"]!!.jsonObject["pattern"]!!.jsonPrimitive.content,
+        )
+
+        val keyValueConfig = definitions["keyValueConfig"]!!.jsonObject
+        assertEquals("30mm", keyValueConfig["properties"]!!.jsonObject["labelWidth"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals(
+            "#/\$defs/keyValueField",
+            keyValueConfig["properties"]!!.jsonObject["fields"]!!.jsonObject["items"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+        )
+
+        val keyValueBlock = definitions["keyValueBlock"]!!.jsonObject
+        assertEquals(listOf("type"), keyValueBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals("key-value", keyValueBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)
+        val values = keyValueBlock["properties"]!!.jsonObject["values"]!!.jsonObject
+        assertEquals("^[A-Za-z][A-Za-z0-9_]*$", values["propertyNames"]!!.jsonObject["pattern"]!!.jsonPrimitive.content)
+        assertEquals(
+            listOf("string", "null"),
+            values["additionalProperties"]!!.jsonObject["type"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
     }
 
     @Test

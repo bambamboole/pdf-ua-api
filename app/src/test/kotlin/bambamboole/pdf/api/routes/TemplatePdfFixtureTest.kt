@@ -83,4 +83,16 @@ class TemplatePdfFixtureTest {
         application { module() }
         assertTemplatePdfFixture("page-background", embeddedFont = "LiberationSans")
     }
+
+    @Test
+    fun keyValueBasic() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture("key-value-basic", embeddedFont = "Inter")
+    }
+
+    @Test
+    fun keyValueRuntime() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture("key-value-runtime", embeddedFont = "Inter")
+    }
 }

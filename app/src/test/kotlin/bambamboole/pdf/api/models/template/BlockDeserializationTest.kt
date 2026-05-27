@@ -3,6 +3,7 @@ package bambamboole.pdf.api.models.template
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.Base64
@@ -24,7 +25,8 @@ class BlockDeserializationTest {
               {"type":"spacer","config":{"height":12}},
               {"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}},
               {"type":"heading","id":"title","text":"Invoice","config":{"level":1}},
-              {"type":"image","id":"logo","src":"logo.png","alt":"Logo","config":{"maxHeight":80}}
+              {"type":"image","id":"logo","src":"logo.png","alt":"Logo","config":{"maxHeight":80}},
+              {"type":"key-value","id":"meta","values":{"invoice":"INV-1","empty":null},"config":{"labelWidth":"24mm","fields":[{"key":"invoice","label":"Invoice"},{"key":"empty","label":"Empty"}]}}
             ]
         """.trimIndent()
         val blocks = json.decodeFromString(ListSerializer(Block.serializer()), input)
@@ -47,6 +49,12 @@ class BlockDeserializationTest {
         assertEquals("logo.png", image.src)
         assertEquals("Logo", image.alt)
         assertEquals(80, image.config.maxHeight)
+        val keyValue = assertIs<KeyValueBlock>(blocks[6])
+        assertEquals("meta", keyValue.id)
+        assertEquals("INV-1", keyValue.values["invoice"])
+        assertEquals(null, keyValue.values["empty"])
+        assertEquals("24mm", keyValue.config.labelWidth)
+        assertEquals(listOf("invoice", "empty"), keyValue.config.fields.map { it.key })
     }
 
     @Test
@@ -164,5 +172,51 @@ class BlockDeserializationTest {
     fun spacerAndDividerRenderTheirInnerMarkup() {
         assertEquals("", SpacerBlock().render())
         assertEquals("<hr>", DividerBlock().render())
+    }
+
+    @Test
+    fun keyValueRendersConfiguredFieldsInOrderAndEscapes() {
+        val block = KeyValueBlock(
+            values = mapOf("name" to "<ACME>", "invoice" to "INV-1", "ignored" to "x"),
+            config = KeyValueConfig(
+                fields = listOf(
+                    KeyValueField("invoice", "Invoice"),
+                    KeyValueField("missing", "Missing"),
+                    KeyValueField("name", "Customer <name>"),
+                ),
+            ),
+        )
+
+        assertEquals(
+            "<table class=\"key-value\"><tbody>" +
+                "<tr><td>Invoice</td><td>INV-1</td></tr>" +
+                "<tr><td>Missing</td><td></td></tr>" +
+                "<tr><td>Customer &lt;name&gt;</td><td>&lt;ACME&gt;</td></tr>" +
+                "</tbody></table>",
+            block.render(),
+        )
+    }
+
+    @Test
+    fun keyValueApplyDataReplacesValuesWithFlatStringMap() {
+        val block = KeyValueBlock(values = mapOf("invoice" to "Original"))
+        val overridden = block.applyData(
+            JsonObject(
+                mapOf(
+                    "invoice" to JsonPrimitive("Runtime"),
+                    "empty" to JsonNull,
+                ),
+            ),
+        )
+
+        val keyValue = assertIs<KeyValueBlock>(overridden)
+        assertEquals(mapOf("invoice" to "Runtime", "empty" to null), keyValue.values)
+    }
+
+    @Test
+    fun keyValueRejectsInvalidFieldKeys() {
+        assertFailsWith<IllegalArgumentException> {
+            KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("1bad", "Bad")))).render()
+        }
     }
 }
