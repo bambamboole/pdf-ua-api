@@ -51,4 +51,7 @@ class TemplateFixtureTest {
 
     @Test
     fun externalFont() = assertTemplateFixture("external-font")
+
+    @Test
+    fun pageBackground() = assertTemplateFixture("page-background")
 }

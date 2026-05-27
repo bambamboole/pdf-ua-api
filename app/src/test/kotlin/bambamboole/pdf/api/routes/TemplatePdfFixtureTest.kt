@@ -77,4 +77,10 @@ class TemplatePdfFixtureTest {
         application { module() }
         assertTemplatePdfFixture("external-font", embeddedFont = "Lobster")
     }
+
+    @Test
+    fun pageBackground() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture("page-background", embeddedFont = "LiberationSans")
+    }
 }

@@ -41,4 +41,19 @@ class TemplateDeserializationTest {
         assertEquals(Align.RIGHT, page.pageNumbers.position)
         assertEquals(10, page.margins.top)
     }
+
+    @Test
+    fun decodesPageBackground() {
+        val input = """
+            {"template":{"version":1,"config":{"page":{
+            "background":{"src":"https://cdn.example.com/stationary","type":"pdf"}
+            }},"rows":[]}}
+        """.trimIndent()
+
+        val request = json.decodeFromString(RenderRequest.serializer(), input)
+        val background = request.template.config.page.background
+
+        assertEquals("https://cdn.example.com/stationary", background?.src)
+        assertEquals(PageBackgroundType.PDF, background?.type)
+    }
 }
