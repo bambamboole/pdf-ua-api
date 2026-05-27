@@ -46,7 +46,7 @@ fun Route.renderRoutes(
                 producer = pdfProducer,
                 assetResolver = assetResolver,
                 baseUrl = request.options.baseUrl,
-                attachments = null,
+                attachments = request.template.attachments,
             )
 
             call.response.header("X-Document-UUID", result.documentId)

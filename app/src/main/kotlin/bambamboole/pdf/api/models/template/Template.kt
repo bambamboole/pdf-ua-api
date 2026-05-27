@@ -1,5 +1,6 @@
 package bambamboole.pdf.api.models.template
 
+import bambamboole.pdf.api.models.FileAttachment
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,5 +31,6 @@ data class Template(
     val version: Int,
     val config: TemplateConfig = TemplateConfig(),
     val fonts: Map<String, FontFace> = emptyMap(),
+    val attachments: List<FileAttachment> = emptyList(),
     val rows: List<Row> = emptyList(),
 )
