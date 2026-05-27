@@ -176,7 +176,7 @@ object PdfService {
 
     private fun backgroundObjectDrawerFactory(): DefaultObjectDrawerFactory =
         DefaultObjectDrawerFactory().apply {
-            registerDrawer("pdf/background", PdfBackgroundObjectDrawer)
+            registerDrawer(BackgroundObjectDrawer.OBJECT_TYPE, BackgroundObjectDrawer)
         }
 
     private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
