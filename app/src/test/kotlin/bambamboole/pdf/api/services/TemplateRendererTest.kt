@@ -3,6 +3,7 @@ package bambamboole.pdf.api.services
 import bambamboole.pdf.api.models.RenderOptions
 import bambamboole.pdf.api.models.template.Align
 import bambamboole.pdf.api.models.template.BaseBlockConfig
+import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.PageFormat
@@ -11,6 +12,7 @@ import bambamboole.pdf.api.models.template.Row
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TemplateConfig
 import bambamboole.pdf.api.models.template.TextBlock
+import bambamboole.pdf.api.models.template.TypographyConfig
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
@@ -98,5 +100,36 @@ class TemplateRendererTest {
         val html = TemplateRenderer.render(template(block))
         assertTrue(!html.contains("display:none"), "unsafe width must not be emitted")
         assertTrue(!html.contains("width: 1mm}"), "unsafe width must be dropped entirely")
+    }
+
+    @Test
+    fun externalFontEmitsFontFaceAndUsesFamily() {
+        val tpl = Template(
+            version = 1,
+            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf")),
+            rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
+        )
+        val html = TemplateRenderer.render(tpl)
+        assertTrue(
+            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
+        )
+        assertTrue(html.contains(".block-1 { font-family: 'Lobster'; }"))
+    }
+
+    @Test
+    fun bundledFamilyIsUsedAsIsWithoutFontFace() {
+        val cfg = TemplateConfig(typography = TypographyConfig(family = "Inter"))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        assertTrue(html.contains("body { font-family: 'Inter'; }"))
+        assertTrue(!html.contains("@font-face"), "bundled family must not emit @font-face")
+    }
+
+    @Test
+    fun dropsUnsafeColorButKeepsValidOne() {
+        val malicious = TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(color = "red; } body{display:none")))
+        val ok = TextBlock(text = "y", config = BaseBlockConfig(typography = TypographyConfig(color = "#ff0000", size = 12)))
+        val html = TemplateRenderer.render(Template(version = 1, rows = listOf(Row(listOf(malicious, ok)))))
+        assertTrue(!html.contains("display:none"), "unsafe color must be dropped")
+        assertTrue(html.contains(".block-2 { font-size: 12pt; color: #ff0000; }"))
     }
 }

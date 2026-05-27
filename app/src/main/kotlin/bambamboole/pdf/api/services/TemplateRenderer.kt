@@ -4,17 +4,26 @@ import bambamboole.pdf.api.models.RenderOptions
 import bambamboole.pdf.api.models.template.Align
 import bambamboole.pdf.api.models.template.Block
 import bambamboole.pdf.api.models.template.BlockConfig
+import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.Row
 import bambamboole.pdf.api.models.template.SpacingConfig
 import bambamboole.pdf.api.models.template.Template
+import bambamboole.pdf.api.models.template.TypographyConfig
 import bambamboole.pdf.api.util.Html
 import kotlinx.serialization.json.JsonObject
 
 private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
+private val UNSAFE_CSS = Regex("[;{}\"\\r\\n]")
 
-private fun safeWidth(width: String?): String? =
-    width?.takeIf { SAFE_WIDTH.matches(it) }
+private fun safeWidth(width: String?): String? = width?.takeIf { SAFE_WIDTH.matches(it) }
+
+private fun safeColor(color: String?): String? = color?.takeIf { it.isNotBlank() && !UNSAFE_CSS.containsMatchIn(it) }
+
+private fun cssString(value: String): String = value.replace("\\", "\\\\").replace("'", "\\'")
+
+private fun cssUrl(value: String): String = value
+    .replace("\\", "%5C").replace("\"", "%22").replace("(", "%28").replace(")", "%29").replace("\r", "").replace("\n", "")
 
 object TemplateRenderer {
 
@@ -33,6 +42,7 @@ object TemplateRenderer {
             counter++
             val cssId = "block-$counter"
             emitPositioningCss(ctx, cssId, resolved.config, widthOnCell)
+            emitTypographyCss(ctx, cssId, resolved.config.typography)
             return "<div class=\"$cssId\">${resolved.render()}</div>"
         }
 
@@ -64,10 +74,43 @@ object TemplateRenderer {
         }
     }
 
+    private fun emitTypographyCss(ctx: RenderContext, cssId: String, typography: TypographyConfig?) {
+        val declarations = typographyDeclarations(typography)
+        if (declarations.isNotEmpty()) {
+            ctx.addCss(".$cssId { ${declarations.joinToString("; ")}; }")
+        }
+    }
+
+    private fun typographyDeclarations(typography: TypographyConfig?): List<String> {
+        if (typography == null) return emptyList()
+        return buildList {
+            typography.family?.let { add("font-family: '${cssString(it)}'") }
+            typography.size?.let { add("font-size: ${it}pt") }
+            typography.weight?.let { add("font-weight: $it") }
+            safeColor(typography.color)?.let { add("color: $it") }
+            typography.align?.let { add("text-align: ${it.name.lowercase()}") }
+        }
+    }
+
+    private fun fontFaceCss(fonts: Map<String, FontFace>): String =
+        fonts.entries.joinToString("\n") { (family, face) ->
+            "@font-face { font-family: '${cssString(family)}'; " +
+                "src: url(\"${cssUrl(face.src)}\") format(\"truetype\"); " +
+                "font-weight: ${face.weight}; font-style: ${cssString(face.style)}; }"
+        }
+
     private fun wrapDocument(bodyHtml: String, template: Template, ctx: RenderContext, options: RenderOptions): String {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
         val title = Html.escape(options.title)
+
+        val bodyTypography = typographyDeclarations(template.config.typography)
+        val bodyTypographyCss = if (bodyTypography.isNotEmpty()) "body { ${bodyTypography.joinToString("; ")}; }" else ""
+
+        val style = listOf(pageCss(page), fontFaceCss(template.fonts), baseCss(), bodyTypographyCss, ctx.collectedCss())
+            .filter { it.isNotBlank() }
+            .joinToString("\n")
+
         return """
 <!DOCTYPE html>
 <html lang="$lang">
@@ -75,9 +118,7 @@ object TemplateRenderer {
 <meta charset="UTF-8">
 <title>$title</title>
 <style>
-${pageCss(page)}
-${baseCss()}
-${ctx.collectedCss()}
+$style
 </style>
 </head>
 <body>
