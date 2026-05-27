@@ -7,7 +7,11 @@ import bambamboole.pdf.api.models.template.DividerBlock
 import bambamboole.pdf.api.models.template.DividerConfig
 import bambamboole.pdf.api.models.template.DividerStyle
 import bambamboole.pdf.api.models.template.FontFace
+import bambamboole.pdf.api.models.template.HeadingBlock
+import bambamboole.pdf.api.models.template.HeadingConfig
 import bambamboole.pdf.api.models.template.HtmlBlock
+import bambamboole.pdf.api.models.template.ImageBlock
+import bambamboole.pdf.api.models.template.ImageConfig
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.Orientation
@@ -66,6 +70,46 @@ class TemplateRendererTest {
         assertTrue(html.contains("border-top-width: 2pt"))
         assertTrue(html.contains("border-top-color: #111827"))
         assertTrue(html.contains("border-top-style: dashed"))
+    }
+
+    @Test
+    fun rendersHeadingWithRuntimeDataOverride() {
+        val data = mapOf("title" to JsonObject(mapOf("text" to JsonPrimitive("Runtime title"))))
+        val html = TemplateRenderer.render(template(HeadingBlock(id = "title", text = "Original", config = HeadingConfig(level = 1))), data)
+
+        assertTrue(html.contains("<div class=\"block-1\"><h1>Runtime title</h1></div>"))
+        assertTrue(!html.contains("Original"))
+    }
+
+    @Test
+    fun rejectsInvalidHeadingLevel() {
+        assertFailsWith<IllegalArgumentException> {
+            TemplateRenderer.render(template(HeadingBlock(text = "Bad", config = HeadingConfig(level = 7))))
+        }
+    }
+
+    @Test
+    fun rendersImageWithRuntimeDataAndScopedMaxHeight() {
+        val data = mapOf(
+            "logo" to JsonObject(
+                mapOf(
+                    "src" to JsonPrimitive("runtime.png"),
+                    "alt" to JsonPrimitive("Runtime logo"),
+                ),
+            ),
+        )
+        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)
+
+        assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
+        assertTrue(html.contains(".block-1 img, .block-1 svg { max-height: 72px; }"))
+        assertTrue(html.contains("img, svg { max-width: 100%; height: auto; }"))
+    }
+
+    @Test
+    fun dropsInvalidImageMaxHeightCss() {
+        val html = TemplateRenderer.render(template(ImageBlock(src = "logo.png", config = ImageConfig(maxHeight = -1))))
+
+        assertTrue(!html.contains("max-height: -1px"))
     }
 
     @Test
