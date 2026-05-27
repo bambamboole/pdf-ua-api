@@ -8,7 +8,6 @@ import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.Orientation
 import bambamboole.pdf.api.models.template.PageBackgroundConfig
-import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.PageSize
 import bambamboole.pdf.api.models.template.PresetPageSize
@@ -128,10 +127,10 @@ object TemplateRenderer {
 
     private fun wrapDocument(bodyHtml: String, template: Template, ctx: RenderContext, options: RenderOptions): String {
         val page = template.config.page
+        page.background?.let { validateBackground(it) }
         val lang = page.locale.substringBefore('_')
         val title = Html.escape(options.title)
-        val stationaryHtml = page.background?.takeIf { it.isPdfBackground() }?.toStationaryObjectHtml().orEmpty()
-        val bodyPrefix = stationaryHtml.takeIf { it.isNotEmpty() }?.let { "$it\n" }.orEmpty()
+        val bodyPrefix = page.background?.let { "${backgroundObjectHtml(it)}\n" }.orEmpty()
 
         val bodyTypography = typographyDeclarations(template.config.typography)
         val bodyTypographyCss = if (bodyTypography.isNotEmpty()) "body { ${bodyTypography.joinToString("; ")}; }" else ""
@@ -159,17 +158,9 @@ $bodyPrefix$bodyHtml
 
     private fun pageCss(page: PageConfig): String {
         val css = StringBuilder("@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins)}; }")
-        page.background?.let { background ->
-            validateBackground(background)
-            if (background.isPdfBackground()) {
-                css.append(" @page { @top-left { content: element(stationary); } }")
-                css.append(" .stationary { position: running(stationary); }")
-            } else {
-                css.append(
-                    " @page { background-image: url(\"${background.src.cssUrlEscape()}\"); " +
-                        "background-size: cover; background-position: center; background-repeat: no-repeat; }",
-                )
-            }
+        page.background?.let {
+            css.append(" .pagebg { position: running(pagebg); }")
+            css.append(" @page { @top-left { content: element(pagebg); } }")
         }
         if (page.pageNumbers.enabled) {
             val position = page.pageNumbers.position.name.lowercase()
@@ -205,22 +196,10 @@ $bodyPrefix$bodyHtml
         }
     }
 
-    private fun PageBackgroundConfig.isPdfBackground(): Boolean {
-        if (type == PageBackgroundType.PDF) return true
-        if (type == PageBackgroundType.IMAGE) return false
-        val lower = src.lowercase()
-        if (lower.startsWith("data:application/pdf;base64,")) return true
-        return runCatching { URI.create(src).path?.lowercase()?.endsWith(".pdf") == true }.getOrDefault(false)
-    }
-
-    private fun PageBackgroundConfig.toStationaryObjectHtml(): String =
-        """<div class="stationary"><object type="pdf/background" pdfsrc="${Html.escape(src)}" style="width:1px;height:1px"></object></div>"""
-
-    private fun String.cssUrlEscape(): String =
-        replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "")
-            .replace("\r", "")
+    private fun backgroundObjectHtml(background: PageBackgroundConfig): String =
+        """<div class="pagebg"><object type="${BackgroundObjectDrawer.OBJECT_TYPE}" """ +
+            """data-src="${Html.escape(background.src)}" data-kind="${background.type.name.lowercase()}" """ +
+            """style="width:1px;height:1px"></object></div>"""
 
     private fun baseCss(): String = """
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }

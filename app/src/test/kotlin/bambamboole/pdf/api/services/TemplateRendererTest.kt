@@ -82,57 +82,30 @@ class TemplateRendererTest {
     }
 
     @Test
-    fun emitsImagePageBackgroundCss() {
-        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png")))
+    fun emitsBackgroundObjectAndRunningPlacementForImage() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png", type = PageBackgroundType.IMAGE)))
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
 
-        assertTrue(html.contains("""background-image: url("https://cdn.example.com/bg.png")"""))
-        assertTrue(html.contains("background-size: cover"))
-        assertTrue(!html.contains("pdf/background"))
+        assertTrue(html.contains("""<object type="x-page-background" data-src="https://cdn.example.com/bg.png" data-kind="image" style="width:1px;height:1px">"""))
+        assertTrue(html.contains(".pagebg { position: running(pagebg); }"))
+        assertTrue(html.contains("@top-left { content: element(pagebg); }"))
+        assertTrue(!html.contains("background-image"), "the broken @page background-image path must be gone")
     }
 
     @Test
-    fun emitsPdfPageBackgroundAsRunningObject() {
-        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "data:application/pdf;base64,JVBERi0x")))
-        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+    fun emitsBackgroundKindForPdfAndAuto() {
+        val pdf = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf", type = PageBackgroundType.PDF)))))
+        assertTrue(pdf.contains("""data-src="https://cdn.example.com/s.pdf" data-kind="pdf""""))
 
-        assertTrue(html.contains("@top-left { content: element(stationary); }"))
-        assertTrue(html.contains(".stationary { position: running(stationary); }"))
-        assertTrue(html.contains("""<object type="pdf/background" pdfsrc="data:application/pdf;base64,JVBERi0x""""))
-        assertTrue(!html.contains("pdfpage="))
+        val auto = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf")))))
+        assertTrue(auto.contains("""data-kind="auto""""))
     }
 
     @Test
-    fun autoDetectsPdfPageBackgroundFromUrlPath() {
-        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/stationary.pdf?token=123")))
-        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-
-        assertTrue(html.contains("""<object type="pdf/background" pdfsrc="https://cdn.example.com/stationary.pdf?token=123""""))
-        assertTrue(!html.contains("background-image"))
-    }
-
-    @Test
-    fun ambiguousPageBackgroundUrlDefaultsToImage() {
-        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/stationary?id=123")))
-        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-
-        assertTrue(html.contains("""background-image: url("https://cdn.example.com/stationary?id=123")"""))
-        assertTrue(!html.contains("pdf/background"))
-    }
-
-    @Test
-    fun canForcePdfPageBackgroundForUrlWithoutPdfExtension() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                background = PageBackgroundConfig(
-                    src = "https://cdn.example.com/stationary?id=123",
-                    type = PageBackgroundType.PDF,
-                ),
-            ),
-        )
-        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-
-        assertTrue(html.contains("""type="pdf/background" pdfsrc="https://cdn.example.com/stationary?id=123""""))
+    fun noBackgroundObjectWhenUnset() {
+        val html = TemplateRenderer.render(template(TextBlock(text = "x")))
+        assertTrue(!html.contains("x-page-background"))
+        assertTrue(!html.contains("running(pagebg)"))
     }
 
     @Test
