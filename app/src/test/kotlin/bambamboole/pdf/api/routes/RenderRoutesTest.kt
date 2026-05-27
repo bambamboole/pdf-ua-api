@@ -38,6 +38,29 @@ class RenderRoutesTest {
     }
 
     @Test
+    fun rendersTemplateWithSpacerAndDividerBlocks() = testApplication {
+        application { module() }
+
+        val body = """
+            {"template":{"version":1,"rows":[
+              {"blocks":[{"type":"text","text":"Before"}]},
+              {"blocks":[{"type":"spacer","config":{"height":6}}]},
+              {"blocks":[{"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}}]},
+              {"blocks":[{"type":"text","text":"After"}]}
+            ]}}
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+        assertTrue(response.readRawBytes().take(5).toByteArray().decodeToString().startsWith("%PDF-"))
+    }
+
+    @Test
     fun appliesDataOverride() = testApplication {
         application { module() }
 

@@ -62,6 +62,7 @@ data class BlockSchema(
     val type: String,
     val fields: List<String>,
     val configFields: List<String>,
+    val configEnums: Map<String, List<String>> = emptyMap(),
 )
 
 object TemplateSchema {
@@ -111,6 +112,17 @@ object TemplateSchema {
                     fields = listOf("id", "html", "config"),
                     configFields = listOf("typography", "spacing", "width", "align"),
                 ),
+                BlockSchema(
+                    type = "spacer",
+                    fields = listOf("id", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "height"),
+                ),
+                BlockSchema(
+                    type = "divider",
+                    fields = listOf("id", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "thickness", "lineColor", "style"),
+                    configEnums = mapOf("style" to DividerStyle.entries.map { it.serializedName() }),
+                ),
             ),
         )
 
@@ -119,5 +131,14 @@ object TemplateSchema {
             Align.LEFT -> "left"
             Align.CENTER -> "center"
             Align.RIGHT -> "right"
+        }
+
+    private fun DividerStyle.serializedName(): String =
+        when (this) {
+            DividerStyle.SOLID -> "solid"
+            DividerStyle.DASHED -> "dashed"
+            DividerStyle.DOTTED -> "dotted"
+            DividerStyle.DOUBLE -> "double"
+            DividerStyle.NONE -> "none"
         }
 }

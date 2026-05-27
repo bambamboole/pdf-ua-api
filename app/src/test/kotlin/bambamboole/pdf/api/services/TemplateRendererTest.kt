@@ -3,6 +3,9 @@ package bambamboole.pdf.api.services
 import bambamboole.pdf.api.models.RenderOptions
 import bambamboole.pdf.api.models.template.Align
 import bambamboole.pdf.api.models.template.BaseBlockConfig
+import bambamboole.pdf.api.models.template.DividerBlock
+import bambamboole.pdf.api.models.template.DividerConfig
+import bambamboole.pdf.api.models.template.DividerStyle
 import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.PageConfig
@@ -12,6 +15,8 @@ import bambamboole.pdf.api.models.template.PageFormat
 import bambamboole.pdf.api.models.template.PageNumbersConfig
 import bambamboole.pdf.api.models.template.PresetPageSize
 import bambamboole.pdf.api.models.template.Row
+import bambamboole.pdf.api.models.template.SpacerBlock
+import bambamboole.pdf.api.models.template.SpacerConfig
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TemplateConfig
 import bambamboole.pdf.api.models.template.TextBlock
@@ -40,6 +45,37 @@ class TemplateRendererTest {
         val cfg = TemplateConfig(page = PageConfig(locale = "en_US"))
         val html = TemplateRenderer.render(template(HtmlBlock(html = "<b>x</b>"), config = cfg))
         assertTrue(html.contains("<html lang=\"en\">"))
+    }
+
+    @Test
+    fun rendersSpacerWithScopedHeightCss() {
+        val html = TemplateRenderer.render(template(SpacerBlock(config = SpacerConfig(height = 12))))
+
+        assertTrue(html.contains(".block-1 { height: 12mm; }"))
+        assertTrue(html.contains("<div class=\"block-1\"></div>"))
+    }
+
+    @Test
+    fun rendersDividerWithScopedLineCss() {
+        val block = DividerBlock(config = DividerConfig(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED))
+        val html = TemplateRenderer.render(template(block))
+
+        assertTrue(html.contains("<div class=\"block-1\"><hr></div>"))
+        assertTrue(html.contains("border: none"))
+        assertTrue(html.contains("margin: 2.5mm 0"))
+        assertTrue(html.contains("border-top-width: 2pt"))
+        assertTrue(html.contains("border-top-color: #111827"))
+        assertTrue(html.contains("border-top-style: dashed"))
+    }
+
+    @Test
+    fun dividerDropsUnsafeLineCssValuesButKeepsEnumStyle() {
+        val block = DividerBlock(config = DividerConfig(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED))
+        val html = TemplateRenderer.render(template(block))
+
+        assertTrue(!html.contains("display:none"), "unsafe color must not be emitted")
+        assertTrue(!html.contains("border-top-width: -1pt"), "negative thickness must not be emitted")
+        assertTrue(html.contains("border-top-style: dotted"), "enum style should still be emitted")
     }
 
     @Test

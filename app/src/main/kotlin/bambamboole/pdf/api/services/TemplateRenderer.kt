@@ -67,6 +67,7 @@ object TemplateRenderer {
             val cssId = "block-$counter"
             emitPositioningCss(ctx, cssId, resolved.config, widthOnCell)
             emitTypographyCss(ctx, cssId, resolved.config.typography)
+            resolved.renderCss(cssId).forEach(ctx::addCss)
             return "<div class=\"$cssId\">${resolved.render()}</div>"
         }
 
