@@ -37,6 +37,73 @@ private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
 
+private val SAFE_SVG_ELEMENTS = setOf(
+    "svg",
+    "g",
+    "defs",
+    "title",
+    "desc",
+    "path",
+    "rect",
+    "circle",
+    "ellipse",
+    "line",
+    "polyline",
+    "polygon",
+    "text",
+    "tspan",
+    "lineargradient",
+    "radialgradient",
+    "stop",
+    "clippath",
+)
+
+private val SAFE_SVG_ATTRIBUTES = setOf(
+    "xmlns",
+    "xmlns:xlink",
+    "id",
+    "viewbox",
+    "width",
+    "height",
+    "x",
+    "y",
+    "x1",
+    "y1",
+    "x2",
+    "y2",
+    "cx",
+    "cy",
+    "r",
+    "rx",
+    "ry",
+    "d",
+    "points",
+    "transform",
+    "fill",
+    "stroke",
+    "stroke-width",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-miterlimit",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "opacity",
+    "fill-opacity",
+    "stroke-opacity",
+    "font-family",
+    "font-size",
+    "font-weight",
+    "text-anchor",
+    "dx",
+    "dy",
+    "offset",
+    "stop-color",
+    "stop-opacity",
+    "clip-path",
+    "role",
+    "aria-label",
+)
+
 private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
 
 private fun safeCssColor(value: String): String? = value.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
@@ -176,7 +243,13 @@ private fun sanitizeSvgElement(element: Element) {
             val attribute = attributes.item(index)
             val name = attribute.nodeName.lowercase()
             val value = attribute.nodeValue.trim().lowercase()
-            if (name.startsWith("on") || (name == "href" || name == "xlink:href") && value.startsWith("javascript:")) {
+            if (
+                name !in SAFE_SVG_ATTRIBUTES ||
+                name == "href" ||
+                name == "xlink:href" ||
+                value.contains("url(") ||
+                value.contains("javascript:")
+            ) {
                 add(attribute.nodeName)
             }
         }
@@ -188,7 +261,7 @@ private fun sanitizeSvgElement(element: Element) {
     for (index in 0 until children.length) {
         val child = children.item(index)
         if (child is Element) {
-            if (child.hasElementName("script") || child.hasElementName("foreignObject")) {
+            if (!child.hasAllowedSvgElementName()) {
                 childElementsToRemove.add(child)
             } else {
                 sanitizeSvgElement(child)
@@ -201,6 +274,11 @@ private fun sanitizeSvgElement(element: Element) {
 private fun Element.hasElementName(expected: String): Boolean {
     val name = localName ?: tagName
     return name.equals(expected, ignoreCase = true)
+}
+
+private fun Element.hasAllowedSvgElementName(): Boolean {
+    val name = localName ?: tagName
+    return name.lowercase() in SAFE_SVG_ELEMENTS
 }
 
 private fun serializeElement(element: Element): String {

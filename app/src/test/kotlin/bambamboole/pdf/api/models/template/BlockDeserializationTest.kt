@@ -102,6 +102,7 @@ class BlockDeserializationTest {
               <a href="javascript:alert(1)" xlink:href="javascript:alert(2)">
                 <rect width="10" height="10"/>
               </a>
+              <rect width="10" height="10"/>
             </svg>
         """.trimIndent()
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
@@ -117,6 +118,32 @@ class BlockDeserializationTest {
         assertTrue(!output.contains("foreignObject"))
         assertTrue(!output.contains("onclick"))
         assertTrue(!output.contains("javascript:"))
+    }
+
+    @Test
+    fun imageStripsSvgExternalReferencesAndStyles() {
+        val svg = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <style>@import url(https://example.com/x.css); rect { fill: url(https://example.com/p.svg); }</style>
+              <defs><path id="shape" d="M0 0h10v10z"/></defs>
+              <image href="https://example.com/logo.png" width="10" height="10"/>
+              <use href="#shape"/>
+              <rect style="fill: url(https://example.com/p.svg)" fill="red" width="10" height="10"/>
+            </svg>
+        """.trimIndent()
+        val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
+        val src = "data:image/svg+xml;base64,$encoded"
+
+        val output = ImageBlock(src = src, alt = "Logo").render()
+
+        assertTrue(output.startsWith("<svg "))
+        assertTrue(output.contains("<rect"))
+        assertTrue(output.contains("fill=\"red\""))
+        assertTrue(!output.contains("<style"))
+        assertTrue(!output.contains("<image"))
+        assertTrue(!output.contains("<use"))
+        assertTrue(!output.contains("style="))
+        assertTrue(!output.contains("https://"))
     }
 
     @Test
