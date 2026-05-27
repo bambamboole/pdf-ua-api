@@ -21,6 +21,8 @@ object ImageRenderService {
 
     private fun parseAndInjectViewportWidth(html: String, width: Int): org.w3c.dom.Document {
         val jsoupDoc = Jsoup.parse(html)
+        jsoupDoc.head().prependElement("style").attr("type", "text/css")
+            .text("html { font-family: 'Liberation Sans'; }")
         val style = "@page { size: ${width}px 1px; margin: 0; }"
         jsoupDoc.head().appendElement("style").attr("type", "text/css").text(style)
         return w3cDom.fromJsoup(jsoupDoc)
@@ -48,7 +50,7 @@ object ImageRenderService {
 
         val builder = Java2DRendererBuilder()
         builder.useFastMode()
-        builder.useEnvironmentFonts(true)
+        builder.useEnvironmentFonts(false)
 
         BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
             val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }

@@ -48,4 +48,7 @@ class TemplateFixtureTest {
 
     @Test
     fun twoColumnOverride() = assertTemplateFixture("two-column-override")
+
+    @Test
+    fun externalFont() = assertTemplateFixture("external-font")
 }

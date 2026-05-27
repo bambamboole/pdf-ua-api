@@ -44,5 +44,6 @@ data class TemplateConfig(
 data class Template(
     val version: Int,
     val config: TemplateConfig = TemplateConfig(),
+    val fonts: Map<String, FontFace> = emptyMap(),
     val rows: List<Row> = emptyList(),
 )
