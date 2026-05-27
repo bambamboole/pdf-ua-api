@@ -7,6 +7,7 @@ import bambamboole.pdf.api.models.template.BlockConfig
 import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.Orientation
+import bambamboole.pdf.api.models.template.PageBackgroundConfig
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.PageSize
 import bambamboole.pdf.api.models.template.PresetPageSize
@@ -16,6 +17,7 @@ import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TypographyConfig
 import bambamboole.pdf.api.util.Html
 import kotlinx.serialization.json.JsonObject
+import java.net.URI
 
 private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
 private val UNSAFE_CSS = Regex("[;{}\"\\r\\n]")
@@ -126,8 +128,10 @@ object TemplateRenderer {
 
     private fun wrapDocument(bodyHtml: String, template: Template, ctx: RenderContext, options: RenderOptions): String {
         val page = template.config.page
+        page.background?.let { validateBackground(it) }
         val lang = page.locale.substringBefore('_')
         val title = Html.escape(options.title)
+        val bodyPrefix = page.background?.let { "${backgroundObjectHtml(it)}\n" }.orEmpty()
 
         val bodyTypography = typographyDeclarations(template.config.typography)
         val bodyTypographyCss = if (bodyTypography.isNotEmpty()) "body { ${bodyTypography.joinToString("; ")}; }" else ""
@@ -147,7 +151,7 @@ $style
 </style>
 </head>
 <body>
-$bodyHtml
+$bodyPrefix$bodyHtml
 </body>
 </html>
 """.trim()
@@ -155,6 +159,10 @@ $bodyHtml
 
     private fun pageCss(page: PageConfig): String {
         val css = StringBuilder("@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins)}; }")
+        page.background?.let {
+            css.append(" .pagebg { position: running(pagebg); }")
+            css.append(" @page { @top-left { content: element(pagebg); } }")
+        }
         if (page.pageNumbers.enabled) {
             val position = page.pageNumbers.position.name.lowercase()
             css.append(
@@ -172,6 +180,27 @@ $bodyHtml
         val left = margins.left ?: 0
         return "${top}mm ${right}mm ${bottom}mm ${left}mm"
     }
+
+    private fun validateBackground(background: PageBackgroundConfig) {
+        require(background.src.isNotBlank()) { "Page background src cannot be blank" }
+        require(!background.src.any { it < ' ' || it == '\u007f' }) { "Page background src contains control characters" }
+
+        val scheme = URI.create(background.src).scheme?.lowercase()
+        require(scheme == "http" || scheme == "https" || scheme == "data") {
+            "Page background src must use http, https, or data URI"
+        }
+        if (scheme == "data") {
+            val lower = background.src.lowercase()
+            require(lower.startsWith("data:image/") || lower.startsWith("data:application/pdf;base64,")) {
+                "Page background data URI must be an image or application/pdf base64 URI"
+            }
+        }
+    }
+
+    private fun backgroundObjectHtml(background: PageBackgroundConfig): String =
+        """<div class="pagebg"><object type="${BackgroundObjectDrawer.OBJECT_TYPE}" """ +
+            """data-src="${Html.escape(background.src)}" data-kind="${background.type.name.lowercase()}" """ +
+            """style="width:1px;height:1px"></object></div>"""
 
     private fun baseCss(): String = """
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }

@@ -9,6 +9,8 @@ import bambamboole.pdf.api.models.template.DividerStyle
 import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.HeadingBlock
 import bambamboole.pdf.api.models.template.HeadingConfig
+import bambamboole.pdf.api.models.template.PageBackgroundConfig
+import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.ImageBlock
 import bambamboole.pdf.api.models.template.ImageConfig
@@ -160,6 +162,33 @@ class TemplateRendererTest {
     }
 
     @Test
+    fun emitsBackgroundObjectAndRunningPlacementForImage() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png", type = PageBackgroundType.IMAGE)))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("""<object type="x-page-background" data-src="https://cdn.example.com/bg.png" data-kind="image" style="width:1px;height:1px">"""))
+        assertTrue(html.contains(".pagebg { position: running(pagebg); }"))
+        assertTrue(html.contains("@top-left { content: element(pagebg); }"))
+        assertTrue(!html.contains("background-image"), "the broken @page background-image path must be gone")
+    }
+
+    @Test
+    fun emitsBackgroundKindForPdfAndAuto() {
+        val pdf = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf", type = PageBackgroundType.PDF)))))
+        assertTrue(pdf.contains("""data-src="https://cdn.example.com/s.pdf" data-kind="pdf""""))
+
+        val auto = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf")))))
+        assertTrue(auto.contains("""data-kind="auto""""))
+    }
+
+    @Test
+    fun noBackgroundObjectWhenUnset() {
+        val html = TemplateRenderer.render(template(TextBlock(text = "x")))
+        assertTrue(!html.contains("x-page-background"))
+        assertTrue(!html.contains("running(pagebg)"))
+    }
+
+    @Test
     fun appliesDataOverrideByBlockId() {
         val data = mapOf("intro" to JsonObject(mapOf("text" to JsonPrimitive("Overridden"))))
         val html = TemplateRenderer.render(template(TextBlock(id = "intro", text = "Original")), data)
@@ -205,6 +234,15 @@ class TemplateRendererTest {
         val html = TemplateRenderer.render(template(block))
         assertTrue(!html.contains("display:none"), "unsafe width must not be emitted")
         assertTrue(!html.contains("width: 1mm}"), "unsafe width must be dropped entirely")
+    }
+
+    @Test
+    fun rejectsUnsafePageBackgroundSrc() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "file:///etc/passwd")))
+
+        assertFailsWith<IllegalArgumentException> {
+            TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        }
     }
 
     @Test
