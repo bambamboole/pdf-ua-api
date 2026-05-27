@@ -73,4 +73,30 @@ class TemplateRendererTest {
             TemplateRenderer.render(Template(version = 2))
         }
     }
+
+    @Test
+    fun multiBlockRowPutsSafeWidthOnCellsWithScopedIds() {
+        val left = TextBlock(text = "L", config = BaseBlockConfig(width = "60%"))
+        val right = TextBlock(text = "R", config = BaseBlockConfig(width = "40%"))
+        val tpl = Template(version = 1, rows = listOf(Row(listOf(left, right))))
+        val html = TemplateRenderer.render(tpl)
+        assertTrue(html.contains("<td style=\"width: 60%;\"><div class=\"block-1\"><p>L</p></div></td>"))
+        assertTrue(html.contains("<td style=\"width: 40%;\"><div class=\"block-2\"><p>R</p></div></td>"))
+    }
+
+    @Test
+    fun singleBlockSafeWidthEmittedAsScopedCss() {
+        val block = TextBlock(text = "x", config = BaseBlockConfig(width = "80mm"))
+        val html = TemplateRenderer.render(template(block))
+        assertTrue(html.contains(".block-1 { width: 80mm; }"))
+    }
+
+    @Test
+    fun unsafeWidthIsDroppedNotInjected() {
+        val malicious = "1mm} body{display:none"
+        val block = TextBlock(text = "x", config = BaseBlockConfig(width = malicious))
+        val html = TemplateRenderer.render(template(block))
+        assertTrue(!html.contains("display:none"), "unsafe width must not be emitted")
+        assertTrue(!html.contains("width: 1mm}"), "unsafe width must be dropped entirely")
+    }
 }

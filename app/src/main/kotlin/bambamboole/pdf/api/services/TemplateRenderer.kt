@@ -11,6 +11,11 @@ import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.util.Html
 import kotlinx.serialization.json.JsonObject
 
+private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
+
+private fun safeWidth(width: String?): String? =
+    width?.takeIf { SAFE_WIDTH.matches(it) }
+
 object TemplateRenderer {
 
     fun render(
@@ -33,10 +38,9 @@ object TemplateRenderer {
 
         fun renderRow(row: Row): String {
             val cells = row.blocks.joinToString("") { block ->
-                val widthOnCell = row.blocks.size > 1 && block.config.width != null
-                val widthAttr =
-                    if (widthOnCell) " style=\"width: ${Html.escape(block.config.width!!)};\"" else ""
-                "<td$widthAttr>${renderBlock(block, widthOnCell)}</td>"
+                val cellWidth = if (row.blocks.size > 1) safeWidth(block.config.width) else null
+                val widthAttr = if (cellWidth != null) " style=\"width: $cellWidth;\"" else ""
+                "<td$widthAttr>${renderBlock(block, widthOnCell = cellWidth != null)}</td>"
             }
             return "<table class=\"row\" role=\"presentation\"><tr>$cells</tr></table>"
         }
@@ -47,7 +51,8 @@ object TemplateRenderer {
 
     private fun emitPositioningCss(ctx: RenderContext, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
         val declarations = buildList {
-            if (!widthOnCell && config.width != null) add("width: ${config.width}")
+            val width = safeWidth(config.width)
+            if (!widthOnCell && width != null) add("width: $width")
             when (config.align) {
                 Align.CENTER -> { add("margin-left: auto"); add("margin-right: auto") }
                 Align.RIGHT -> { add("margin-left: auto"); add("text-align: right") }
