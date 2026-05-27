@@ -28,12 +28,16 @@ object TemplateJsonSchema {
     private const val TEMPLATE_VERSION = 1
     private const val RENDER_ENDPOINT = "/render/template"
 
-    private val blockOrder = listOf("text", "html", "heading", "image", "spacer", "divider", "table")
+    private const val KEY_VALUE_FIELD_KEY_PATTERN = "^[A-Za-z][A-Za-z0-9_]*$"
+
+    private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
 
     private val definitionTsTypes = mapOf(
         "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
         "headingConfig" to "BlockConfig & { level?: number }",
         "imageConfig" to "BlockConfig & { maxHeight?: number }",
+        "keyValueField" to "{ key: string; label: string }",
+        "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
         "spacerConfig" to "BlockConfig & { height?: number }",
         "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
         "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
@@ -114,6 +118,12 @@ object TemplateJsonSchema {
                 "ImageConfig",
                 "maxHeight" to int(min = 1, default = 60),
             ),
+            "keyValueField" to keyValueField(),
+            "keyValueConfig" to extendedBlockConfig(
+                "KeyValueConfig",
+                "labelWidth" to string(default = "30mm"),
+                "fields" to arrayOf(ref("keyValueField")),
+            ),
             "spacerConfig" to extendedBlockConfig(
                 "SpacerConfig",
                 "height" to int(min = 0, default = 5),
@@ -141,6 +151,13 @@ object TemplateJsonSchema {
                 "imageConfig",
                 "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
                 "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
+            ),
+            "keyValueBlock" to block(
+                "KeyValueBlock",
+                "key-value",
+                emptyList(),
+                "keyValueConfig",
+                "values" to keyValueValues(),
             ),
             "spacerBlock" to block("SpacerBlock", "spacer", emptyList(), "spacerConfig"),
             "dividerBlock" to block("DividerBlock", "divider", emptyList(), "dividerConfig"),
@@ -180,6 +197,19 @@ object TemplateJsonSchema {
 
     private fun extendedBlockConfig(title: String, vararg properties: Pair<String, PropertyDefinition>): PropertyDefinition =
         schemaObject(title, baseBlockConfigProperties() + properties)
+
+    private fun keyValueField(): PropertyDefinition =
+        schemaObject("KeyValueField", required = listOf("key", "label")) {
+            "key" to string(pattern = KEY_VALUE_FIELD_KEY_PATTERN)
+            "label" to string()
+        }
+
+    private fun keyValueValues(): PropertyDefinition =
+        ObjectPropertyDefinition(
+            title = "KeyValueValues",
+            propertyNames = string(pattern = KEY_VALUE_FIELD_KEY_PATTERN),
+            additionalProperties = AdditionalPropertiesSchema(nullableStringValue()),
+        )
 
     private fun baseBlockConfigProperties(): Map<String, PropertyDefinition> =
         linkedMapOf(
@@ -358,6 +388,9 @@ object TemplateJsonSchema {
 
     private fun nullableString(description: String? = null): PropertyDefinition =
         GenericPropertyDefinition(type = listOf("string", "null"), description = description)
+
+    private fun nullableStringValue(): PropertyDefinition =
+        GenericPropertyDefinition(type = listOf("string", "null"))
 
     private fun int(min: Int? = null, max: Int? = null, default: Int? = null): PropertyDefinition =
         NumericPropertyDefinition(

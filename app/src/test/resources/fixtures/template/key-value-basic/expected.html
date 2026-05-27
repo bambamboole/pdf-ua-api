@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Document</title>
 <style>
-@page { size: 215.9mm 279.4mm; margin: 20mm 20mm 20mm 25mm; }
+@page { size: 210mm 297mm; margin: 20mm 20mm 20mm 25mm; }
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
 img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
@@ -18,11 +18,12 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
 .data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
-.block-2 { margin-left: auto; text-align: right; }
+body { font-family: 'Inter'; }
+.block-2 .key-value td:first-child { width: 34mm; }
 
 </style>
 </head>
 <body>
-<table class="row" role="presentation"><tr><td style="width: 60%;"><div class="block-1"><p>Invoice #2026-001</p></div></td><td style="width: 40%;"><div class="block-2"><p>Issued 2026-05-27</p></div></td></tr></table>
+<table class="row" role="presentation"><tr><td><div class="block-1"><h1>Invoice metadata</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-2"><table class="key-value"><tbody><tr><td>Invoice number</td><td>INV-2026-001</td></tr><tr><td>Customer</td><td>ACME GmbH</td></tr><tr><td>Payment terms</td><td>Due within 14 days</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-3"><p>All values are supplied directly by the template.</p></div></td></tr></table>
 </body>
 </html>

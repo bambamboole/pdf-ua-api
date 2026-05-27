@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import org.w3c.dom.Element
 import java.io.ByteArrayInputStream
 import java.io.StringWriter
@@ -38,10 +39,7 @@ private fun JsonElement.string(key: String): String? =
     (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
 private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
-
-private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
-
-private fun safeColumnWidth(width: String?): String? = width?.takeIf { it.isNotBlank() && SAFE_WIDTH.matches(it) }
+private val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
 
@@ -120,6 +118,14 @@ private sealed class SvgSource {
 private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
 
 private fun safeCssColor(value: String): String? = value.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
+
+private fun JsonObject.stringValues(): Map<String, String?> =
+    mapValues { (_, value) ->
+        when (value) {
+            JsonNull -> null
+            else -> runCatching { value.jsonPrimitive.contentOrNull }.getOrNull()
+        }
+    }
 
 @Serializable
 @SerialName("text")
@@ -206,6 +212,55 @@ data class ImageBlock(
             ?.takeIf { it > 0 }
             ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
             ?: emptyList()
+}
+
+@Serializable
+data class KeyValueField(
+    val key: String,
+    val label: String,
+)
+
+@Serializable
+data class KeyValueConfig(
+    override val typography: TypographyConfig? = null,
+    override val spacing: SpacingConfig? = null,
+    override val width: String? = null,
+    override val align: Align? = null,
+    val labelWidth: String = "30mm",
+    val fields: List<KeyValueField> = emptyList(),
+) : BlockConfig
+
+@Serializable
+@SerialName("key-value")
+data class KeyValueBlock(
+    override val id: String? = null,
+    val values: Map<String, String?> = emptyMap(),
+    override val config: KeyValueConfig = KeyValueConfig(),
+) : Block {
+    override fun applyData(values: JsonElement): Block =
+        if (values is JsonObject) copy(values = values.stringValues()) else this
+
+    override fun render(): String {
+        validateFields()
+        val rows = config.fields.joinToString("") { field ->
+            val label = Html.escape(field.label)
+            val value = Html.escape(values[field.key].orEmpty())
+            "<tr><td>$label</td><td>$value</td></tr>"
+        }
+        return "<table class=\"key-value\"><tbody>$rows</tbody></table>"
+    }
+
+    override fun renderCss(cssId: String): List<String> {
+        validateFields()
+        val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
+        return listOf(".$cssId .key-value td:first-child { width: $labelWidth; }")
+    }
+
+    private fun validateFields() {
+        config.fields.forEach { field ->
+            require(SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) { "Key-value field key is invalid: ${field.key}" }
+        }
+    }
 }
 
 private fun svgSource(source: String): SvgSource? {
@@ -450,7 +505,7 @@ data class TableBlock(
     private fun colgroup(): String {
         val widths = buildList<String?> {
             if (config.numberRows) add(null)
-            config.columns.forEach { add(safeColumnWidth(it.width)) }
+            config.columns.forEach { add(safeCssWidth(it.width)) }
         }
         if (widths.none { !it.isNullOrEmpty() }) return ""
         return widths.joinToString("", prefix = "<colgroup>", postfix = "</colgroup>") { width ->

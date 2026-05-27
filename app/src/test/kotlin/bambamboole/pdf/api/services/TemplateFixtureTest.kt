@@ -54,4 +54,10 @@ class TemplateFixtureTest {
 
     @Test
     fun pageBackground() = assertTemplateFixture("page-background")
+
+    @Test
+    fun keyValueBasic() = assertTemplateFixture("key-value-basic")
+
+    @Test
+    fun keyValueRuntime() = assertTemplateFixture("key-value-runtime")
 }
