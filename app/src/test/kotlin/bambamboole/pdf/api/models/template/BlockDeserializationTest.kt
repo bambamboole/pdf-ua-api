@@ -21,7 +21,8 @@ class BlockDeserializationTest {
               {"type":"html","html":"<b>x</b>"},
               {"type":"spacer","config":{"height":12}},
               {"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}},
-              {"type":"heading","id":"title","text":"Invoice","config":{"level":1}}
+              {"type":"heading","id":"title","text":"Invoice","config":{"level":1}},
+              {"type":"image","id":"logo","src":"logo.png","alt":"Logo","config":{"maxHeight":80}}
             ]
         """.trimIndent()
         val blocks = json.decodeFromString(ListSerializer(Block.serializer()), input)
@@ -40,6 +41,10 @@ class BlockDeserializationTest {
         assertEquals("title", heading.id)
         assertEquals("Invoice", heading.text)
         assertEquals(1, heading.config.level)
+        val image = assertIs<ImageBlock>(blocks[5])
+        assertEquals("logo.png", image.src)
+        assertEquals("Logo", image.alt)
+        assertEquals(80, image.config.maxHeight)
     }
 
     @Test
@@ -77,6 +82,13 @@ class BlockDeserializationTest {
     fun headingRendersEscapedTextAtConfiguredLevel() {
         assertEquals("<h2>Hello</h2>", HeadingBlock(text = "Hello").render())
         assertEquals("<h1>&lt;script&gt;x&lt;/script&gt;</h1>", HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render())
+    }
+
+    @Test
+    fun imageRendersEscapedImgByDefault() {
+        val html = ImageBlock(src = "x\"onerror=\"alert(1)", alt = "<Logo>").render()
+
+        assertEquals("<img src=\"x&quot;onerror=&quot;alert(1)\" alt=\"&lt;Logo&gt;\">", html)
     }
 
     @Test

@@ -84,6 +84,39 @@ data class HeadingBlock(
 }
 
 @Serializable
+data class ImageConfig(
+    override val typography: TypographyConfig? = null,
+    override val spacing: SpacingConfig? = null,
+    override val width: String? = null,
+    override val align: Align? = null,
+    val maxHeight: Int = 60,
+) : BlockConfig
+
+@Serializable
+@SerialName("image")
+data class ImageBlock(
+    override val id: String? = null,
+    val src: String,
+    val alt: String = "",
+    override val config: ImageConfig = ImageConfig(),
+) : Block {
+    override fun applyData(values: JsonObject): Block =
+        copy(
+            src = values.string("src") ?: src,
+            alt = values.string("alt") ?: alt,
+        )
+
+    override fun render(): String =
+        "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
+
+    override fun renderCss(cssId: String): List<String> =
+        nonNegative(config.maxHeight)
+            ?.takeIf { it > 0 }
+            ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
+            ?: emptyList()
+}
+
+@Serializable
 data class SpacerConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
