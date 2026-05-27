@@ -60,6 +60,30 @@ data class HtmlBlock(
 }
 
 @Serializable
+data class HeadingConfig(
+    override val typography: TypographyConfig? = null,
+    override val spacing: SpacingConfig? = null,
+    override val width: String? = null,
+    override val align: Align? = null,
+    val level: Int = 2,
+) : BlockConfig
+
+@Serializable
+@SerialName("heading")
+data class HeadingBlock(
+    override val id: String? = null,
+    val text: String,
+    override val config: HeadingConfig = HeadingConfig(),
+) : Block {
+    override fun applyData(values: JsonObject): Block = copy(text = values.string("text") ?: text)
+
+    override fun render(): String {
+        require(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
+        return "<h${config.level}>${Html.escape(text)}</h${config.level}>"
+    }
+}
+
+@Serializable
 data class SpacerConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,

@@ -20,7 +20,8 @@ class BlockDeserializationTest {
               {"type":"text","id":"intro","text":"Hello"},
               {"type":"html","html":"<b>x</b>"},
               {"type":"spacer","config":{"height":12}},
-              {"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}}
+              {"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}},
+              {"type":"heading","id":"title","text":"Invoice","config":{"level":1}}
             ]
         """.trimIndent()
         val blocks = json.decodeFromString(ListSerializer(Block.serializer()), input)
@@ -35,6 +36,10 @@ class BlockDeserializationTest {
         assertEquals(2, divider.config.thickness)
         assertEquals("#111827", divider.config.lineColor)
         assertEquals(DividerStyle.DASHED, divider.config.style)
+        val heading = assertIs<HeadingBlock>(blocks[4])
+        assertEquals("title", heading.id)
+        assertEquals("Invoice", heading.text)
+        assertEquals(1, heading.config.level)
     }
 
     @Test
@@ -66,6 +71,12 @@ class BlockDeserializationTest {
     @Test
     fun htmlRendersRaw() {
         assertEquals("<b>x</b>", HtmlBlock(html = "<b>x</b>").render())
+    }
+
+    @Test
+    fun headingRendersEscapedTextAtConfiguredLevel() {
+        assertEquals("<h2>Hello</h2>", HeadingBlock(text = "Hello").render())
+        assertEquals("<h1>&lt;script&gt;x&lt;/script&gt;</h1>", HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render())
     }
 
     @Test
