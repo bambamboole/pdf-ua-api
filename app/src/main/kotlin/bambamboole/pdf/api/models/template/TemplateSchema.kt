@@ -83,7 +83,7 @@ object TemplateSchema {
                     },
                     orientations = Orientation.entries.map { Orientation.serializer().descriptor.getElementName(it.ordinal) },
                     customFields = listOf("width", "height"),
-                    customUnits = listOf("mm", "cm", "in", "px", "pt", "pc"),
+                    customUnits = listOf("mm"),
                 ),
                 locales = "BCP 47 / Java locale style string, e.g. de_DE or en_US",
                 margins = listOf("top", "right", "bottom", "left"),

@@ -29,8 +29,6 @@ private fun cssString(value: String): String = value.replace("\\", "\\\\").repla
 private fun cssUrl(value: String): String = value
     .replace("\\", "%5C").replace("\"", "%22").replace("(", "%28").replace(")", "%29").replace("\r", "").replace("\n", "")
 
-private val SAFE_LENGTH = Regex("^\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc)$")
-
 private fun mm(value: Double): String {
     val number = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()
     return "${number}mm"
@@ -46,9 +44,8 @@ private fun pageSizeCss(size: PageSize): String = when (size) {
         "${mm(w)} ${mm(h)}"
     }
     is CustomPageSize -> {
-        require(SAFE_LENGTH.matches(size.width)) { "Invalid page width: ${size.width}" }
-        require(SAFE_LENGTH.matches(size.height)) { "Invalid page height: ${size.height}" }
-        "${size.width} ${size.height}"
+        require(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
+        "${size.width}mm ${size.height}mm"
     }
 }
 

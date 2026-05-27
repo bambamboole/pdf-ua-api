@@ -58,14 +58,14 @@ class TemplateRendererTest {
 
     @Test
     fun emitsCustomSize() {
-        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize("101.6mm", "152.4mm")))
+        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize(102, 152)))
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-        assertTrue(html.contains("@page { size: 101.6mm 152.4mm;"))
+        assertTrue(html.contains("@page { size: 102mm 152mm;"))
     }
 
     @Test
-    fun rejectsUnsafeCustomDimension() {
-        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize("1mm} body{x:1", "297mm")))
+    fun rejectsNonPositiveCustomDimension() {
+        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize(0, 297)))
         assertFailsWith<IllegalArgumentException> {
             TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         }

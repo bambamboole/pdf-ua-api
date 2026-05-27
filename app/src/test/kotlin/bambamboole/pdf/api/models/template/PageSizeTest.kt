@@ -26,10 +26,10 @@ class PageSizeTest {
 
     @Test
     fun decodesCustomWhenWidthOrHeightPresent() {
-        val size = json.decodeFromString(PageSize.serializer(), """{"width":"210mm","height":"297mm"}""")
+        val size = json.decodeFromString(PageSize.serializer(), """{"width":210,"height":297}""")
         val custom = assertIs<CustomPageSize>(size)
-        assertEquals("210mm", custom.width)
-        assertEquals("297mm", custom.height)
+        assertEquals(210, custom.width)
+        assertEquals(297, custom.height)
     }
 
     @Test
