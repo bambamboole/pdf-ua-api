@@ -6,6 +6,7 @@ import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
+import com.openhtmltopdf.render.DefaultObjectDrawerFactory
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.cos.COSArray
 import org.apache.pdfbox.cos.COSName
@@ -170,7 +171,13 @@ object PdfService {
 
         builder.usePdfUaAccessibility(true)
         builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_A)
+        builder.useObjectDrawerFactory(backgroundObjectDrawerFactory())
     }
+
+    private fun backgroundObjectDrawerFactory(): DefaultObjectDrawerFactory =
+        DefaultObjectDrawerFactory().apply {
+            registerDrawer("pdf/background", PdfBackgroundObjectDrawer)
+        }
 
     private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
         when (this) {

@@ -3,6 +3,8 @@ package bambamboole.pdf.api.services
 import bambamboole.pdf.api.models.RenderOptions
 import bambamboole.pdf.api.models.template.Align
 import bambamboole.pdf.api.models.template.BaseBlockConfig
+import bambamboole.pdf.api.models.template.PageBackgroundConfig
+import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.PageFormat
@@ -53,6 +55,60 @@ class TemplateRendererTest {
     }
 
     @Test
+    fun emitsImagePageBackgroundCss() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png")))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("""background-image: url("https://cdn.example.com/bg.png")"""))
+        assertTrue(html.contains("background-size: cover"))
+        assertTrue(!html.contains("pdf/background"))
+    }
+
+    @Test
+    fun emitsPdfPageBackgroundAsRunningObject() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "data:application/pdf;base64,JVBERi0x")))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("@top-left { content: element(stationary); }"))
+        assertTrue(html.contains(".stationary { position: running(stationary); }"))
+        assertTrue(html.contains("""<object type="pdf/background" pdfsrc="data:application/pdf;base64,JVBERi0x""""))
+        assertTrue(!html.contains("pdfpage="))
+    }
+
+    @Test
+    fun autoDetectsPdfPageBackgroundFromUrlPath() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/stationary.pdf?token=123")))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("""<object type="pdf/background" pdfsrc="https://cdn.example.com/stationary.pdf?token=123""""))
+        assertTrue(!html.contains("background-image"))
+    }
+
+    @Test
+    fun ambiguousPageBackgroundUrlDefaultsToImage() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/stationary?id=123")))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("""background-image: url("https://cdn.example.com/stationary?id=123")"""))
+        assertTrue(!html.contains("pdf/background"))
+    }
+
+    @Test
+    fun canForcePdfPageBackgroundForUrlWithoutPdfExtension() {
+        val cfg = TemplateConfig(
+            page = PageConfig(
+                background = PageBackgroundConfig(
+                    src = "https://cdn.example.com/stationary?id=123",
+                    type = PageBackgroundType.PDF,
+                ),
+            ),
+        )
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+
+        assertTrue(html.contains("""type="pdf/background" pdfsrc="https://cdn.example.com/stationary?id=123""""))
+    }
+
+    @Test
     fun appliesDataOverrideByBlockId() {
         val data = mapOf("intro" to JsonObject(mapOf("text" to JsonPrimitive("Overridden"))))
         val html = TemplateRenderer.render(template(TextBlock(id = "intro", text = "Original")), data)
@@ -98,5 +154,14 @@ class TemplateRendererTest {
         val html = TemplateRenderer.render(template(block))
         assertTrue(!html.contains("display:none"), "unsafe width must not be emitted")
         assertTrue(!html.contains("width: 1mm}"), "unsafe width must be dropped entirely")
+    }
+
+    @Test
+    fun rejectsUnsafePageBackgroundSrc() {
+        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "file:///etc/passwd")))
+
+        assertFailsWith<IllegalArgumentException> {
+            TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        }
     }
 }
