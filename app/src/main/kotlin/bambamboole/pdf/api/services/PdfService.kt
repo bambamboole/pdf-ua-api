@@ -4,7 +4,7 @@ import bambamboole.pdf.api.models.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.cos.COSArray
@@ -26,43 +26,10 @@ object PdfService {
     private val w3cDom = W3CDom()
     private val validRelationships = setOf("Source", "Data", "Alternative", "Supplement", "Unspecified")
 
-    private data class FontConfig(
-        val path: String,
-        val family: String,
-        val weight: Int,
-        val style: FontStyle
-    )
-
-    private val fontConfigs = listOf(
-        FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSans-Bold.ttf", "Liberation Sans", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSans-Italic.ttf", "Liberation Sans", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSans-BoldItalic.ttf", "Liberation Sans", 700, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSerif-Bold.ttf", "Liberation Serif", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSerif-Italic.ttf", "Liberation Serif", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSerif-BoldItalic.ttf", "Liberation Serif", 700, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationMono-Bold.ttf", "Liberation Mono", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationMono-Italic.ttf", "Liberation Mono", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationMono-BoldItalic.ttf", "Liberation Mono", 700, FontStyle.ITALIC)
-    )
-
     private val colorProfileBytes: ByteArray by lazy {
         logger.info("Loading sRGB color profile")
         loadResource("/colorspaces/sRGB.icc")
             ?: throw IllegalStateException("sRGB.icc color profile not found in resources")
-    }
-
-    private val fontByteArrays: Map<FontConfig, ByteArray> by lazy {
-        logger.info("Loading ${fontConfigs.size} font files")
-        fontConfigs.associateWith { config ->
-            loadResource(config.path)
-                ?: throw IllegalStateException("Font not found: ${config.path}")
-        }.also {
-            val totalSize = it.values.sumOf { bytes -> bytes.size }
-            logger.info("Successfully cached ${it.size} fonts (${totalSize / 1024} KB total)")
-        }
     }
 
     private fun loadResource(path: String): ByteArray? =
@@ -71,7 +38,7 @@ object PdfService {
     fun warmup() {
         logger.info("Warming up PdfService...")
         colorProfileBytes
-        fontByteArrays
+        BundledFonts.fontBytes
         logger.info("PdfService warmup complete")
     }
 
@@ -94,7 +61,7 @@ object PdfService {
 
         val pdfBytes = ByteArrayOutputStream(512 * 1024).use { outputStream ->
             val builder = PdfRendererBuilder()
-            configurePdfUA(builder)
+            configurePdfUA(builder, html)
             builder.withProducer(producer)
             if (assetResolver != null) {
                 builder.useHttpStreamImplementation(assetResolver)
@@ -186,16 +153,16 @@ object PdfService {
         }
     }
 
-    private fun configurePdfUA(builder: PdfRendererBuilder) {
+    private fun configurePdfUA(builder: PdfRendererBuilder, html: String) {
         builder.useColorProfile(colorProfileBytes)
 
-        fontByteArrays.forEach { (config, bytes) ->
+        BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
             val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }
             builder.useFont(
                 fontSupplier,
                 config.family,
                 config.weight,
-                config.style,
+                config.style.toRendererStyle(),
                 true,
                 EnumSet.of(FSFontUseCase.FALLBACK_FINAL)
             )
@@ -204,4 +171,10 @@ object PdfService {
         builder.usePdfUaAccessibility(true)
         builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_A)
     }
+
+    private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
+        when (this) {
+            BundledFonts.FontStyle.Normal -> RendererFontStyle.NORMAL
+            BundledFonts.FontStyle.Italic -> RendererFontStyle.ITALIC
+        }
 }

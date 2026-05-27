@@ -20,7 +20,7 @@ open http://localhost:8080
 - **HTML to PDF Conversion** - Convert any HTML document to PDF/A-3a
 - **PDF/UA Compliant** - Full accessibility compliance built-in
 - **Thread-Safe** - Handles concurrent requests efficiently
-- **Bundled Fonts** - Liberation fonts included (no system dependencies)
+- **Bundled Fonts** - Popular open-source fonts included (no system dependencies)
 - **CSS Support** - Full CSS 2.1 styling with automatic table pagination
 - **Validation** - Built-in PDF/A compliance validation with veraPDF
 - **Flexible Configuration** - Environment variable-based configuration

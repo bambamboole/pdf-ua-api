@@ -4,7 +4,7 @@ import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.java2d.api.BufferedImagePageProcessor
 import com.openhtmltopdf.java2d.api.Java2DRendererBuilder
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
 import org.slf4j.LoggerFactory
@@ -19,36 +19,6 @@ object ImageRenderService {
     private val logger = LoggerFactory.getLogger(ImageRenderService::class.java)
     private val w3cDom = W3CDom()
 
-    private data class FontConfig(
-        val path: String,
-        val family: String,
-        val weight: Int,
-        val style: FontStyle
-    )
-
-    private val fontConfigs = listOf(
-        FontConfig("/fonts/LiberationSans-Regular.ttf", "Liberation Sans", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSans-Bold.ttf", "Liberation Sans", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSans-Italic.ttf", "Liberation Sans", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSans-BoldItalic.ttf", "Liberation Sans", 700, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSerif-Regular.ttf", "Liberation Serif", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSerif-Bold.ttf", "Liberation Serif", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationSerif-Italic.ttf", "Liberation Serif", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationSerif-BoldItalic.ttf", "Liberation Serif", 700, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationMono-Regular.ttf", "Liberation Mono", 400, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationMono-Bold.ttf", "Liberation Mono", 700, FontStyle.NORMAL),
-        FontConfig("/fonts/LiberationMono-Italic.ttf", "Liberation Mono", 400, FontStyle.ITALIC),
-        FontConfig("/fonts/LiberationMono-BoldItalic.ttf", "Liberation Mono", 700, FontStyle.ITALIC)
-    )
-
-    private val fontByteArrays: Map<FontConfig, ByteArray> by lazy {
-        logger.info("Loading ${fontConfigs.size} font files for ImageRenderService")
-        fontConfigs.associateWith { config ->
-            ImageRenderService::class.java.getResourceAsStream(config.path)?.use { it.readBytes() }
-                ?: throw IllegalStateException("Font not found: ${config.path}")
-        }
-    }
-
     private fun parseAndInjectViewportWidth(html: String, width: Int): org.w3c.dom.Document {
         val jsoupDoc = Jsoup.parse(html)
         val style = "@page { size: ${width}px 1px; margin: 0; }"
@@ -58,7 +28,7 @@ object ImageRenderService {
 
     fun warmup() {
         logger.info("Warming up ImageRenderService...")
-        fontByteArrays
+        BundledFonts.fontBytes
         logger.info("ImageRenderService warmup complete")
     }
 
@@ -80,9 +50,9 @@ object ImageRenderService {
         builder.useFastMode()
         builder.useEnvironmentFonts(true)
 
-        fontByteArrays.forEach { (config, bytes) ->
+        BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
             val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }
-            builder.useFont(fontSupplier, config.family, config.weight, config.style, true)
+            builder.useFont(fontSupplier, config.family, config.weight, config.style.toRendererStyle(), true)
         }
 
         if (assetResolver != null) {
@@ -116,4 +86,10 @@ object ImageRenderService {
             out.toByteArray()
         }
     }
+
+    private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
+        when (this) {
+            BundledFonts.FontStyle.Normal -> RendererFontStyle.NORMAL
+            BundledFonts.FontStyle.Italic -> RendererFontStyle.ITALIC
+        }
 }

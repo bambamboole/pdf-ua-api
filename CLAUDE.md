@@ -15,7 +15,7 @@ Guidance for Claude Code when working in this repository.
 - `app/src/main/kotlin/bambamboole/pdf/api/routes/` contains one route extension per endpoint.
 - `app/src/main/kotlin/bambamboole/pdf/api/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
 - `app/src/main/kotlin/bambamboole/pdf/api/models/` contains kotlinx-serializable request/response DTOs.
-- `app/src/main/resources/` contains Ktor config, logback config, bundled Liberation fonts, ICC color profile, templates, and examples.
+- `app/src/main/resources/` contains Ktor config, logback config, bundled open-source fonts, ICC color profile, templates, and examples.
 - `app/src/test/resources/fixtures/` and `app/src/test/resources/image-fixtures/` are regression baselines. Treat expected PDFs/images as test artifacts, not disposable output.
 
 ## Build And Test

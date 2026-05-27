@@ -32,7 +32,7 @@ Instructions for coding agents working in this repository.
 - Check sibling files before creating or editing code so naming, structure, and Ktor/Gradle patterns stay consistent.
 - Match the existing structure: route extension functions call focused service objects and use serializable DTOs.
 - Use descriptive names for variables, functions, routes, and DTO fields; prefer clarity over abbreviation.
-- Preserve accessibility/compliance defaults: `PdfService` configures sRGB, bundled Liberation fonts, PDF/UA accessibility, and PDF/A-3a conformance.
+- Preserve accessibility/compliance defaults: `PdfService` configures sRGB, bundled open-source fonts, PDF/UA accessibility, and PDF/A-3a conformance.
 - Treat fixture baselines as important. Conversion and rendering tests may create `generated.pdf` or diff images; inspect them before adding or removing files.
 - Keep `AssetResolver` security constraints intact unless the task is specifically about changing asset fetching. It blocks non-http schemes, localhost, private, link-local, wildcard addresses, and optional domain allow-list misses.
 - Do not replace the Gradle convention setup or version catalog with ad hoc dependency declarations unless the change is clearly scoped.

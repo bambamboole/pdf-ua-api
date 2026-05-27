@@ -1,0 +1,448 @@
+{
+  "fonts": [
+    {
+      "path": "/fonts/liberation-sans/LiberationSans-Regular.ttf",
+      "family": "Liberation Sans",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-sans/LiberationSans-Bold.ttf",
+      "family": "Liberation Sans",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-sans/LiberationSans-Italic.ttf",
+      "family": "Liberation Sans",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/liberation-sans/LiberationSans-BoldItalic.ttf",
+      "family": "Liberation Sans",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/liberation-serif/LiberationSerif-Regular.ttf",
+      "family": "Liberation Serif",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-serif/LiberationSerif-Bold.ttf",
+      "family": "Liberation Serif",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-serif/LiberationSerif-Italic.ttf",
+      "family": "Liberation Serif",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/liberation-serif/LiberationSerif-BoldItalic.ttf",
+      "family": "Liberation Serif",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/liberation-mono/LiberationMono-Regular.ttf",
+      "family": "Liberation Mono",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-mono/LiberationMono-Bold.ttf",
+      "family": "Liberation Mono",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/liberation-mono/LiberationMono-Italic.ttf",
+      "family": "Liberation Mono",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/liberation-mono/LiberationMono-BoldItalic.ttf",
+      "family": "Liberation Mono",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/roboto/Roboto[wdth,wght].ttf",
+      "family": "Roboto",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/roboto/Roboto[wdth,wght].ttf",
+      "family": "Roboto",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/roboto/Roboto-Italic[wdth,wght].ttf",
+      "family": "Roboto",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/roboto/Roboto-Italic[wdth,wght].ttf",
+      "family": "Roboto",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/open-sans/OpenSans[wdth,wght].ttf",
+      "family": "Open Sans",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/open-sans/OpenSans[wdth,wght].ttf",
+      "family": "Open Sans",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/open-sans/OpenSans-Italic[wdth,wght].ttf",
+      "family": "Open Sans",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/open-sans/OpenSans-Italic[wdth,wght].ttf",
+      "family": "Open Sans",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/poppins/Poppins-Regular.ttf",
+      "family": "Poppins",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/poppins/Poppins-Bold.ttf",
+      "family": "Poppins",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/poppins/Poppins-Italic.ttf",
+      "family": "Poppins",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/poppins/Poppins-BoldItalic.ttf",
+      "family": "Poppins",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/montserrat/Montserrat[wght].ttf",
+      "family": "Montserrat",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/montserrat/Montserrat[wght].ttf",
+      "family": "Montserrat",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/montserrat/Montserrat-Italic[wght].ttf",
+      "family": "Montserrat",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/montserrat/Montserrat-Italic[wght].ttf",
+      "family": "Montserrat",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/lato/Lato-Regular.ttf",
+      "family": "Lato",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/lato/Lato-Bold.ttf",
+      "family": "Lato",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/lato/Lato-Italic.ttf",
+      "family": "Lato",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/lato/Lato-BoldItalic.ttf",
+      "family": "Lato",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/inter/Inter[opsz,wght].ttf",
+      "family": "Inter",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/inter/Inter[opsz,wght].ttf",
+      "family": "Inter",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/inter/Inter-Italic[opsz,wght].ttf",
+      "family": "Inter",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/inter/Inter-Italic[opsz,wght].ttf",
+      "family": "Inter",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/noto-sans/NotoSans[wdth,wght].ttf",
+      "family": "Noto Sans",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/noto-sans/NotoSans[wdth,wght].ttf",
+      "family": "Noto Sans",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/noto-sans/NotoSans-Italic[wdth,wght].ttf",
+      "family": "Noto Sans",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/noto-sans/NotoSans-Italic[wdth,wght].ttf",
+      "family": "Noto Sans",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/noto-serif/NotoSerif[wdth,wght].ttf",
+      "family": "Noto Serif",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/noto-serif/NotoSerif[wdth,wght].ttf",
+      "family": "Noto Serif",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/noto-serif/NotoSerif-Italic[wdth,wght].ttf",
+      "family": "Noto Serif",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/noto-serif/NotoSerif-Italic[wdth,wght].ttf",
+      "family": "Noto Serif",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/noto-sans-mono/NotoSansMono[wdth,wght].ttf",
+      "family": "Noto Sans Mono",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/noto-sans-mono/NotoSansMono[wdth,wght].ttf",
+      "family": "Noto Sans Mono",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/oswald/Oswald[wght].ttf",
+      "family": "Oswald",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/oswald/Oswald[wght].ttf",
+      "family": "Oswald",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/nunito/Nunito[wght].ttf",
+      "family": "Nunito",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/nunito/Nunito[wght].ttf",
+      "family": "Nunito",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/nunito/Nunito-Italic[wght].ttf",
+      "family": "Nunito",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/nunito/Nunito-Italic[wght].ttf",
+      "family": "Nunito",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/raleway/Raleway[wght].ttf",
+      "family": "Raleway",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/raleway/Raleway[wght].ttf",
+      "family": "Raleway",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/raleway/Raleway-Italic[wght].ttf",
+      "family": "Raleway",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/raleway/Raleway-Italic[wght].ttf",
+      "family": "Raleway",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/rubik/Rubik[wght].ttf",
+      "family": "Rubik",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/rubik/Rubik[wght].ttf",
+      "family": "Rubik",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/rubik/Rubik-Italic[wght].ttf",
+      "family": "Rubik",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/rubik/Rubik-Italic[wght].ttf",
+      "family": "Rubik",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/merriweather/Merriweather[opsz,wdth,wght].ttf",
+      "family": "Merriweather",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/merriweather/Merriweather[opsz,wdth,wght].ttf",
+      "family": "Merriweather",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/merriweather/Merriweather-Italic[opsz,wdth,wght].ttf",
+      "family": "Merriweather",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/merriweather/Merriweather-Italic[opsz,wdth,wght].ttf",
+      "family": "Merriweather",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/playfair-display/PlayfairDisplay[wght].ttf",
+      "family": "Playfair Display",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/playfair-display/PlayfairDisplay[wght].ttf",
+      "family": "Playfair Display",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/playfair-display/PlayfairDisplay-Italic[wght].ttf",
+      "family": "Playfair Display",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/playfair-display/PlayfairDisplay-Italic[wght].ttf",
+      "family": "Playfair Display",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/fira-code/FiraCode[wght].ttf",
+      "family": "Fira Code",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/fira-code/FiraCode[wght].ttf",
+      "family": "Fira Code",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/jetbrains-mono/JetBrainsMono[wght].ttf",
+      "family": "JetBrains Mono",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/jetbrains-mono/JetBrainsMono[wght].ttf",
+      "family": "JetBrains Mono",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "path": "/fonts/jetbrains-mono/JetBrainsMono-Italic[wght].ttf",
+      "family": "JetBrains Mono",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "path": "/fonts/jetbrains-mono/JetBrainsMono-Italic[wght].ttf",
+      "family": "JetBrains Mono",
+      "weight": 700,
+      "style": "italic"
+    }
+  ]
+}
