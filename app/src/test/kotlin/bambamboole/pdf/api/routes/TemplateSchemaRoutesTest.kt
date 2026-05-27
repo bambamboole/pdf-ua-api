@@ -28,6 +28,14 @@ class TemplateSchemaRoutesTest {
         val schema = Json.parseToJsonElement(response.bodyAsText()).jsonObject
         assertEquals("template", schema["kind"]?.jsonPrimitive?.content)
         assertEquals("1", schema["templateVersion"]?.jsonPrimitive?.content)
+        assertEquals(
+            listOf("version", "config", "fonts", "attachments", "rows"),
+            schema["templateFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("name", "content", "mimeType", "description", "relationship"),
+            schema["attachmentFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
 
         val size = schema["page"]!!.jsonObject["size"]!!.jsonObject
         val presets = size["presets"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }

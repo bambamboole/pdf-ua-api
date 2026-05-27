@@ -8,6 +8,8 @@ data class TemplateSchemaResponse(
     val kind: String,
     val templateVersion: Int,
     val endpoint: String,
+    val templateFields: List<String>,
+    val attachmentFields: List<String>,
     val page: PageSchema,
     val typography: TypographySchema,
     val fonts: FontsSchema,
@@ -68,6 +70,8 @@ object TemplateSchema {
             kind = "template",
             templateVersion = 1,
             endpoint = "/render/template",
+            templateFields = listOf("version", "config", "fonts", "attachments", "rows"),
+            attachmentFields = listOf("name", "content", "mimeType", "description", "relationship"),
             page = PageSchema(
                 size = PageSizeSchema(
                     presets = PageFormat.entries.map {
