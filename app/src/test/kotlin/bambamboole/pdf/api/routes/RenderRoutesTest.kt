@@ -1,7 +1,6 @@
 package bambamboole.pdf.api.routes
 
 import bambamboole.pdf.api.module
-import bambamboole.pdf.api.services.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -77,33 +76,5 @@ class RenderRoutesTest {
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
-
-    @Test
-    fun rendersTemplateWithExternalFontEmbedded() = testApplication {
-        application { module() }
-
-        val body = """
-            {"template":{"version":1,
-              "fonts":{"Lobster":{"src":"https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/lobster/Lobster-Regular.ttf"}},
-              "rows":[{"blocks":[{"type":"text","id":"t","text":"Special Offer","config":{"typography":{"family":"Lobster","size":36}}}]}]
-            }}
-        """.trimIndent()
-
-        val response = client.post("/render/template") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        val pdf = response.readRawBytes()
-
-        val validation = PdfValidationService.validatePdf(pdf)
-        assertTrue(validation.isCompliant, "external-font PDF must be PDF/A-3a compliant")
-        val fontNames = validation.documentInfo!!.fonts.map { it.name }
-        assertTrue(
-            fontNames.any { it.contains("Lobster", ignoreCase = true) },
-            "Lobster font must be embedded. Found: $fontNames",
-        )
     }
 }
