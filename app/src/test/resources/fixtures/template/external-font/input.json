@@ -1,0 +1,20 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": { "format": "A4", "locale": "en_US" },
+      "typography": { "family": "Inter" }
+    },
+    "fonts": {
+      "Lobster": {
+        "src": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/lobster/Lobster-Regular.ttf",
+        "weight": 400,
+        "style": "normal"
+      }
+    },
+    "rows": [
+      { "blocks": [ { "type": "text", "id": "title", "text": "Special Offer", "config": { "typography": { "family": "Lobster", "size": 36 } } } ] },
+      { "blocks": [ { "type": "text", "id": "body", "text": "Everything else uses the bundled Inter body font." } ] }
+    ]
+  }
+}
