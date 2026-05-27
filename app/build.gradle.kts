@@ -53,6 +53,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktorServerTestHost)
     testImplementation(libs.kotlinTest)
+    testImplementation(libs.kotlinxSchemaJson)
 }
 
 application {
