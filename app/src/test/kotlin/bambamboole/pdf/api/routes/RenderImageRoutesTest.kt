@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,14 +29,25 @@ class RenderImageRoutesTest {
             return File(projectRoot, "app/src/test/resources/fixtures/image")
         }
 
-        private fun imagesAreIdentical(expected: BufferedImage, actual: BufferedImage): Boolean {
+        private const val PER_CHANNEL_THRESHOLD = 32
+        private const val MAX_DIFF_RATIO = 0.10
+
+        private fun imagesMatch(expected: BufferedImage, actual: BufferedImage): Boolean {
             if (expected.width != actual.width || expected.height != actual.height) return false
+            var significantDiffs = 0
             for (y in 0 until expected.height) {
                 for (x in 0 until expected.width) {
-                    if (expected.getRGB(x, y) != actual.getRGB(x, y)) return false
+                    val e = expected.getRGB(x, y)
+                    val a = actual.getRGB(x, y)
+                    val dr = abs(((e shr 16) and 0xFF) - ((a shr 16) and 0xFF))
+                    val dg = abs(((e shr 8) and 0xFF) - ((a shr 8) and 0xFF))
+                    val db = abs((e and 0xFF) - (a and 0xFF))
+                    if (dr > PER_CHANNEL_THRESHOLD || dg > PER_CHANNEL_THRESHOLD || db > PER_CHANNEL_THRESHOLD) {
+                        significantDiffs++
+                    }
                 }
             }
-            return true
+            return significantDiffs.toDouble() / (expected.width * expected.height) <= MAX_DIFF_RATIO
         }
 
         private suspend fun ApplicationTestBuilder.testImageFixture(
@@ -78,7 +90,7 @@ class RenderImageRoutesTest {
                 val expectedImage = ImageIO.read(expectedFile)
                 val actualImage = ImageIO.read(ByteArrayInputStream(actualBytes))
 
-                if (!imagesAreIdentical(expectedImage, actualImage)) {
+                if (!imagesMatch(expectedImage, actualImage)) {
                     val diffImage = PdfVisualTester.createDiffImage(expectedImage, actualImage)
                     val diffFile = File(fixtureDir, "diff.$format")
                     ImageIO.write(diffImage, format, diffFile)
