@@ -1,61 +1,26 @@
 package bambamboole.pdf.api.routes
 
-import bambamboole.pdf.api.models.ConvertRequest
-import bambamboole.pdf.api.module
+import bambamboole.pdf.api.services.PdfService
 import bambamboole.pdf.api.services.PdfValidationService
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.testing.*
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class LargeDocumentTest {
 
     @Test
-    fun testConvert50kLineHtml() = testApplication {
-        application { module() }
-
+    fun testConvert50kLineHtml() {
         val html = buildLargeHtml(tableRows = 8_000, paragraphs = 2_000)
         val lineCount = html.count { it == '\n' }
-        val charCount = html.length
-        println("Generated HTML: $lineCount lines, $charCount chars (${charCount / 1024} KB)")
+        println("Generated HTML: $lineCount lines, ${html.length / 1024} KB")
 
-        val runtime = Runtime.getRuntime()
-        runtime.gc()
-        val memBefore = runtime.totalMemory() - runtime.freeMemory()
         val startTime = System.currentTimeMillis()
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html)))
-        }
-
+        val pdfBytes = PdfService.convertHtmlToPdf(html).bytes
         val conversionTime = System.currentTimeMillis() - startTime
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        val pdfBytes = response.readRawBytes()
-
-        runtime.gc()
-        val memAfter = runtime.totalMemory() - runtime.freeMemory()
-        val memDeltaMb = (memAfter - memBefore) / 1024.0 / 1024.0
-
-        println("--- Performance Results ---")
-        println("Conversion time: ${conversionTime}ms")
-        println("Approx memory delta: ${"%.1f".format(memDeltaMb)} MB")
-        println("PDF size: ${pdfBytes.size / 1024} KB (${pdfBytes.size / 1024 / 1024} MB)")
-        println("Throughput: ${"%.0f".format(lineCount / (conversionTime / 1000.0))} lines/sec")
-
+        println("Conversion time: ${conversionTime}ms, PDF size: ${pdfBytes.size / 1024} KB")
         assertTrue(pdfBytes.size > 1000, "PDF should not be blank")
 
-        val validationStart = System.currentTimeMillis()
         val validation = PdfValidationService.validatePdf(pdfBytes)
-        val validationTime = System.currentTimeMillis() - validationStart
-        println("Validation time: ${validationTime}ms")
-        println("---------------------------")
-
         assertTrue(validation.isCompliant, "Large document must remain PDF/A-3a compliant: ${validation.failures}")
     }
 

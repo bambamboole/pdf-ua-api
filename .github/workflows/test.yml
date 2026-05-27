@@ -23,3 +23,16 @@ jobs:
       run: ./gradlew test --no-daemon
       env:
         JAVA_TOOL_OPTIONS: '--enable-native-access=ALL-UNNAMED'
+
+    - name: Upload comparison diffs and test report on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-failures
+        path: |
+          app/src/test/resources/fixtures/**/generated.*
+          app/src/test/resources/fixtures/**/*diff*.png
+          app/src/test/resources/fixtures/**/diff.*
+          app/build/reports/tests/test/
+        if-no-files-found: ignore
+        retention-days: 14
