@@ -82,6 +82,27 @@ class TemplateSchemaRoutesTest {
             listOf("solid", "dashed", "dotted", "double", "none"),
             definitions["dividerStyle"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
+        assertEquals(
+            listOf("auto", "image", "pdf"),
+            definitions["pageBackgroundType"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+
+        val pageConfig = definitions["pageConfig"]!!.jsonObject
+        assertEquals(
+            listOf("#/\$defs/pageBackgroundConfig", "null"),
+            pageConfig["properties"]!!.jsonObject["background"]!!.jsonObject["oneOf"]!!.jsonArray.map { option ->
+                option.jsonObject["\$ref"]?.jsonPrimitive?.content ?: option.jsonObject["type"]!!.jsonPrimitive.content
+            },
+        )
+
+        val pageBackgroundConfig = definitions["pageBackgroundConfig"]!!.jsonObject
+        assertEquals(listOf("src"), pageBackgroundConfig["required"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals("string", pageBackgroundConfig["properties"]!!.jsonObject["src"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("1", pageBackgroundConfig["properties"]!!.jsonObject["src"]!!.jsonObject["minLength"]!!.jsonPrimitive.content)
+        assertEquals(
+            "#/\$defs/pageBackgroundType",
+            pageBackgroundConfig["properties"]!!.jsonObject["type"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+        )
 
         val blockConfig = definitions["blockConfig"]!!.jsonObject
         assertEquals(

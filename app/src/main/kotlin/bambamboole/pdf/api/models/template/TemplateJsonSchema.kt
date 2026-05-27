@@ -73,6 +73,7 @@ object TemplateJsonSchema {
             put("pageFormat", stringEnum("PageFormat", PageFormat.entries.map { it.serializedName() }))
             put("orientation", stringEnum("Orientation", Orientation.entries.map { it.serializedName() }))
             put("dividerStyle", stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }))
+            put("pageBackgroundType", stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }))
             put("typographyConfig", typographyConfig())
             put("spacingConfig", spacingConfig())
             put("blockConfig", blockConfig())
@@ -132,6 +133,7 @@ object TemplateJsonSchema {
             put("customPageSize", customPageSize())
             put("pageSize", oneOf(listOf(ref("presetPageSize"), ref("customPageSize")), title = "PageSize"))
             put("pageNumbersConfig", pageNumbersConfig())
+            put("pageBackgroundConfig", pageBackgroundConfig())
             put("pageConfig", pageConfig())
             put("templateConfig", templateConfig())
             put("fontFace", fontFace())
@@ -233,15 +235,29 @@ object TemplateJsonSchema {
             put("position", ref("align"))
         }
 
+    private fun pageBackgroundConfig(): JsonObject =
+        schemaObject("PageBackgroundConfig", required = listOf("src")) {
+            put(
+                "src",
+                string(
+                    minLength = 1,
+                    description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+                ),
+            )
+            put("type", ref("pageBackgroundType"))
+        }
+
     private fun pageConfig(): JsonObject =
         schemaObject(
             "PageConfig",
-            tsType = "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig }",
+            tsType = "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
+                "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }",
         ) {
             put("size", ref("pageSize"))
             put("locale", string(default = "de_DE"))
             put("margins", ref("spacingConfig"))
             put("pageNumbers", ref("pageNumbersConfig"))
+            put("background", nullableRef("pageBackgroundConfig"))
         }
 
     private fun templateConfig(): JsonObject =
@@ -353,11 +369,17 @@ object TemplateJsonSchema {
             put("type", "string")
         }
 
-    private fun string(pattern: String? = null, default: String? = null, description: String? = null): JsonObject =
+    private fun string(
+        pattern: String? = null,
+        default: String? = null,
+        minLength: Int? = null,
+        description: String? = null,
+    ): JsonObject =
         buildJsonObject {
             put("type", "string")
             pattern?.let { put("pattern", it) }
             default?.let { put("default", it) }
+            minLength?.let { put("minLength", it) }
             description?.let { put("description", it) }
         }
 
@@ -405,6 +427,9 @@ object TemplateJsonSchema {
 
     private fun DividerStyle.serializedName(): String =
         DividerStyle.serializer().descriptor.getElementName(ordinal)
+
+    private fun PageBackgroundType.serializedName(): String =
+        PageBackgroundType.serializer().descriptor.getElementName(ordinal)
 
     private fun String.camelCase(): String =
         replace(Regex("-([a-z])")) { it.groupValues[1].uppercase() }
