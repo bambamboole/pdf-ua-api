@@ -13,10 +13,11 @@ class ConfigsTest {
     }
 
     @Test
-    fun pageFormatExposesDimensionsAndCssSize() {
-        assertEquals("A4", PageFormat.A4.cssSize)
+    fun pageFormatExposesDimensions() {
         assertEquals(210.0, PageFormat.A4.widthMm)
-        assertEquals("101.6mm 152.4mm", PageFormat.PARCEL_LABEL_4X6.cssSize)
+        assertEquals(297.0, PageFormat.A4.heightMm)
+        assertEquals(297.0, PageFormat.A3.widthMm)
+        assertEquals(420.0, PageFormat.A3.heightMm)
     }
 
     @Test

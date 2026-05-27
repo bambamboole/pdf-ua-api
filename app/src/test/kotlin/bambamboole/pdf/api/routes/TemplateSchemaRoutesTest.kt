@@ -37,10 +37,14 @@ class TemplateSchemaRoutesTest {
             schema["attachmentFields"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
 
-        val page = schema["page"]!!.jsonObject
-        val formats = page["formats"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }
-        assertTrue("A4" in formats)
-        assertTrue("Letter" in formats)
+        val size = schema["page"]!!.jsonObject["size"]!!.jsonObject
+        val presets = size["presets"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }
+        assertTrue("A4" in presets)
+        assertTrue("A3" in presets)
+        assertTrue("Letter" in presets)
+        assertTrue("ParcelLabel4x6" !in presets)
+        assertEquals(listOf("portrait", "landscape"), size["orientations"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("width", "height"), size["customFields"]!!.jsonArray.map { it.jsonPrimitive.content })
 
         val fonts = schema["fonts"]!!.jsonObject
         val bundledFamilies = fonts["bundledFamilies"]!!.jsonArray.map { it.jsonPrimitive.content }

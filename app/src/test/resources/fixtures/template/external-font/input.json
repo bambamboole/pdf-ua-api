@@ -2,7 +2,7 @@
   "template": {
     "version": 1,
     "config": {
-      "page": { "format": "A4", "locale": "en_US" },
+      "page": { "size": { "format": "A4" }, "locale": "en_US" },
       "typography": { "family": "Inter" }
     },
     "fonts": {
