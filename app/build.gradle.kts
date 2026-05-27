@@ -11,8 +11,6 @@ plugins {
     // Apply the Kotlin serialization plugin
     alias(libs.plugins.kotlinPluginSerialization)
 
-    alias(libs.plugins.ksp)
-
     id("io.github.tabilzad.inspektor") version "0.10.0-alpha"
 }
 
@@ -32,6 +30,7 @@ dependencies {
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)
+    implementation(libs.kotlinxSchemaJson)
 
     // OpenHTMLToPDF
     implementation(libs.openhtmltopdfCore)
@@ -53,15 +52,8 @@ dependencies {
     implementation("io.github.tabilzad.inspektor:annotations:0.10.0-alpha")
 
     // Testing
-    kspTest(libs.kotlinxSchemaKsp)
     testImplementation(libs.ktorServerTestHost)
     testImplementation(libs.kotlinTest)
-    testImplementation(libs.kotlinxSchemaAnnotations)
-    testImplementation(libs.kotlinxSchemaJson)
-}
-
-ksp {
-    arg("kotlinx.schema.include", "bambamboole.pdf.api.models.template.SpikeKsp**")
 }
 
 application {

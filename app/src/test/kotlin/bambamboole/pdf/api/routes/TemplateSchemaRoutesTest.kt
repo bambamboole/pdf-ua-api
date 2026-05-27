@@ -89,6 +89,11 @@ class TemplateSchemaRoutesTest {
 
         val pageConfig = definitions["pageConfig"]!!.jsonObject
         assertEquals(
+            "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; " +
+                "background?: PageBackgroundConfig | null }",
+            pageConfig["tsType"]!!.jsonPrimitive.content,
+        )
+        assertEquals(
             listOf("#/\$defs/pageBackgroundConfig", "null"),
             pageConfig["properties"]!!.jsonObject["background"]!!.jsonObject["oneOf"]!!.jsonArray.map { option ->
                 option.jsonObject["\$ref"]?.jsonPrimitive?.content ?: option.jsonObject["type"]!!.jsonPrimitive.content

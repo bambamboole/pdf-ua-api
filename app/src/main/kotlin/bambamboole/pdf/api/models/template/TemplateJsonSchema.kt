@@ -1,13 +1,28 @@
 package bambamboole.pdf.api.models.template
 
 import bambamboole.pdf.api.services.BundledFonts
+import kotlinx.schema.json.AdditionalPropertiesConstraint
+import kotlinx.schema.json.AdditionalPropertiesSchema
+import kotlinx.schema.json.ArrayPropertyDefinition
+import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.GenericPropertyDefinition
+import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.json.NumericPropertyDefinition
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.OneOfPropertyDefinition
+import kotlinx.schema.json.PropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
+import kotlinx.schema.json.StringPropertyDefinition
+import kotlinx.schema.json.encodeToJsonObject
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
-import kotlinx.serialization.json.putJsonObject
 
 object TemplateJsonSchema {
     private const val TEMPLATE_VERSION = 1
@@ -15,24 +30,36 @@ object TemplateJsonSchema {
 
     private val blockOrder = listOf("text", "html", "heading", "image", "spacer", "divider")
 
+    private val definitionTsTypes = mapOf(
+        "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
+        "headingConfig" to "BlockConfig & { level?: number }",
+        "imageConfig" to "BlockConfig & { maxHeight?: number }",
+        "spacerConfig" to "BlockConfig & { height?: number }",
+        "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
+        "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
+            "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }",
+        "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
+    )
+
     fun current(): JsonObject =
-        buildJsonObject {
-            put("\$schema", "https://json-schema.org/draft/2020-12/schema")
-            put("\$id", "https://pdf-ua-api.com/schemas/template-v1.json")
-            put("title", "Template")
-            put("type", "object")
-            putJsonArray("required") { add("version") }
-            put("x-pdfUa", pdfUaMetadata())
-            putJsonObject("properties") {
-                put("version", constInteger(TEMPLATE_VERSION))
-                put("config", ref("templateConfig"))
-                put("fonts", fontsProperty())
-                put("attachments", arrayOf(ref("fileAttachment")))
-                put("rows", arrayOf(ref("row")))
-            }
-            put("additionalProperties", false)
-            put("\$defs", definitions())
-        }
+        JsonSchema(
+            schema = "https://json-schema.org/draft/2020-12/schema",
+            id = "https://pdf-ua-api.com/schemas/template-v1.json",
+            title = "Template",
+            type = listOf("object"),
+            required = listOf("version"),
+            additionalProperties = AdditionalPropertiesConstraint.deny(),
+            properties = mapOf(
+                "version" to constInteger(TEMPLATE_VERSION),
+                "config" to ref("templateConfig"),
+                "fonts" to fontsProperty(),
+                "attachments" to arrayOf(ref("fileAttachment")),
+                "rows" to arrayOf(ref("row")),
+            ),
+            defs = definitions(),
+        ).encodeToJsonObject()
+            .withRootExtension("x-pdfUa", pdfUaMetadata())
+            .withDefinitionExtensions(definitionTsTypes)
 
     private fun pdfUaMetadata(): JsonObject =
         buildJsonObject {
@@ -67,353 +94,298 @@ object TemplateJsonSchema {
             }
         }
 
-    private fun definitions(): JsonObject =
-        buildJsonObject {
-            put("align", stringEnum("Align", Align.entries.map { it.serializedName() }))
-            put("pageFormat", stringEnum("PageFormat", PageFormat.entries.map { it.serializedName() }))
-            put("orientation", stringEnum("Orientation", Orientation.entries.map { it.serializedName() }))
-            put("dividerStyle", stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }))
-            put("pageBackgroundType", stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }))
-            put("typographyConfig", typographyConfig())
-            put("spacingConfig", spacingConfig())
-            put("blockConfig", blockConfig())
-            put(
-                "headingConfig",
-                extendedBlockConfig(
-                    "HeadingConfig",
-                    "BlockConfig & { level?: number }",
-                    "level" to int(min = 1, max = 6, default = 2),
-                ),
-            )
-            put(
+    private fun definitions(): Map<String, PropertyDefinition> =
+        linkedMapOf(
+            "align" to stringEnum("Align", Align.entries.map { it.serializedName() }),
+            "pageFormat" to stringEnum("PageFormat", PageFormat.entries.map { it.serializedName() }),
+            "orientation" to stringEnum("Orientation", Orientation.entries.map { it.serializedName() }),
+            "dividerStyle" to stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }),
+            "pageBackgroundType" to stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }),
+            "typographyConfig" to typographyConfig(),
+            "spacingConfig" to spacingConfig(),
+            "blockConfig" to blockConfig(),
+            "headingConfig" to extendedBlockConfig(
+                "HeadingConfig",
+                "level" to int(min = 1, max = 6, default = 2),
+            ),
+            "imageConfig" to extendedBlockConfig(
+                "ImageConfig",
+                "maxHeight" to int(min = 1, default = 60),
+            ),
+            "spacerConfig" to extendedBlockConfig(
+                "SpacerConfig",
+                "height" to int(min = 0, default = 5),
+            ),
+            "dividerConfig" to extendedBlockConfig(
+                "DividerConfig",
+                "thickness" to int(min = 0, default = 1),
+                "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
+                "style" to ref("dividerStyle"),
+            ),
+            "textBlock" to block("TextBlock", "text", listOf("text"), "blockConfig", "text" to string()),
+            "htmlBlock" to block("HtmlBlock", "html", listOf("html"), "blockConfig", "html" to string()),
+            "headingBlock" to block("HeadingBlock", "heading", listOf("text"), "headingConfig", "text" to string()),
+            "imageBlock" to block(
+                "ImageBlock",
+                "image",
+                listOf("src"),
                 "imageConfig",
-                extendedBlockConfig(
-                    "ImageConfig",
-                    "BlockConfig & { maxHeight?: number }",
-                    "maxHeight" to int(min = 1, default = 60),
-                ),
-            )
-            put(
-                "spacerConfig",
-                extendedBlockConfig(
-                    "SpacerConfig",
-                    "BlockConfig & { height?: number }",
-                    "height" to int(min = 0, default = 5),
-                ),
-            )
-            put(
-                "dividerConfig",
-                extendedBlockConfig(
-                    "DividerConfig",
-                    "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
-                    "thickness" to int(min = 0, default = 1),
-                    "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
-                    "style" to ref("dividerStyle"),
-                ),
-            )
-            put("textBlock", block("TextBlock", "text", listOf("text"), "blockConfig", "text" to string()))
-            put("htmlBlock", block("HtmlBlock", "html", listOf("html"), "blockConfig", "html" to string()))
-            put("headingBlock", block("HeadingBlock", "heading", listOf("text"), "headingConfig", "text" to string()))
-            put(
-                "imageBlock",
-                block(
-                    "ImageBlock",
-                    "image",
-                    listOf("src"),
-                    "imageConfig",
-                    "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
-                    "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
-                ),
-            )
-            put("spacerBlock", block("SpacerBlock", "spacer", emptyList(), "spacerConfig"))
-            put("dividerBlock", block("DividerBlock", "divider", emptyList(), "dividerConfig"))
-            put("block", oneOf(blockOrder.map { ref("${it.camelCase()}Block") }))
-            put("row", row())
-            put("presetPageSize", presetPageSize())
-            put("customPageSize", customPageSize())
-            put("pageSize", oneOf(listOf(ref("presetPageSize"), ref("customPageSize")), title = "PageSize"))
-            put("pageNumbersConfig", pageNumbersConfig())
-            put("pageBackgroundConfig", pageBackgroundConfig())
-            put("pageConfig", pageConfig())
-            put("templateConfig", templateConfig())
-            put("fontFace", fontFace())
-            put("fileAttachment", fileAttachment())
-        }
+                "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
+                "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
+            ),
+            "spacerBlock" to block("SpacerBlock", "spacer", emptyList(), "spacerConfig"),
+            "dividerBlock" to block("DividerBlock", "divider", emptyList(), "dividerConfig"),
+            "block" to oneOf(blockOrder.map { ref("${it.camelCase()}Block") }),
+            "row" to row(),
+            "presetPageSize" to presetPageSize(),
+            "customPageSize" to customPageSize(),
+            "pageSize" to oneOf(listOf(ref("presetPageSize"), ref("customPageSize")), title = "PageSize"),
+            "pageNumbersConfig" to pageNumbersConfig(),
+            "pageBackgroundConfig" to pageBackgroundConfig(),
+            "pageConfig" to pageConfig(),
+            "templateConfig" to templateConfig(),
+            "fontFace" to fontFace(),
+            "fileAttachment" to fileAttachment(),
+        )
 
-    private fun typographyConfig(): JsonObject =
+    private fun typographyConfig(): PropertyDefinition =
         schemaObject("TypographyConfig") {
-            put("family", nullableString(description = "Bundled or external font family key."))
-            put("size", nullableInt(min = 1, description = "Font size in points."))
-            put("weight", nullableInt(description = "Numeric font weight."))
-            put("align", nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope."))
-            put("color", nullableString(description = "CSS color value used for text."))
+            "family" to nullableString(description = "Bundled or external font family key.")
+            "size" to nullableInt(min = 1, description = "Font size in points.")
+            "weight" to nullableInt(description = "Numeric font weight.")
+            "align" to nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope.")
+            "color" to nullableString(description = "CSS color value used for text.")
         }
 
-    private fun spacingConfig(): JsonObject =
+    private fun spacingConfig(): PropertyDefinition =
         schemaObject("SpacingConfig") {
-            put("top", nullableInt(min = 0, description = "Top spacing in millimetres."))
-            put("right", nullableInt(min = 0, description = "Right spacing in millimetres."))
-            put("bottom", nullableInt(min = 0, description = "Bottom spacing in millimetres."))
-            put("left", nullableInt(min = 0, description = "Left spacing in millimetres."))
+            "top" to nullableInt(min = 0, description = "Top spacing in millimetres.")
+            "right" to nullableInt(min = 0, description = "Right spacing in millimetres.")
+            "bottom" to nullableInt(min = 0, description = "Bottom spacing in millimetres.")
+            "left" to nullableInt(min = 0, description = "Left spacing in millimetres.")
         }
 
-    private fun blockConfig(): JsonObject =
-        schemaObject(
-            "BlockConfig",
-            tsType = "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
-        ) {
-            put("typography", nullableRef("typographyConfig"))
-            put("spacing", nullableRef("spacingConfig"))
-            put("width", nullableString(description = "CSS width for this block, such as 50%, 80mm, or auto."))
-            put(
-                "align",
-                nullableEnum(
-                    Align.entries.map { it.serializedName() },
-                    description = "Horizontal placement of this block within its row cell.",
-                ),
-            )
-        }
+    private fun blockConfig(): PropertyDefinition =
+        schemaObject("BlockConfig", baseBlockConfigProperties())
 
-    private fun extendedBlockConfig(title: String, tsType: String, vararg properties: Pair<String, JsonObject>): JsonObject =
-        schemaObject(title, tsType = tsType) {
-            put("typography", nullableRef("typographyConfig"))
-            put("spacing", nullableRef("spacingConfig"))
-            put("width", nullableString(description = "CSS width for this block, such as 50%, 80mm, or auto."))
-            put(
-                "align",
-                nullableEnum(
-                    Align.entries.map { it.serializedName() },
-                    description = "Horizontal placement of this block within its row cell.",
-                ),
-            )
-            properties.forEach { (name, schema) -> put(name, schema) }
-        }
+    private fun extendedBlockConfig(title: String, vararg properties: Pair<String, PropertyDefinition>): PropertyDefinition =
+        schemaObject(title, baseBlockConfigProperties() + properties)
+
+    private fun baseBlockConfigProperties(): Map<String, PropertyDefinition> =
+        linkedMapOf(
+            "typography" to nullableRef("typographyConfig"),
+            "spacing" to nullableRef("spacingConfig"),
+            "width" to nullableString(description = "CSS width for this block, such as 50%, 80mm, or auto."),
+            "align" to nullableEnum(
+                Align.entries.map { it.serializedName() },
+                description = "Horizontal placement of this block within its row cell.",
+            ),
+        )
 
     private fun block(
         title: String,
         type: String,
         requiredFields: List<String>,
         configDefinition: String,
-        vararg fields: Pair<String, JsonObject>,
-    ): JsonObject =
-        buildJsonObject {
-            put("title", title)
-            put("type", "object")
-            putJsonArray("required") {
-                add("type")
-                requiredFields.forEach(::add)
-            }
-            putJsonObject("properties") {
-                put("type", constString(type))
-                put("id", nullableString(description = "Stable block identifier used for runtime data overrides."))
-                fields.forEach { (name, schema) -> put(name, schema) }
-                put("config", ref(configDefinition))
-            }
-            put("additionalProperties", false)
-        }
-
-    private fun row(): JsonObject =
-        schemaObject("Row", required = listOf("blocks")) {
-            put("blocks", arrayOf(ref("block")))
-        }
-
-    private fun presetPageSize(): JsonObject =
-        schemaObject("PresetPageSize") {
-            put("format", ref("pageFormat"))
-            put("orientation", ref("orientation"))
-        }
-
-    private fun customPageSize(): JsonObject =
-        schemaObject("CustomPageSize", required = listOf("width", "height")) {
-            put("width", int(min = 1))
-            put("height", int(min = 1))
-        }
-
-    private fun pageNumbersConfig(): JsonObject =
-        schemaObject("PageNumbersConfig", tsType = "{ enabled?: boolean; position?: Align }") {
-            put("enabled", boolean(default = false))
-            put("position", ref("align"))
-        }
-
-    private fun pageBackgroundConfig(): JsonObject =
-        schemaObject("PageBackgroundConfig", required = listOf("src")) {
-            put(
-                "src",
-                string(
-                    minLength = 1,
-                    description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
-                ),
-            )
-            put("type", ref("pageBackgroundType"))
-        }
-
-    private fun pageConfig(): JsonObject =
+        vararg fields: Pair<String, PropertyDefinition>,
+    ): PropertyDefinition =
         schemaObject(
-            "PageConfig",
-            tsType = "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
-                "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }",
-        ) {
-            put("size", ref("pageSize"))
-            put("locale", string(default = "de_DE"))
-            put("margins", ref("spacingConfig"))
-            put("pageNumbers", ref("pageNumbersConfig"))
-            put("background", nullableRef("pageBackgroundConfig"))
+            title,
+            required = listOf("type") + requiredFields,
+            properties = linkedMapOf(
+                "type" to constString(type),
+                "id" to nullableString(description = "Stable block identifier used for runtime data overrides."),
+                *fields,
+                "config" to ref(configDefinition),
+            ),
+        )
+
+    private fun row(): PropertyDefinition =
+        schemaObject("Row", required = listOf("blocks")) {
+            "blocks" to arrayOf(ref("block"))
         }
 
-    private fun templateConfig(): JsonObject =
-        schemaObject("TemplateConfig", tsType = "{ page?: PageConfig; typography?: TypographyConfig }") {
-            put("page", ref("pageConfig"))
-            put("typography", ref("typographyConfig"))
+    private fun presetPageSize(): PropertyDefinition =
+        schemaObject("PresetPageSize") {
+            "format" to ref("pageFormat")
+            "orientation" to ref("orientation")
         }
 
-    private fun fontFace(): JsonObject =
+    private fun customPageSize(): PropertyDefinition =
+        schemaObject("CustomPageSize", required = listOf("width", "height")) {
+            "width" to int(min = 1)
+            "height" to int(min = 1)
+        }
+
+    private fun pageNumbersConfig(): PropertyDefinition =
+        schemaObject("PageNumbersConfig") {
+            "enabled" to boolean(default = false)
+            "position" to ref("align")
+        }
+
+    private fun pageBackgroundConfig(): PropertyDefinition =
+        schemaObject("PageBackgroundConfig", required = listOf("src")) {
+            "src" to string(
+                minLength = 1,
+                description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+            )
+            "type" to ref("pageBackgroundType")
+        }
+
+    private fun pageConfig(): PropertyDefinition =
+        schemaObject("PageConfig") {
+            "size" to ref("pageSize")
+            "locale" to string(default = "de_DE")
+            "margins" to ref("spacingConfig")
+            "pageNumbers" to ref("pageNumbersConfig")
+            "background" to nullableRef("pageBackgroundConfig")
+        }
+
+    private fun templateConfig(): PropertyDefinition =
+        schemaObject("TemplateConfig") {
+            "page" to ref("pageConfig")
+            "typography" to ref("typographyConfig")
+        }
+
+    private fun fontFace(): PropertyDefinition =
         schemaObject("FontFace", required = listOf("src")) {
-            put("src", string())
-            put("weight", int(default = 400))
-            put("style", string(default = "normal"))
+            "src" to string()
+            "weight" to int(default = 400)
+            "style" to string(default = "normal")
         }
 
-    private fun fileAttachment(): JsonObject =
+    private fun fileAttachment(): PropertyDefinition =
         schemaObject("FileAttachment", required = listOf("name", "content")) {
-            put("name", string())
-            put("content", string(description = "Base64-encoded file content."))
-            put("mimeType", string(default = "application/octet-stream"))
-            put("description", nullableString())
-            put("relationship", string(default = "Alternative"))
+            "name" to string()
+            "content" to string(description = "Base64-encoded file content.")
+            "mimeType" to string(default = "application/octet-stream")
+            "description" to nullableString()
+            "relationship" to string(default = "Alternative")
         }
 
-    private fun fontsProperty(): JsonObject =
-        buildJsonObject {
-            put("type", "object")
-            put("description", "External fonts keyed by font family name.")
-            put("additionalProperties", ref("fontFace"))
-        }
+    private fun fontsProperty(): PropertyDefinition =
+        ObjectPropertyDefinition(
+            description = "External fonts keyed by font family name.",
+            additionalProperties = AdditionalPropertiesSchema(ref("fontFace")),
+        )
+
+    private fun schemaObject(
+        title: String,
+        properties: Map<String, PropertyDefinition>,
+        required: List<String> = emptyList(),
+    ): PropertyDefinition =
+        ObjectPropertyDefinition(
+            title = title,
+            properties = properties,
+            required = required.ifEmpty { null },
+            additionalProperties = AdditionalPropertiesConstraint.deny(),
+        )
 
     private fun schemaObject(
         title: String,
         required: List<String> = emptyList(),
-        tsType: String? = null,
-        properties: JsonObjectBuilder.() -> Unit,
-    ): JsonObject =
-        buildJsonObject {
-            put("title", title)
-            put("type", "object")
-            if (required.isNotEmpty()) {
-                putJsonArray("required") {
-                    required.forEach(::add)
-                }
-            }
-            put("properties", buildJsonObject(properties))
-            put("additionalProperties", false)
-            tsType?.let { put("tsType", it) }
-        }
+        properties: SchemaPropertiesBuilder.() -> Unit,
+    ): PropertyDefinition =
+        schemaObject(title, SchemaPropertiesBuilder().apply(properties).build(), required)
 
-    private fun stringEnum(title: String, values: List<String>): JsonObject =
-        buildJsonObject {
-            put("title", title)
-            put("type", "string")
-            putJsonArray("enum") {
-                values.forEach(::add)
-            }
-        }
+    private fun stringEnum(title: String, values: List<String>): PropertyDefinition =
+        StringPropertyDefinition(title = title, enum = values)
 
-    private fun nullableEnum(values: List<String>, description: String? = null): JsonObject =
-        buildJsonObject {
-            putJsonArray("type") {
-                add("string")
-                add("null")
-            }
-            putJsonArray("enum") {
-                values.forEach(::add)
-                add(JsonNull)
-            }
-            description?.let { put("description", it) }
-        }
-
-    private fun oneOf(schemas: List<JsonObject>, title: String? = null): JsonObject =
-        buildJsonObject {
-            title?.let { put("title", it) }
-            putJsonArray("oneOf") {
-                schemas.forEach(::add)
-            }
-        }
-
-    private fun arrayOf(item: JsonObject): JsonObject =
-        buildJsonObject {
-            put("type", "array")
-            put("items", item)
-        }
-
-    private fun ref(definition: String): JsonObject =
-        buildJsonObject {
-            put("\$ref", "#/\$defs/$definition")
-        }
-
-    private fun nullableRef(definition: String): JsonObject =
-        oneOf(
-            listOf(
-                ref(definition),
-                buildJsonObject { put("type", "null") },
-            ),
+    private fun nullableEnum(values: List<String>, description: String? = null): PropertyDefinition =
+        GenericPropertyDefinition(
+            type = listOf("string", "null"),
+            enum = values.map(::JsonPrimitive) + JsonNull,
+            description = description,
         )
 
-    private fun constInteger(value: Int): JsonObject =
-        buildJsonObject {
-            put("const", value)
-            put("type", "integer")
-        }
+    private fun oneOf(schemas: List<PropertyDefinition>, title: String? = null): PropertyDefinition =
+        OneOfPropertyDefinition(oneOf = schemas, title = title)
 
-    private fun constString(value: String): JsonObject =
-        buildJsonObject {
-            put("const", value)
-            put("type", "string")
-        }
+    private fun arrayOf(item: PropertyDefinition): PropertyDefinition =
+        ArrayPropertyDefinition(items = item)
+
+    private fun ref(definition: String): PropertyDefinition =
+        ReferencePropertyDefinition(ref = "#/\$defs/$definition")
+
+    private fun nullableRef(definition: String): PropertyDefinition =
+        oneOf(listOf(ref(definition), nullType()))
+
+    private fun nullType(): PropertyDefinition =
+        GenericPropertyDefinition(type = listOf("null"))
+
+    private fun constInteger(value: Int): PropertyDefinition =
+        NumericPropertyDefinition(type = listOf("integer"), constValue = JsonPrimitive(value))
+
+    private fun constString(value: String): PropertyDefinition =
+        StringPropertyDefinition(constValue = JsonPrimitive(value))
 
     private fun string(
         pattern: String? = null,
         default: String? = null,
         minLength: Int? = null,
         description: String? = null,
-    ): JsonObject =
+    ): PropertyDefinition =
+        StringPropertyDefinition(
+            pattern = pattern,
+            default = default?.let(::JsonPrimitive),
+            minLength = minLength,
+            description = description,
+        )
+
+    private fun nullableString(description: String? = null): PropertyDefinition =
+        GenericPropertyDefinition(type = listOf("string", "null"), description = description)
+
+    private fun int(min: Int? = null, max: Int? = null, default: Int? = null): PropertyDefinition =
+        NumericPropertyDefinition(
+            type = listOf("integer"),
+            minimum = min?.toDouble(),
+            maximum = max?.toDouble(),
+            default = default?.let(::JsonPrimitive),
+        )
+
+    private fun nullableInt(min: Int? = null, description: String? = null): PropertyDefinition =
+        GenericPropertyDefinition(
+            type = listOf("integer", "null"),
+            minimum = min?.toDouble(),
+            description = description,
+        )
+
+    private fun boolean(default: Boolean? = null): PropertyDefinition =
+        BooleanPropertyDefinition(default = default?.let(::JsonPrimitive))
+
+    private fun JsonObject.withRootExtension(name: String, value: JsonElement): JsonObject =
         buildJsonObject {
-            put("type", "string")
-            pattern?.let { put("pattern", it) }
-            default?.let { put("default", it) }
-            minLength?.let { put("minLength", it) }
-            description?.let { put("description", it) }
+            this@withRootExtension.forEach { (key, existingValue) -> put(key, existingValue) }
+            put(name, value)
         }
 
-    private fun nullableString(description: String? = null): JsonObject =
+    private fun JsonObject.withDefinitionExtensions(tsTypes: Map<String, String>): JsonObject =
         buildJsonObject {
-            putJsonArray("type") {
-                add("string")
-                add("null")
+            this@withDefinitionExtensions.forEach { (key, value) ->
+                if (key == "\$defs") {
+                    put(key, value.jsonObject.withTsTypes(tsTypes))
+                } else {
+                    put(key, value)
+                }
             }
-            description?.let { put("description", it) }
         }
 
-    private fun int(min: Int? = null, max: Int? = null, default: Int? = null): JsonObject =
+    private fun JsonObject.withTsTypes(tsTypes: Map<String, String>): JsonObject =
         buildJsonObject {
-            put("type", "integer")
-            min?.let { put("minimum", it) }
-            max?.let { put("maximum", it) }
-            default?.let { put("default", it) }
-        }
-
-    private fun nullableInt(min: Int? = null, description: String? = null): JsonObject =
-        buildJsonObject {
-            putJsonArray("type") {
-                add("integer")
-                add("null")
+            this@withTsTypes.forEach { (name, definition) ->
+                val tsType = tsTypes[name]
+                if (tsType == null) {
+                    put(name, definition)
+                } else {
+                    put(
+                        name,
+                        buildJsonObject {
+                            definition.jsonObject.forEach { (key, value) -> put(key, value) }
+                            put("tsType", tsType)
+                        },
+                    )
+                }
             }
-            min?.let { put("minimum", it) }
-            description?.let { put("description", it) }
-        }
-
-    private fun boolean(default: Boolean? = null): JsonObject =
-        buildJsonObject {
-            put("type", "boolean")
-            default?.let { put("default", it) }
         }
 
     private fun PageFormat.serializedName(): String =
@@ -435,4 +407,12 @@ object TemplateJsonSchema {
         replace(Regex("-([a-z])")) { it.groupValues[1].uppercase() }
 }
 
-private typealias JsonObjectBuilder = kotlinx.serialization.json.JsonObjectBuilder
+private class SchemaPropertiesBuilder {
+    private val properties = linkedMapOf<String, PropertyDefinition>()
+
+    infix fun String.to(schema: PropertyDefinition) {
+        properties[this] = schema
+    }
+
+    fun build(): Map<String, PropertyDefinition> = properties
+}
