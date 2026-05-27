@@ -30,7 +30,7 @@ object TemplateJsonSchema {
 
     private const val KEY_VALUE_FIELD_KEY_PATTERN = "^[A-Za-z][A-Za-z0-9_]*$"
 
-    private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider")
+    private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
 
     private val definitionTsTypes = mapOf(
         "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
@@ -40,6 +40,7 @@ object TemplateJsonSchema {
         "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
         "spacerConfig" to "BlockConfig & { height?: number }",
         "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
+        "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
         "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
             "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }",
         "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
@@ -104,6 +105,7 @@ object TemplateJsonSchema {
             "pageFormat" to stringEnum("PageFormat", PageFormat.entries.map { it.serializedName() }),
             "orientation" to stringEnum("Orientation", Orientation.entries.map { it.serializedName() }),
             "dividerStyle" to stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }),
+            "tableStyle" to stringEnum("TableStyle", TableStyle.entries.map { it.serializedName() }),
             "pageBackgroundType" to stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }),
             "typographyConfig" to typographyConfig(),
             "spacingConfig" to spacingConfig(),
@@ -132,6 +134,13 @@ object TemplateJsonSchema {
                 "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
                 "style" to ref("dividerStyle"),
             ),
+            "tableColumn" to tableColumn(),
+            "tableConfig" to extendedBlockConfig(
+                "TableConfig",
+                "numberRows" to boolean(default = false),
+                "columns" to arrayOf(ref("tableColumn")),
+                "style" to ref("tableStyle"),
+            ),
             "textBlock" to block("TextBlock", "text", listOf("text"), "blockConfig", "text" to string()),
             "htmlBlock" to block("HtmlBlock", "html", listOf("html"), "blockConfig", "html" to string()),
             "headingBlock" to block("HeadingBlock", "heading", listOf("text"), "headingConfig", "text" to string()),
@@ -152,6 +161,7 @@ object TemplateJsonSchema {
             ),
             "spacerBlock" to block("SpacerBlock", "spacer", emptyList(), "spacerConfig"),
             "dividerBlock" to block("DividerBlock", "divider", emptyList(), "dividerConfig"),
+            "tableBlock" to block("TableBlock", "table", emptyList(), "tableConfig"),
             "block" to oneOf(blockOrder.map { ref("${it.camelCase()}Block") }),
             "row" to row(),
             "presetPageSize" to presetPageSize(),
@@ -229,6 +239,20 @@ object TemplateJsonSchema {
                 "config" to ref(configDefinition),
             ),
         )
+
+    private fun tableColumn(): PropertyDefinition =
+        schemaObject("TableColumn", required = listOf("key", "label")) {
+            "key" to string(
+                pattern = "^[A-Za-z][A-Za-z0-9_]*$",
+                description = "Runtime data key used for this table column.",
+            )
+            "label" to string(description = "Header label rendered for this table column.")
+            "align" to nullableEnum(
+                Align.entries.map { it.serializedName() },
+                description = "Text alignment for this table column.",
+            )
+            "width" to nullableString(description = "Column width as a CSS width value, such as 20mm or 15%.")
+        }
 
     private fun row(): PropertyDefinition =
         schemaObject("Row", required = listOf("blocks")) {
@@ -432,6 +456,9 @@ object TemplateJsonSchema {
 
     private fun DividerStyle.serializedName(): String =
         DividerStyle.serializer().descriptor.getElementName(ordinal)
+
+    private fun TableStyle.serializedName(): String =
+        TableStyle.serializer().descriptor.getElementName(ordinal)
 
     private fun PageBackgroundType.serializedName(): String =
         PageBackgroundType.serializer().descriptor.getElementName(ordinal)

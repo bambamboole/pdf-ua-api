@@ -54,7 +54,7 @@ class TemplateSchemaRoutesTest {
         assertTrue("Inter" in bundledFamilies)
         assertEquals(listOf("src", "weight", "style"), metadata["externalFontFields"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals(
-            listOf("text", "html", "heading", "image", "key-value", "spacer", "divider"),
+            listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table"),
             metadata["blockOrder"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
 
@@ -68,9 +68,39 @@ class TemplateSchemaRoutesTest {
                 "#/\$defs/keyValueBlock",
                 "#/\$defs/spacerBlock",
                 "#/\$defs/dividerBlock",
+                "#/\$defs/tableBlock",
             ),
             definitions["block"]!!.jsonObject["oneOf"]!!.jsonArray.map { it.jsonObject["\$ref"]!!.jsonPrimitive.content },
         )
+        assertEquals(
+            listOf("striped", "bordered", "minimal"),
+            definitions["tableStyle"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+
+        val tableColumn = definitions["tableColumn"]!!.jsonObject
+        assertEquals(listOf("key", "label"), tableColumn["required"]!!.jsonArray.map { it.jsonPrimitive.content })
+        val tableColumnProps = tableColumn["properties"]!!.jsonObject
+        assertEquals(
+            listOf("key", "label", "align", "width"),
+            tableColumnProps.keys.toList(),
+        )
+        assertEquals("^[A-Za-z][A-Za-z0-9_]*$", tableColumnProps["key"]!!.jsonObject["pattern"]!!.jsonPrimitive.content)
+
+        val tableConfigProps = definitions["tableConfig"]!!.jsonObject["properties"]!!.jsonObject
+        assertEquals("boolean", tableConfigProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("false", tableConfigProps["numberRows"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("array", tableConfigProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals(
+            "#/\$defs/tableColumn",
+            tableConfigProps["columns"]!!.jsonObject["items"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+        )
+        assertEquals(
+            "#/\$defs/tableStyle",
+            tableConfigProps["style"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+        )
+
+        val tableBlock = definitions["tableBlock"]!!.jsonObject
+        assertEquals("table", tableBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)
         assertEquals(
             listOf("A3", "A4", "A5", "A6", "Letter", "Legal", "Tabloid"),
             definitions["pageFormat"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },

@@ -84,6 +84,38 @@ class RenderRoutesTest {
     }
 
     @Test
+    fun rendersTemplateWithTableBlockAndBareArrayData() = testApplication {
+        application { module() }
+
+        val body = """
+            {"template":{"version":1,"rows":[
+              {"blocks":[{"type":"table","id":"lineItems","config":{
+                "numberRows":true,
+                "style":"striped",
+                "columns":[
+                  {"key":"sku","label":"SKU","width":"20mm"},
+                  {"key":"description","label":"Description"},
+                  {"key":"total","label":"Total","align":"right"}
+                ]
+              }}]}
+            ]},
+            "data":{"lineItems":[
+              {"sku":"A-100","description":"Accessible PDF setup","total":"100,00 €"},
+              {"sku":"B-200","description":"Structure review","total":"50,00 €"}
+            ]}}
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+        assertTrue(response.readRawBytes().take(5).toByteArray().decodeToString().startsWith("%PDF-"))
+    }
+
+    @Test
     fun rendersTemplateWithKeyValueBlock() = testApplication {
         application { module() }
 

@@ -3,8 +3,11 @@ package bambamboole.pdf.api.models.template
 import bambamboole.pdf.api.util.Html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.w3c.dom.Element
@@ -22,8 +25,8 @@ sealed interface Block {
     val id: String?
     val config: BlockConfig
 
-    /** Returns a copy with content fields replaced by matching keys in [values]. */
-    fun applyData(values: JsonObject): Block
+    /** Returns a copy with content fields replaced from runtime [values]. */
+    fun applyData(values: JsonElement): Block
 
     /** Renders the block's inner HTML (without the positioning wrapper). */
     fun render(): String
@@ -32,7 +35,8 @@ sealed interface Block {
     fun renderCss(cssId: String): List<String> = emptyList()
 }
 
-private fun JsonObject.string(key: String): String? = this[key]?.jsonPrimitive?.contentOrNull
+private fun JsonElement.string(key: String): String? =
+    (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
 private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
 private val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
@@ -130,7 +134,7 @@ data class TextBlock(
     val text: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = copy(text = values.string("text") ?: text)
+    override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
     override fun render(): String {
         val paragraphs = text.split(Regex("\\R{2,}"))
@@ -147,7 +151,7 @@ data class HtmlBlock(
     val html: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = copy(html = values.string("html") ?: html)
+    override fun applyData(values: JsonElement): Block = copy(html = values.string("html") ?: html)
 
     override fun render(): String = html
 }
@@ -168,7 +172,7 @@ data class HeadingBlock(
     val text: String,
     override val config: HeadingConfig = HeadingConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = copy(text = values.string("text") ?: text)
+    override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
     override fun render(): String {
         require(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
@@ -193,7 +197,7 @@ data class ImageBlock(
     val alt: String = "",
     override val config: ImageConfig = ImageConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block =
+    override fun applyData(values: JsonElement): Block =
         copy(
             src = values.string("src") ?: src,
             alt = values.string("alt") ?: alt,
@@ -233,7 +237,8 @@ data class KeyValueBlock(
     val values: Map<String, String?> = emptyMap(),
     override val config: KeyValueConfig = KeyValueConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = copy(values = values.stringValues())
+    override fun applyData(values: JsonElement): Block =
+        if (values is JsonObject) copy(values = values.stringValues()) else this
 
     override fun render(): String {
         validateFields()
@@ -371,7 +376,7 @@ data class SpacerBlock(
     override val id: String? = null,
     override val config: SpacerConfig = SpacerConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = this
+    override fun applyData(values: JsonElement): Block = this
 
     override fun render(): String = ""
 
@@ -398,7 +403,7 @@ data class DividerBlock(
     override val id: String? = null,
     override val config: DividerConfig = DividerConfig(),
 ) : Block {
-    override fun applyData(values: JsonObject): Block = this
+    override fun applyData(values: JsonElement): Block = this
 
     override fun render(): String = "<hr>"
 
@@ -424,5 +429,104 @@ data class DividerBlock(
             DividerStyle.DOTTED -> "dotted"
             DividerStyle.DOUBLE -> "double"
             DividerStyle.NONE -> "none"
+        }
+}
+
+@Serializable
+data class TableColumn(
+    val key: String,
+    val label: String,
+    val align: Align? = null,
+    val width: String? = null,
+)
+
+@Serializable
+data class TableConfig(
+    override val typography: TypographyConfig? = null,
+    override val spacing: SpacingConfig? = null,
+    override val width: String? = null,
+    override val align: Align? = null,
+    val numberRows: Boolean = false,
+    val columns: List<TableColumn> = emptyList(),
+    val style: TableStyle = TableStyle.STRIPED,
+) : BlockConfig
+
+@Serializable
+@SerialName("table")
+data class TableBlock(
+    override val id: String? = null,
+    val rows: List<JsonObject> = emptyList(),
+    override val config: TableConfig = TableConfig(),
+) : Block {
+    override fun applyData(values: JsonElement): Block =
+        copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
+
+    override fun render(): String {
+        val headers = buildList {
+            if (config.numberRows) add("#")
+            config.columns.forEach { add(it.label) }
+        }
+        val thead = buildString {
+            append("<thead><tr>")
+            headers.forEachIndexed { index, header -> append("<th${alignStyle(index)}>${Html.escape(header)}</th>") }
+            append("</tr></thead>")
+        }
+        val tbody = buildString {
+            append("<tbody>")
+            rows.forEachIndexed { rowIndex, row ->
+                append("<tr>")
+                cellsFor(row, rowIndex).forEachIndexed { index, cell -> append("<td${alignStyle(index)}>${Html.escape(cell)}</td>") }
+                append("</tr>")
+            }
+            append("</tbody>")
+        }
+        return "<table class=\"data-table\">${colgroup()}$thead$tbody</table>"
+    }
+
+    override fun renderCss(cssId: String): List<String> =
+        when (config.style) {
+            TableStyle.STRIPED -> listOf(".$cssId tbody tr:nth-child(even) { background-color: #f9fafb; }")
+            TableStyle.BORDERED -> listOf(
+                ".$cssId { border-collapse: collapse; }",
+                ".$cssId th, .$cssId td { border: 1px solid #d1d5db; }",
+            )
+            TableStyle.MINIMAL -> listOf(
+                ".$cssId thead tr { border-bottom: 2px solid #1a1a2e; }",
+                ".$cssId tbody tr { border-bottom: 1px solid #e5e7eb; }",
+            )
+        }
+
+    private fun cellsFor(row: JsonObject, rowIndex: Int): List<String> =
+        buildList {
+            if (config.numberRows) add((rowIndex + 1).toString())
+            config.columns.forEach { column -> add(cellText(row[column.key])) }
+        }
+
+    private fun colgroup(): String {
+        val widths = buildList<String?> {
+            if (config.numberRows) add(null)
+            config.columns.forEach { add(safeCssWidth(it.width)) }
+        }
+        if (widths.none { !it.isNullOrEmpty() }) return ""
+        return widths.joinToString("", prefix = "<colgroup>", postfix = "</colgroup>") { width ->
+            if (width.isNullOrEmpty()) "<col>" else "<col style=\"width: ${Html.escape(width)};\">"
+        }
+    }
+
+    private fun alignStyle(index: Int): String {
+        var columnIndex = index
+        if (config.numberRows) {
+            if (columnIndex == 0) return " style=\"text-align: right;\""
+            columnIndex--
+        }
+        val align = config.columns.getOrNull(columnIndex)?.align ?: return ""
+        return " style=\"text-align: ${align.name.lowercase()};\""
+    }
+
+    private fun cellText(value: JsonElement?): String =
+        when (value) {
+            null, JsonNull -> ""
+            is JsonPrimitive -> value.content
+            else -> value.toString()
         }
 }

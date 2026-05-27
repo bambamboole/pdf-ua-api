@@ -28,11 +28,18 @@ import bambamboole.pdf.api.models.template.SpacerBlock
 import bambamboole.pdf.api.models.template.SpacerConfig
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TemplateConfig
+import bambamboole.pdf.api.models.template.TableBlock
+import bambamboole.pdf.api.models.template.TableColumn
+import bambamboole.pdf.api.models.template.TableConfig
+import bambamboole.pdf.api.models.template.TableStyle
 import bambamboole.pdf.api.models.template.TextBlock
 import bambamboole.pdf.api.models.template.TypographyConfig
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -326,6 +333,42 @@ class TemplateRendererTest {
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         assertTrue(html.contains("body { font-family: 'Inter'; }"))
         assertTrue(!html.contains("@font-face"), "bundled family must not emit @font-face")
+    }
+
+    @Test
+    fun rendersTableWithRuntimeRowDataAsBareArray() {
+        val table = TableBlock(
+            id = "items",
+            config = TableConfig(
+                style = TableStyle.STRIPED,
+                columns = listOf(
+                    TableColumn(key = "sku", label = "SKU"),
+                    TableColumn(key = "description", label = "Description"),
+                ),
+            ),
+        )
+        val data = mapOf(
+            "items" to buildJsonArray {
+                add(buildJsonObject { put("sku", "A-100"); put("description", "Accessible PDF setup") })
+                add(buildJsonObject { put("sku", "B-200"); put("description", "Structure review") })
+            },
+        )
+
+        val html = TemplateRenderer.render(template(table), data)
+
+        assertTrue(html.contains("<th>SKU</th><th>Description</th>"))
+        assertTrue(html.contains("<td>A-100</td><td>Accessible PDF setup</td>"))
+        assertTrue(html.contains("<td>B-200</td><td>Structure review</td>"))
+        assertTrue(html.contains(".block-1 tbody tr:nth-child(even) { background-color: #f9fafb; }"))
+    }
+
+    @Test
+    fun emitsDataTableBaseCssOnce() {
+        val html = TemplateRenderer.render(template(TableBlock(config = TableConfig(columns = listOf(TableColumn("a", "A"))))))
+
+        assertTrue(html.contains(".data-table { width: 100%; border-collapse: collapse; text-align: left; }"))
+        assertTrue(html.contains(".data-table th { padding: 2mm 2.4mm;"))
+        assertTrue(html.contains(".data-table td { padding: 2mm 2.4mm;"))
     }
 
     @Test

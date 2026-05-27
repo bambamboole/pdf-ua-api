@@ -6,6 +6,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -175,6 +178,200 @@ class BlockDeserializationTest {
     }
 
     @Test
+    fun decodesTableBlockWithColumnsAndStyle() {
+        val input = """
+            {"type":"table","id":"items","config":{
+              "numberRows":true,
+              "style":"bordered",
+              "columns":[
+                {"key":"sku","label":"SKU","width":"20mm"},
+                {"key":"description","label":"Description","align":"left"}
+              ]
+            }}
+        """.trimIndent()
+        val table = assertIs<TableBlock>(json.decodeFromString(Block.serializer(), input))
+
+        assertEquals("items", table.id)
+        assertTrue(table.config.numberRows)
+        assertEquals(TableStyle.BORDERED, table.config.style)
+        assertEquals(listOf("sku", "description"), table.config.columns.map { it.key })
+        assertEquals("20mm", table.config.columns[0].width)
+        assertEquals(Align.LEFT, table.config.columns[1].align)
+        assertTrue(table.rows.isEmpty())
+    }
+
+    @Test
+    fun unknownTableStyleFails() {
+        assertFailsWith<SerializationException> {
+            json.decodeFromString(Block.serializer(), """{"type":"table","config":{"style":"fancy"}}""")
+        }
+    }
+
+    @Test
+    fun tableRendersConfiguredColumnsInOrderEscapingCells() {
+        val block = TableBlock(
+            rows = listOf(
+                row("description" to "Service & repair", "quantity" to "1", "total" to "100,00 €"),
+            ),
+            config = TableConfig(
+                columns = listOf(
+                    TableColumn(key = "description", label = "Description"),
+                    TableColumn(key = "quantity", label = "<Qty>"),
+                    TableColumn(key = "total", label = "Total"),
+                ),
+            ),
+        )
+
+        val html = block.render()
+
+        assertTrue(html.startsWith("<table class=\"data-table\">"))
+        assertTrue(html.contains("<thead><tr><th>Description</th><th>&lt;Qty&gt;</th><th>Total</th></tr></thead>"))
+        assertTrue(html.contains("<td>Service &amp; repair</td><td>1</td><td>100,00 €</td>"))
+    }
+
+    @Test
+    fun tableRendersMissingColumnValuesAsEmptyCells() {
+        val block = TableBlock(
+            rows = listOf(row("description" to "Only this")),
+            config = TableConfig(
+                columns = listOf(
+                    TableColumn(key = "description", label = "Description"),
+                    TableColumn(key = "missing", label = "Missing"),
+                ),
+            ),
+        )
+
+        assertTrue(block.render().contains("<td>Only this</td><td></td>"))
+    }
+
+    @Test
+    fun tableEmitsPerColumnAlignmentInline() {
+        val block = TableBlock(
+            rows = listOf(row("first" to "1", "second" to "2")),
+            config = TableConfig(
+                columns = listOf(
+                    TableColumn(key = "first", label = "A", align = Align.LEFT),
+                    TableColumn(key = "second", label = "B", align = Align.RIGHT),
+                ),
+            ),
+        )
+
+        val html = block.render()
+
+        assertTrue(html.contains("<th style=\"text-align: left;\">A</th>"))
+        assertTrue(html.contains("<th style=\"text-align: right;\">B</th>"))
+        assertTrue(html.contains("<td style=\"text-align: left;\">1</td>"))
+        assertTrue(html.contains("<td style=\"text-align: right;\">2</td>"))
+    }
+
+    @Test
+    fun tableRendersColgroupOnlyWhenAColumnHasWidth() {
+        val withWidths = TableBlock(
+            rows = listOf(row("sku" to "A-100", "description" to "Setup")),
+            config = TableConfig(
+                columns = listOf(
+                    TableColumn(key = "sku", label = "SKU", width = "7%"),
+                    TableColumn(key = "description", label = "Description"),
+                ),
+            ),
+        )
+        val widthHtml = withWidths.render()
+        assertTrue(widthHtml.contains("<colgroup><col style=\"width: 7%;\"><col></colgroup>"))
+
+        val noWidths = TableBlock(
+            rows = listOf(row("sku" to "A-100")),
+            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+        )
+        assertTrue(!noWidths.render().contains("<colgroup"))
+    }
+
+    @Test
+    fun tableNumberRowsPrependsRightAlignedCounterColumn() {
+        val block = TableBlock(
+            rows = listOf(
+                row("description" to "Accessible PDF setup"),
+                row("description" to "Structure review"),
+            ),
+            config = TableConfig(
+                numberRows = true,
+                columns = listOf(TableColumn(key = "description", label = "Description")),
+            ),
+        )
+
+        val html = block.render()
+
+        assertTrue(html.contains("<th style=\"text-align: right;\">#</th><th>Description</th>"))
+        assertTrue(html.contains("<td style=\"text-align: right;\">1</td><td>Accessible PDF setup</td>"))
+        assertTrue(html.contains("<td style=\"text-align: right;\">2</td><td>Structure review</td>"))
+    }
+
+    @Test
+    fun tableNumberRowsColgroupPrependsLeadingCol() {
+        val block = TableBlock(
+            rows = listOf(row("sku" to "A-100")),
+            config = TableConfig(
+                numberRows = true,
+                columns = listOf(TableColumn(key = "sku", label = "SKU", width = "10mm")),
+            ),
+        )
+
+        assertTrue(block.render().contains("<colgroup><col><col style=\"width: 10mm;\"></colgroup>"))
+    }
+
+    @Test
+    fun tableStylePresetsEmitScopedCss() {
+        assertEquals(
+            listOf(".block-1 tbody tr:nth-child(even) { background-color: #f9fafb; }"),
+            TableBlock(config = TableConfig(style = TableStyle.STRIPED)).renderCss("block-1"),
+        )
+        assertEquals(
+            listOf(
+                ".block-1 { border-collapse: collapse; }",
+                ".block-1 th, .block-1 td { border: 1px solid #d1d5db; }",
+            ),
+            TableBlock(config = TableConfig(style = TableStyle.BORDERED)).renderCss("block-1"),
+        )
+        assertEquals(
+            listOf(
+                ".block-1 thead tr { border-bottom: 2px solid #1a1a2e; }",
+                ".block-1 tbody tr { border-bottom: 1px solid #e5e7eb; }",
+            ),
+            TableBlock(config = TableConfig(style = TableStyle.MINIMAL)).renderCss("block-1"),
+        )
+    }
+
+    @Test
+    fun tableApplyDataReplacesRowsFromBareArray() {
+        val block = TableBlock(
+            id = "items",
+            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+        )
+        val data = buildJsonArray {
+            add(buildJsonObject { put("sku", "A-100") })
+            add(buildJsonObject { put("sku", "B-200") })
+        }
+
+        val updated = assertIs<TableBlock>(block.applyData(data))
+
+        assertEquals(2, updated.rows.size)
+        val html = updated.render()
+        assertTrue(html.contains("<td>A-100</td>"))
+        assertTrue(html.contains("<td>B-200</td>"))
+    }
+
+    @Test
+    fun tableApplyDataClearsRowsForNonArrayData() {
+        val block = TableBlock(
+            rows = listOf(row("sku" to "A-100")),
+            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+        )
+
+        val updated = assertIs<TableBlock>(block.applyData(JsonObject(mapOf("rows" to JsonPrimitive("nope")))))
+
+        assertTrue(updated.rows.isEmpty())
+    }
+
+    @Test
     fun keyValueRendersConfiguredFieldsInOrderAndEscapes() {
         val block = KeyValueBlock(
             values = mapOf("name" to "<ACME>", "invoice" to "INV-1", "ignored" to "x"),
@@ -219,4 +416,7 @@ class BlockDeserializationTest {
             KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("1bad", "Bad")))).render()
         }
     }
+
+    private fun row(vararg cells: Pair<String, String>): JsonObject =
+        buildJsonObject { cells.forEach { (key, value) -> put(key, value) } }
 }
