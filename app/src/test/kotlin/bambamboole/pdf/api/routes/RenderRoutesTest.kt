@@ -61,6 +61,29 @@ class RenderRoutesTest {
     }
 
     @Test
+    fun rendersTemplateWithHeadingAndImageBlocks() = testApplication {
+        application { module() }
+
+        val svg = """<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="#2563eb"/></svg>"""
+        val imageSrc = "data:image/svg+xml;base64,${Base64.getEncoder().encodeToString(svg.toByteArray())}"
+        val body = """
+            {"template":{"version":1,"rows":[
+              {"blocks":[{"type":"heading","id":"title","text":"Heading block","config":{"level":2}}]},
+              {"blocks":[{"type":"image","id":"logo","src":"$imageSrc","alt":"Blue square","config":{"maxHeight":24}}]}
+            ]}}
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+        assertTrue(response.readRawBytes().take(5).toByteArray().decodeToString().startsWith("%PDF-"))
+    }
+
+    @Test
     fun appliesDataOverride() = testApplication {
         application { module() }
 
