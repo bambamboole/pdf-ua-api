@@ -120,12 +120,12 @@ class ValidationRoutesTest {
         }
 
         private fun getSourceFixturesDir(): File {
-            val fixturesUrl = ValidationRoutesTest::class.java.classLoader.getResource("fixtures")
-                ?: fail("Fixtures directory not found in classpath")
+            val fixturesUrl = ValidationRoutesTest::class.java.classLoader.getResource("fixtures/html")
+                ?: fail("fixtures/html directory not found in classpath")
 
             val buildFixturesDir = File(fixturesUrl.toURI())
             val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/fixtures")
+            return File(projectRoot, "app/src/test/resources/fixtures/html")
         }
     }
 

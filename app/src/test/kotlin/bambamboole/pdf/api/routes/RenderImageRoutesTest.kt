@@ -21,11 +21,11 @@ class RenderImageRoutesTest {
 
     companion object {
         private fun getSourceFixturesDir(): File {
-            val fixturesUrl = RenderImageRoutesTest::class.java.classLoader.getResource("image-fixtures")
-                ?: fail("image-fixtures directory not found in classpath")
+            val fixturesUrl = RenderImageRoutesTest::class.java.classLoader.getResource("fixtures/image")
+                ?: fail("fixtures/image directory not found in classpath")
             val buildFixturesDir = File(fixturesUrl.toURI())
             val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/image-fixtures")
+            return File(projectRoot, "app/src/test/resources/fixtures/image")
         }
 
         private fun imagesAreIdentical(expected: BufferedImage, actual: BufferedImage): Boolean {
