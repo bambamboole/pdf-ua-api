@@ -29,7 +29,7 @@ fun Route.renderRoutes(
         ResponseEntry("400", Nothing::class, description = "Invalid template or request"),
         ResponseEntry("500", Nothing::class, description = "Rendering failed"),
     ])
-    post("/render") {
+    post("/render/template") {
         val request = try {
             call.receive<RenderRequest>()
         } catch (e: Exception) {

@@ -22,7 +22,7 @@ class RenderRoutesTest {
             ]}}
         """.trimIndent()
 
-        val response = client.post("/render") {
+        val response = client.post("/render/template") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -45,7 +45,7 @@ class RenderRoutesTest {
             "data":{"intro":{"text":"Overridden"}}}
         """.trimIndent()
 
-        val response = client.post("/render") {
+        val response = client.post("/render/template") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -58,7 +58,7 @@ class RenderRoutesTest {
     fun rejectsUnsupportedVersion() = testApplication {
         application { module() }
 
-        val response = client.post("/render") {
+        val response = client.post("/render/template") {
             contentType(ContentType.Application.Json)
             setBody("""{"template":{"version":2,"rows":[]}}""")
         }
@@ -70,7 +70,7 @@ class RenderRoutesTest {
     fun rejectsUnknownBlockType() = testApplication {
         application { module() }
 
-        val response = client.post("/render") {
+        val response = client.post("/render/template") {
             contentType(ContentType.Application.Json)
             setBody("""{"template":{"version":1,"rows":[{"blocks":[{"type":"nope"}]}]}}""")
         }
