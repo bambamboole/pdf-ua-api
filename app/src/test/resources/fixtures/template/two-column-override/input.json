@@ -1,7 +1,7 @@
 {
   "template": {
     "version": 1,
-    "config": { "page": { "format": "Letter" } },
+    "config": { "page": { "size": { "format": "Letter" } } },
     "rows": [
       {
         "blocks": [
