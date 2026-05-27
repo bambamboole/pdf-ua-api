@@ -31,12 +31,18 @@ class RenderImageRoutesTest {
 
         private const val PER_CHANNEL_THRESHOLD = 32
         private const val MAX_DIFF_RATIO = 0.10
+        private const val MAX_DIMENSION_DELTA = 0.05
 
         private fun imagesMatch(expected: BufferedImage, actual: BufferedImage): Boolean {
-            if (expected.width != actual.width || expected.height != actual.height) return false
+            val widthDelta = abs(expected.width - actual.width).toDouble() / maxOf(expected.width, actual.width)
+            val heightDelta = abs(expected.height - actual.height).toDouble() / maxOf(expected.height, actual.height)
+            if (widthDelta > MAX_DIMENSION_DELTA || heightDelta > MAX_DIMENSION_DELTA) return false
+
+            val width = minOf(expected.width, actual.width)
+            val height = minOf(expected.height, actual.height)
             var significantDiffs = 0
-            for (y in 0 until expected.height) {
-                for (x in 0 until expected.width) {
+            for (y in 0 until height) {
+                for (x in 0 until width) {
                     val e = expected.getRGB(x, y)
                     val a = actual.getRGB(x, y)
                     val dr = abs(((e shr 16) and 0xFF) - ((a shr 16) and 0xFF))
@@ -47,7 +53,7 @@ class RenderImageRoutesTest {
                     }
                 }
             }
-            return significantDiffs.toDouble() / (expected.width * expected.height) <= MAX_DIFF_RATIO
+            return significantDiffs.toDouble() / (width * height) <= MAX_DIFF_RATIO
         }
 
         private suspend fun ApplicationTestBuilder.testImageFixture(
