@@ -2,7 +2,7 @@ package bambamboole.pdf.api.models
 
 import bambamboole.pdf.api.models.template.Template
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class RenderOptions(
@@ -13,7 +13,7 @@ data class RenderOptions(
 @Serializable
 data class RenderRequest(
     val template: Template,
-    /** Per-block content overrides, keyed by block id. */
-    val data: Map<String, JsonObject> = emptyMap(),
+    /** Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables. */
+    val data: Map<String, JsonElement> = emptyMap(),
     val options: RenderOptions = RenderOptions(),
 )

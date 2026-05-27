@@ -16,7 +16,7 @@ import bambamboole.pdf.api.models.template.SpacingConfig
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TypographyConfig
 import bambamboole.pdf.api.util.Html
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
 private val SAFE_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
@@ -55,7 +55,7 @@ object TemplateRenderer {
 
     fun render(
         template: Template,
-        data: Map<String, JsonObject> = emptyMap(),
+        data: Map<String, JsonElement> = emptyMap(),
         options: RenderOptions = RenderOptions(),
     ): String {
         require(template.version == 1) { "Unsupported template version: ${template.version}" }
@@ -209,5 +209,9 @@ p { margin: 0 0 2mm; }
 h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
 .row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 """.trim()
 }
