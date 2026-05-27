@@ -6,6 +6,15 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import org.w3c.dom.Element
+import java.io.ByteArrayInputStream
+import java.io.StringWriter
+import java.util.Base64
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 @Serializable
 sealed interface Block {
@@ -25,6 +34,8 @@ sealed interface Block {
 private fun JsonObject.string(key: String): String? = this[key]?.jsonPrimitive?.contentOrNull
 
 private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
+
+private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
 
 private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
 
@@ -107,13 +118,98 @@ data class ImageBlock(
         )
 
     override fun render(): String =
-        "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
+        inlineSanitizedSvg(src, alt)
+            ?: "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
 
     override fun renderCss(cssId: String): List<String> =
         nonNegative(config.maxHeight)
             ?.takeIf { it > 0 }
             ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
             ?: emptyList()
+}
+
+private fun svgSource(source: String): String? {
+    val trimmed = source.trim()
+    if (trimmed.startsWith("<svg", ignoreCase = true)) {
+        return trimmed
+    }
+
+    val match = SVG_DATA_URL.find(trimmed) ?: return null
+    val encoded = trimmed.substring(match.range.last + 1)
+    return runCatching {
+        Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8)
+    }.getOrNull()
+}
+
+private fun inlineSanitizedSvg(source: String, alt: String): String? {
+    val svg = svgSource(source) ?: return null
+    val document = runCatching {
+        val factory = DocumentBuilderFactory.newInstance().apply {
+            isNamespaceAware = true
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+            isXIncludeAware = false
+            isExpandEntityReferences = false
+        }
+        factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
+    }.getOrNull() ?: return null
+
+    val root = document.documentElement ?: return null
+    if (!root.hasElementName("svg")) {
+        return null
+    }
+
+    sanitizeSvgElement(root)
+    if (alt.isNotEmpty()) {
+        root.setAttribute("role", "img")
+        root.setAttribute("aria-label", alt)
+    }
+    return serializeElement(root)
+}
+
+private fun sanitizeSvgElement(element: Element) {
+    val attributesToRemove = buildList {
+        val attributes = element.attributes
+        for (index in 0 until attributes.length) {
+            val attribute = attributes.item(index)
+            val name = attribute.nodeName.lowercase()
+            val value = attribute.nodeValue.trim().lowercase()
+            if (name.startsWith("on") || (name == "href" || name == "xlink:href") && value.startsWith("javascript:")) {
+                add(attribute.nodeName)
+            }
+        }
+    }
+    attributesToRemove.forEach(element::removeAttribute)
+
+    val childElementsToRemove = mutableListOf<Element>()
+    val children = element.childNodes
+    for (index in 0 until children.length) {
+        val child = children.item(index)
+        if (child is Element) {
+            if (child.hasElementName("script") || child.hasElementName("foreignObject")) {
+                childElementsToRemove.add(child)
+            } else {
+                sanitizeSvgElement(child)
+            }
+        }
+    }
+    childElementsToRemove.forEach { element.removeChild(it) }
+}
+
+private fun Element.hasElementName(expected: String): Boolean {
+    val name = localName ?: tagName
+    return name.equals(expected, ignoreCase = true)
+}
+
+private fun serializeElement(element: Element): String {
+    val writer = StringWriter()
+    TransformerFactory.newInstance()
+        .newTransformer()
+        .apply { setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes") }
+        .transform(DOMSource(element), StreamResult(writer))
+    return writer.toString()
 }
 
 @Serializable

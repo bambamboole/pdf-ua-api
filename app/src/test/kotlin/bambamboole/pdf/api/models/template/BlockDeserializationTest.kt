@@ -5,10 +5,12 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class BlockDeserializationTest {
     private val json = Json
@@ -89,6 +91,32 @@ class BlockDeserializationTest {
         val html = ImageBlock(src = "x\"onerror=\"alert(1)", alt = "<Logo>").render()
 
         assertEquals("<img src=\"x&quot;onerror=&quot;alert(1)\" alt=\"&lt;Logo&gt;\">", html)
+    }
+
+    @Test
+    fun imageInlinesAndSanitizesSvgDataUrls() {
+        val svg = """
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onclick="alert(1)">
+              <script>alert(1)</script>
+              <foreignObject><div>unsafe</div></foreignObject>
+              <a href="javascript:alert(1)" xlink:href="javascript:alert(2)">
+                <rect width="10" height="10"/>
+              </a>
+            </svg>
+        """.trimIndent()
+        val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
+        val src = "data:image/svg+xml;base64,$encoded"
+
+        val output = ImageBlock(src = src, alt = "Logo").render()
+
+        assertTrue(output.startsWith("<svg "))
+        assertTrue(output.contains("role=\"img\""))
+        assertTrue(output.contains("aria-label=\"Logo\""))
+        assertTrue(output.contains("<rect"))
+        assertTrue(!output.contains("<script"))
+        assertTrue(!output.contains("foreignObject"))
+        assertTrue(!output.contains("onclick"))
+        assertTrue(!output.contains("javascript:"))
     }
 
     @Test
