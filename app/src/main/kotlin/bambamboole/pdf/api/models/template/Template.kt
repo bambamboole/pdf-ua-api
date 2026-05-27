@@ -1,5 +1,6 @@
 package bambamboole.pdf.api.models.template
 
+import bambamboole.pdf.api.models.FileAttachment
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -27,7 +28,7 @@ data class PageBackgroundConfig(
 
 @Serializable
 data class PageConfig(
-    val format: PageFormat = PageFormat.A4,
+    val size: PageSize = PresetPageSize(),
     val locale: String = "de_DE",
     val margins: SpacingConfig = SpacingConfig(20, 20, 20, 25),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),
@@ -45,5 +46,6 @@ data class Template(
     val version: Int,
     val config: TemplateConfig = TemplateConfig(),
     val fonts: Map<String, FontFace> = emptyMap(),
+    val attachments: List<FileAttachment> = emptyList(),
     val rows: List<Row> = emptyList(),
 )

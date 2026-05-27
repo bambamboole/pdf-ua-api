@@ -8,8 +8,11 @@ import bambamboole.pdf.api.models.template.PageBackgroundConfig
 import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.HtmlBlock
 import bambamboole.pdf.api.models.template.PageConfig
+import bambamboole.pdf.api.models.template.CustomPageSize
+import bambamboole.pdf.api.models.template.Orientation
 import bambamboole.pdf.api.models.template.PageFormat
 import bambamboole.pdf.api.models.template.PageNumbersConfig
+import bambamboole.pdf.api.models.template.PresetPageSize
 import bambamboole.pdf.api.models.template.Row
 import bambamboole.pdf.api.models.template.Template
 import bambamboole.pdf.api.models.template.TemplateConfig
@@ -42,10 +45,32 @@ class TemplateRendererTest {
     }
 
     @Test
-    fun emitsPageSizeAndMargins() {
-        val cfg = TemplateConfig(page = PageConfig(format = PageFormat.A4))
+    fun emitsPresetPortraitSizeAndMargins() {
+        val cfg = TemplateConfig(page = PageConfig(size = PresetPageSize(PageFormat.A4)))
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-        assertTrue(html.contains("@page { size: A4; margin: 20mm 20mm 20mm 25mm; }"))
+        assertTrue(html.contains("@page { size: 210mm 297mm; margin: 20mm 20mm 20mm 25mm; }"))
+    }
+
+    @Test
+    fun emitsSwappedSizeForLandscape() {
+        val cfg = TemplateConfig(page = PageConfig(size = PresetPageSize(PageFormat.A4, Orientation.LANDSCAPE)))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        assertTrue(html.contains("@page { size: 297mm 210mm;"))
+    }
+
+    @Test
+    fun emitsCustomSize() {
+        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize(102, 152)))
+        val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        assertTrue(html.contains("@page { size: 102mm 152mm;"))
+    }
+
+    @Test
+    fun rejectsNonPositiveCustomDimension() {
+        val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize(0, 297)))
+        assertFailsWith<IllegalArgumentException> {
+            TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
+        }
     }
 
     @Test

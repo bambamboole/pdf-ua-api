@@ -4,10 +4,14 @@ import bambamboole.pdf.api.models.RenderOptions
 import bambamboole.pdf.api.models.template.Align
 import bambamboole.pdf.api.models.template.Block
 import bambamboole.pdf.api.models.template.BlockConfig
+import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.FontFace
+import bambamboole.pdf.api.models.template.Orientation
 import bambamboole.pdf.api.models.template.PageBackgroundConfig
 import bambamboole.pdf.api.models.template.PageBackgroundType
 import bambamboole.pdf.api.models.template.PageConfig
+import bambamboole.pdf.api.models.template.PageSize
+import bambamboole.pdf.api.models.template.PresetPageSize
 import bambamboole.pdf.api.models.template.Row
 import bambamboole.pdf.api.models.template.SpacingConfig
 import bambamboole.pdf.api.models.template.Template
@@ -27,6 +31,26 @@ private fun cssString(value: String): String = value.replace("\\", "\\\\").repla
 
 private fun cssUrl(value: String): String = value
     .replace("\\", "%5C").replace("\"", "%22").replace("(", "%28").replace(")", "%29").replace("\r", "").replace("\n", "")
+
+private fun mm(value: Double): String {
+    val number = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()
+    return "${number}mm"
+}
+
+private fun pageSizeCss(size: PageSize): String = when (size) {
+    is PresetPageSize -> {
+        val (w, h) = if (size.orientation == Orientation.LANDSCAPE) {
+            size.format.heightMm to size.format.widthMm
+        } else {
+            size.format.widthMm to size.format.heightMm
+        }
+        "${mm(w)} ${mm(h)}"
+    }
+    is CustomPageSize -> {
+        require(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
+        "${size.width}mm ${size.height}mm"
+    }
+}
 
 object TemplateRenderer {
 
@@ -134,7 +158,7 @@ $bodyPrefix$bodyHtml
     }
 
     private fun pageCss(page: PageConfig): String {
-        val css = StringBuilder("@page { size: ${page.format.cssSize}; margin: ${marginShorthand(page.margins)}; }")
+        val css = StringBuilder("@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins)}; }")
         page.background?.let { background ->
             validateBackground(background)
             if (background.isPdfBackground()) {

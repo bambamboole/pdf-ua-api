@@ -18,7 +18,7 @@ class TemplateDeserializationTest {
         val request = json.decodeFromString(RenderRequest.serializer(), input)
 
         assertEquals(1, request.template.version)
-        assertEquals(PageFormat.A4, request.template.config.page.format)
+        assertEquals(PresetPageSize(PageFormat.A4, Orientation.PORTRAIT), request.template.config.page.size)
         assertEquals("de_DE", request.template.config.page.locale)
         assertIs<TextBlock>(request.template.rows[0].blocks[0])
         assertEquals("Document", request.options.title)
@@ -28,7 +28,7 @@ class TemplateDeserializationTest {
     @Test
     fun decodesPageNumbersAndMargins() {
         val input = """
-            {"template":{"version":1,"config":{"page":{"format":"Letter",
+            {"template":{"version":1,"config":{"page":{"size":{"format":"Letter"},
             "pageNumbers":{"enabled":true,"position":"right"},
             "margins":{"top":10,"right":10,"bottom":10,"left":10}}},"rows":[]}}
         """.trimIndent()
@@ -36,7 +36,7 @@ class TemplateDeserializationTest {
         val request = json.decodeFromString(RenderRequest.serializer(), input)
         val page = request.template.config.page
 
-        assertEquals(PageFormat.LETTER, page.format)
+        assertEquals(PresetPageSize(PageFormat.LETTER, Orientation.PORTRAIT), page.size)
         assertEquals(true, page.pageNumbers.enabled)
         assertEquals(Align.RIGHT, page.pageNumbers.position)
         assertEquals(10, page.margins.top)

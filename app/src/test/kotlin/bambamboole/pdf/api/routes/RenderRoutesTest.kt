@@ -5,6 +5,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.cos.COSName
+import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -52,6 +55,43 @@ class RenderRoutesTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.readRawBytes().isNotEmpty())
+    }
+
+    @Test
+    fun rendersTemplateWithAttachments() = testApplication {
+        application { module() }
+
+        val attachmentContent = Base64.getEncoder().encodeToString("<invoice/>".toByteArray())
+        val body = """
+            {"template":{"version":1,
+              "attachments":[{
+                "name":"factur-x.xml",
+                "content":"$attachmentContent",
+                "mimeType":"text/xml",
+                "description":"Factur-X XML invoice",
+                "relationship":"Alternative"
+              }],
+              "rows":[{"blocks":[{"type":"text","text":"Invoice"}]}]
+            }}
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val pdf = response.readRawBytes()
+        Loader.loadPDF(pdf).use { document ->
+            val embeddedFiles = document.documentCatalog.names?.embeddedFiles?.names
+            assertNotNull(embeddedFiles)
+            assertTrue(embeddedFiles.containsKey("factur-x.xml"))
+
+            val fileSpec = embeddedFiles["factur-x.xml"]!!
+            assertEquals("factur-x.xml", fileSpec.file)
+            assertEquals("Factur-X XML invoice", fileSpec.fileDescription)
+            assertEquals("Alternative", fileSpec.cosObject.getNameAsString(COSName.AF_RELATIONSHIP))
+        }
     }
 
     @Test

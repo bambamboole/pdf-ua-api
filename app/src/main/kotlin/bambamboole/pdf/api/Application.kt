@@ -8,6 +8,7 @@ import bambamboole.pdf.api.routes.identifyRoutes
 import bambamboole.pdf.api.routes.indexRoutes
 import bambamboole.pdf.api.routes.convertAndValidateRoutes
 import bambamboole.pdf.api.routes.renderImageRoutes
+import bambamboole.pdf.api.routes.templateSchemaRoutes
 import bambamboole.pdf.api.routes.validationRoutes
 import bambamboole.pdf.api.services.AssetResolver
 import bambamboole.pdf.api.services.ImageRenderService
@@ -104,6 +105,7 @@ fun Application.module() {
             indexRoutes()
         }
         healthRoutes()
+        templateSchemaRoutes()
 
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {

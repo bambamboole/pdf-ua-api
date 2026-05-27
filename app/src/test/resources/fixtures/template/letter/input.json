@@ -3,7 +3,7 @@
     "version": 1,
     "config": {
       "page": {
-        "format": "A4",
+        "size": { "format": "A4" },
         "locale": "en_US",
         "pageNumbers": { "enabled": true, "position": "center" }
       }
