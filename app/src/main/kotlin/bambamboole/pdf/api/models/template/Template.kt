@@ -13,7 +13,7 @@ data class PageNumbersConfig(
 
 @Serializable
 data class PageConfig(
-    val format: PageFormat = PageFormat.A4,
+    val size: PageSize = PresetPageSize(),
     val locale: String = "de_DE",
     val margins: SpacingConfig = SpacingConfig(20, 20, 20, 25),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),

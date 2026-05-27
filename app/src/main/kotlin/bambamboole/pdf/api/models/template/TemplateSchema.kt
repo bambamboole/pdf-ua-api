@@ -16,10 +16,18 @@ data class TemplateSchemaResponse(
 
 @Serializable
 data class PageSchema(
-    val formats: List<PageFormatSchema>,
+    val size: PageSizeSchema,
     val locales: String,
     val margins: List<String>,
     val pageNumbers: PageNumbersSchema,
+)
+
+@Serializable
+data class PageSizeSchema(
+    val presets: List<PageFormatSchema>,
+    val orientations: List<String>,
+    val customFields: List<String>,
+    val customUnits: List<String>,
 )
 
 @Serializable
@@ -27,7 +35,6 @@ data class PageFormatSchema(
     val name: String,
     val widthMm: Double,
     val heightMm: Double,
-    val cssSize: String,
 )
 
 @Serializable
@@ -62,14 +69,18 @@ object TemplateSchema {
             templateVersion = 1,
             endpoint = "/render/template",
             page = PageSchema(
-                formats = PageFormat.entries.map {
-                    PageFormatSchema(
-                        name = it.serializedName(),
-                        widthMm = it.widthMm,
-                        heightMm = it.heightMm,
-                        cssSize = it.cssSize,
-                    )
-                },
+                size = PageSizeSchema(
+                    presets = PageFormat.entries.map {
+                        PageFormatSchema(
+                            name = PageFormat.serializer().descriptor.getElementName(it.ordinal),
+                            widthMm = it.widthMm,
+                            heightMm = it.heightMm,
+                        )
+                    },
+                    orientations = Orientation.entries.map { Orientation.serializer().descriptor.getElementName(it.ordinal) },
+                    customFields = listOf("width", "height"),
+                    customUnits = listOf("mm", "cm", "in", "px", "pt", "pc"),
+                ),
                 locales = "BCP 47 / Java locale style string, e.g. de_DE or en_US",
                 margins = listOf("top", "right", "bottom", "left"),
                 pageNumbers = PageNumbersSchema(
@@ -98,13 +109,6 @@ object TemplateSchema {
                 ),
             ),
         )
-
-    private fun PageFormat.serializedName(): String =
-        when (this) {
-            PageFormat.A4 -> "A4"
-            PageFormat.LETTER -> "Letter"
-            PageFormat.PARCEL_LABEL_4X6 -> "ParcelLabel4x6"
-        }
 
     private fun Align.serializedName(): String =
         when (this) {
