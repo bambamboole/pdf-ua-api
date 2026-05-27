@@ -1,0 +1,16 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "format": "A4",
+        "locale": "en_US",
+        "pageNumbers": { "enabled": true, "position": "center" }
+      }
+    },
+    "rows": [
+      { "blocks": [ { "type": "html", "html": "<h1>Welcome</h1>" } ] },
+      { "blocks": [ { "type": "text", "id": "body", "text": "Dear customer,\n\nThank you for your order.\n\nBest regards" } ] }
+    ]
+  }
+}
