@@ -147,6 +147,20 @@ class BlockDeserializationTest {
     }
 
     @Test
+    fun imageDoesNotFallbackToImgForRejectedSvgDataUrls() {
+        val svg = """
+            <!DOCTYPE svg [
+              <!ENTITY xxe SYSTEM "file:///etc/passwd">
+            ]>
+            <svg xmlns="http://www.w3.org/2000/svg"><text>&xxe;</text></svg>
+        """.trimIndent()
+        val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
+        val src = "data:image/svg+xml;base64,$encoded"
+
+        assertEquals("", ImageBlock(src = src, alt = "Logo").render())
+    }
+
+    @Test
     fun spacerAndDividerRenderTheirInnerMarkup() {
         assertEquals("", SpacerBlock().render())
         assertEquals("<hr>", DividerBlock().render())

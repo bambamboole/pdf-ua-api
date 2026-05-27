@@ -104,6 +104,11 @@ private val SAFE_SVG_ATTRIBUTES = setOf(
     "aria-label",
 )
 
+private sealed class SvgSource {
+    data class Content(val value: String) : SvgSource()
+    object Invalid : SvgSource()
+}
+
 private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
 
 private fun safeCssColor(value: String): String? = value.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
@@ -195,21 +200,24 @@ data class ImageBlock(
             ?: emptyList()
 }
 
-private fun svgSource(source: String): String? {
+private fun svgSource(source: String): SvgSource? {
     val trimmed = source.trim()
     if (trimmed.startsWith("<svg", ignoreCase = true)) {
-        return trimmed
+        return SvgSource.Content(trimmed)
     }
 
     val match = SVG_DATA_URL.find(trimmed) ?: return null
     val encoded = trimmed.substring(match.range.last + 1)
     return runCatching {
-        Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8)
-    }.getOrNull()
+        SvgSource.Content(Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8))
+    }.getOrDefault(SvgSource.Invalid)
 }
 
 private fun inlineSanitizedSvg(source: String, alt: String): String? {
-    val svg = svgSource(source) ?: return null
+    val svg = when (val result = svgSource(source) ?: return null) {
+        is SvgSource.Content -> result.value
+        SvgSource.Invalid -> return ""
+    }
     val document = runCatching {
         val factory = DocumentBuilderFactory.newInstance().apply {
             isNamespaceAware = true
@@ -221,11 +229,11 @@ private fun inlineSanitizedSvg(source: String, alt: String): String? {
             isExpandEntityReferences = false
         }
         factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
-    }.getOrNull() ?: return null
+    }.getOrNull() ?: return ""
 
-    val root = document.documentElement ?: return null
+    val root = document.documentElement ?: return ""
     if (!root.hasElementName("svg")) {
-        return null
+        return ""
     }
 
     sanitizeSvgElement(root)
