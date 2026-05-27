@@ -26,64 +26,74 @@ class TemplateSchemaRoutesTest {
         assertEquals(ContentType.Application.Json, response.contentType()?.withoutParameters())
 
         val schema = Json.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("template", schema["kind"]?.jsonPrimitive?.content)
-        assertEquals("1", schema["templateVersion"]?.jsonPrimitive?.content)
+        assertEquals("https://json-schema.org/draft/2020-12/schema", schema["\$schema"]?.jsonPrimitive?.content)
+        assertEquals("https://pdf-ua-api.com/schemas/template-v1.json", schema["\$id"]?.jsonPrimitive?.content)
+        assertEquals("Template", schema["title"]?.jsonPrimitive?.content)
+        assertEquals("object", schema["type"]?.jsonPrimitive?.content)
+
+        val metadata = schema["x-pdfUa"]!!.jsonObject
+        assertEquals("template", metadata["kind"]?.jsonPrimitive?.content)
+        assertEquals("1", metadata["templateVersion"]?.jsonPrimitive?.content)
+        assertEquals("/render/template", metadata["renderEndpoint"]?.jsonPrimitive?.content)
         assertEquals(
             listOf("version", "config", "fonts", "attachments", "rows"),
-            schema["templateFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+            metadata["templateFields"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
         assertEquals(
             listOf("name", "content", "mimeType", "description", "relationship"),
-            schema["attachmentFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+            metadata["attachmentFields"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
 
-        val size = schema["page"]!!.jsonObject["size"]!!.jsonObject
-        val presets = size["presets"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }
+        val presets = metadata["pageFormats"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }
         assertTrue("A4" in presets)
         assertTrue("A3" in presets)
         assertTrue("Letter" in presets)
         assertTrue("ParcelLabel4x6" !in presets)
-        assertEquals(listOf("portrait", "landscape"), size["orientations"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("width", "height"), size["customFields"]!!.jsonArray.map { it.jsonPrimitive.content })
 
-        val fonts = schema["fonts"]!!.jsonObject
-        val bundledFamilies = fonts["bundledFamilies"]!!.jsonArray.map { it.jsonPrimitive.content }
+        val bundledFamilies = metadata["bundledFonts"]!!.jsonArray.map { it.jsonPrimitive.content }
         assertTrue("Inter" in bundledFamilies)
-        assertEquals(listOf("src", "weight", "style"), fonts["externalFontFields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("src", "weight", "style"), metadata["externalFontFields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(
+            listOf("text", "html", "heading", "image", "spacer", "divider"),
+            metadata["blockOrder"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
 
-        val blockTypes = schema["blocks"]!!.jsonArray.associateBy { it.jsonObject["type"]!!.jsonPrimitive.content }
-        assertTrue("text" in blockTypes.keys)
-        assertTrue("html" in blockTypes.keys)
-        assertTrue("heading" in blockTypes.keys)
-        assertTrue("image" in blockTypes.keys)
-        assertTrue("spacer" in blockTypes.keys)
-        assertTrue("divider" in blockTypes.keys)
-        assertEquals(listOf("id", "text", "config"), blockTypes["text"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("id", "html", "config"), blockTypes["html"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("id", "text", "config"), blockTypes["heading"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("id", "src", "alt", "config"), blockTypes["image"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("id", "config"), blockTypes["spacer"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
-        assertEquals(listOf("id", "config"), blockTypes["divider"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        val definitions = schema["\$defs"]!!.jsonObject
         assertEquals(
-            listOf("typography", "spacing", "width", "align", "level"),
-            blockTypes["heading"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+            listOf(
+                "#/\$defs/textBlock",
+                "#/\$defs/htmlBlock",
+                "#/\$defs/headingBlock",
+                "#/\$defs/imageBlock",
+                "#/\$defs/spacerBlock",
+                "#/\$defs/dividerBlock",
+            ),
+            definitions["block"]!!.jsonObject["oneOf"]!!.jsonArray.map { it.jsonObject["\$ref"]!!.jsonPrimitive.content },
         )
         assertEquals(
-            listOf("typography", "spacing", "width", "align", "maxHeight"),
-            blockTypes["image"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+            listOf("A3", "A4", "A5", "A6", "Letter", "Legal", "Tabloid"),
+            definitions["pageFormat"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
         assertEquals(
-            listOf("typography", "spacing", "width", "align", "height"),
-            blockTypes["spacer"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
-        )
-        assertEquals(
-            listOf("typography", "spacing", "width", "align", "thickness", "lineColor", "style"),
-            blockTypes["divider"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+            listOf("portrait", "landscape"),
+            definitions["orientation"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
         assertEquals(
             listOf("solid", "dashed", "dotted", "double", "none"),
-            blockTypes["divider"]!!.jsonObject["configEnums"]!!.jsonObject["style"]!!.jsonArray.map { it.jsonPrimitive.content },
+            definitions["dividerStyle"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
+
+        val blockConfig = definitions["blockConfig"]!!.jsonObject
+        assertEquals(
+            listOf("#/\$defs/typographyConfig", "null"),
+            blockConfig["properties"]!!.jsonObject["typography"]!!.jsonObject["oneOf"]!!.jsonArray.map { option ->
+                option.jsonObject["\$ref"]?.jsonPrimitive?.content ?: option.jsonObject["type"]!!.jsonPrimitive.content
+            },
+        )
+
+        val textBlock = definitions["textBlock"]!!.jsonObject
+        assertEquals(listOf("type", "text"), textBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals("text", textBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)
     }
 
     @Test
