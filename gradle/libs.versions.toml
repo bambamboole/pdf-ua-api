@@ -5,6 +5,7 @@
 [versions]
 kotlin = "2.3.10"
 kotlinxSerializationJSON = "1.10.0"
+kotlinxSchema = "0.5.0"
 ktor = "3.4.0"
 openhtmltopdf = "1.1.37"
 logback = "1.5.28"
@@ -15,6 +16,7 @@ jsoup = "1.18.3"
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
+kotlinxSchemaJson = { module = "org.jetbrains.kotlinx:kotlinx-schema-json", version.ref = "kotlinxSchema" }
 
 # Ktor Server
 ktorServerCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
