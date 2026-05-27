@@ -62,6 +62,7 @@ data class BlockSchema(
     val type: String,
     val fields: List<String>,
     val configFields: List<String>,
+    val configEnums: Map<String, List<String>> = emptyMap(),
 )
 
 object TemplateSchema {
@@ -85,7 +86,7 @@ object TemplateSchema {
                     customFields = listOf("width", "height"),
                     customUnits = listOf("mm"),
                 ),
-                locales = "BCP 47 / Java locale style string, e.g. de_DE or en_US",
+                locales = "ISO 639-1 language code and ISO 3166-1 alpha-2 country code, separated by an underscore e.g. de_DE or en_US",
                 margins = listOf("top", "right", "bottom", "left"),
                 pageNumbers = PageNumbersSchema(
                     fields = listOf("enabled", "position"),
@@ -111,6 +112,27 @@ object TemplateSchema {
                     fields = listOf("id", "html", "config"),
                     configFields = listOf("typography", "spacing", "width", "align"),
                 ),
+                BlockSchema(
+                    type = "heading",
+                    fields = listOf("id", "text", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "level"),
+                ),
+                BlockSchema(
+                    type = "image",
+                    fields = listOf("id", "src", "alt", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "maxHeight"),
+                ),
+                BlockSchema(
+                    type = "spacer",
+                    fields = listOf("id", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "height"),
+                ),
+                BlockSchema(
+                    type = "divider",
+                    fields = listOf("id", "config"),
+                    configFields = listOf("typography", "spacing", "width", "align", "thickness", "lineColor", "style"),
+                    configEnums = mapOf("style" to DividerStyle.entries.map { it.serializedName() }),
+                ),
             ),
         )
 
@@ -119,5 +141,14 @@ object TemplateSchema {
             Align.LEFT -> "left"
             Align.CENTER -> "center"
             Align.RIGHT -> "right"
+        }
+
+    private fun DividerStyle.serializedName(): String =
+        when (this) {
+            DividerStyle.SOLID -> "solid"
+            DividerStyle.DASHED -> "dashed"
+            DividerStyle.DOTTED -> "dotted"
+            DividerStyle.DOUBLE -> "double"
+            DividerStyle.NONE -> "none"
         }
 }

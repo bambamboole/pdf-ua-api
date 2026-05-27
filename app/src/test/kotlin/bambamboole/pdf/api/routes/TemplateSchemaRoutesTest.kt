@@ -54,8 +54,36 @@ class TemplateSchemaRoutesTest {
         val blockTypes = schema["blocks"]!!.jsonArray.associateBy { it.jsonObject["type"]!!.jsonPrimitive.content }
         assertTrue("text" in blockTypes.keys)
         assertTrue("html" in blockTypes.keys)
+        assertTrue("heading" in blockTypes.keys)
+        assertTrue("image" in blockTypes.keys)
+        assertTrue("spacer" in blockTypes.keys)
+        assertTrue("divider" in blockTypes.keys)
         assertEquals(listOf("id", "text", "config"), blockTypes["text"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals(listOf("id", "html", "config"), blockTypes["html"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("id", "text", "config"), blockTypes["heading"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("id", "src", "alt", "config"), blockTypes["image"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("id", "config"), blockTypes["spacer"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(listOf("id", "config"), blockTypes["divider"]!!.jsonObject["fields"]!!.jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(
+            listOf("typography", "spacing", "width", "align", "level"),
+            blockTypes["heading"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("typography", "spacing", "width", "align", "maxHeight"),
+            blockTypes["image"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("typography", "spacing", "width", "align", "height"),
+            blockTypes["spacer"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("typography", "spacing", "width", "align", "thickness", "lineColor", "style"),
+            blockTypes["divider"]!!.jsonObject["configFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("solid", "dashed", "dotted", "double", "none"),
+            blockTypes["divider"]!!.jsonObject["configEnums"]!!.jsonObject["style"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
     }
 
     @Test
