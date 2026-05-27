@@ -6,6 +6,7 @@
 kotlin = "2.3.10"
 kotlinxSerializationJSON = "1.10.0"
 kotlinxSchema = "0.5.0"
+ksp = "2.3.7"
 ktor = "3.4.0"
 openhtmltopdf = "1.1.37"
 logback = "1.5.28"
@@ -16,6 +17,8 @@ jsoup = "1.18.3"
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
+kotlinxSchemaAnnotations = { module = "org.jetbrains.kotlinx:kotlinx-schema-annotations", version.ref = "kotlinxSchema" }
+kotlinxSchemaKsp = { module = "org.jetbrains.kotlinx:kotlinx-schema-ksp", version.ref = "kotlinxSchema" }
 kotlinxSchemaJson = { module = "org.jetbrains.kotlinx:kotlinx-schema-json", version.ref = "kotlinxSchema" }
 
 # Ktor Server
@@ -51,3 +54,4 @@ verapdfCore = { module = "org.verapdf:core", version.ref = "verapdf" }
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
