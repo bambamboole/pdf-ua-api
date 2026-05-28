@@ -33,6 +33,12 @@ sealed interface Block {
 
     /** Emits block-specific CSS for the renderer-generated wrapper class. */
     fun renderCss(cssId: String): List<String> = emptyList()
+
+    /** Static invariants on this block declaration (config, keys, ranges). */
+    fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
+
+    /** Runtime data-shape contract; called only when [data] for this block id is present. */
+    fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> = emptyList()
 }
 
 private fun JsonElement.string(key: String): String? =
@@ -142,6 +148,12 @@ data class TextBlock(
             "<p>" + Html.escape(paragraph).replace(Regex("\\R"), "<br>") + "</p>"
         }
     }
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        return allowedKeys(obj, setOf("text"), path) + optionalStringField(obj, "text", path)
+    }
 }
 
 @Serializable
@@ -154,6 +166,12 @@ data class HtmlBlock(
     override fun applyData(values: JsonElement): Block = copy(html = values.string("html") ?: html)
 
     override fun render(): String = html
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        return allowedKeys(obj, setOf("html"), path) + optionalStringField(obj, "html", path)
+    }
 }
 
 @Serializable
@@ -175,8 +193,24 @@ data class HeadingBlock(
     override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
     override fun render(): String {
-        require(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
+        check(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
         return "<h${config.level}>${Html.escape(text)}</h${config.level}>"
+    }
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> =
+        if (config.level in 1..6) emptyList()
+        else listOf(
+            issue(
+                path.child("config").child("level"),
+                ValidationCodes.OUT_OF_RANGE,
+                "Heading level must be between 1 and 6: ${config.level}",
+            ),
+        )
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        return allowedKeys(obj, setOf("text"), path) + optionalStringField(obj, "text", path)
     }
 }
 
@@ -212,6 +246,14 @@ data class ImageBlock(
             ?.takeIf { it > 0 }
             ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
             ?: emptyList()
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        return allowedKeys(obj, setOf("src", "alt"), path) +
+            optionalStringField(obj, "src", path) +
+            optionalStringField(obj, "alt", path)
+    }
 }
 
 @Serializable
@@ -258,8 +300,28 @@ data class KeyValueBlock(
 
     private fun validateFields() {
         config.fields.forEach { field ->
-            require(SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) { "Key-value field key is invalid: ${field.key}" }
+            check(SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) { "Key-value field key is invalid: ${field.key}" }
         }
+    }
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> =
+        config.fields.flatMapIndexed { index, field ->
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) emptyList()
+            else listOf(
+                issue(
+                    path.child("config").child("fields").index(index).child("key"),
+                    ValidationCodes.INVALID_KEY,
+                    "Key-value field key is invalid: ${field.key}",
+                ),
+            )
+        }
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        val allowed = config.fields.map { it.key }.toSet()
+        return allowedKeys(obj, allowed, path) +
+            obj.keys.filter { it in allowed }.flatMap { key -> nullableStringField(obj, key, path) }
     }
 }
 
@@ -384,6 +446,9 @@ data class SpacerBlock(
         nonNegative(config.height)
             ?.let { listOf(".$cssId { height: ${it}mm; }") }
             ?: emptyList()
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
+        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
 }
 
 @Serializable
@@ -430,6 +495,9 @@ data class DividerBlock(
             DividerStyle.DOUBLE -> "double"
             DividerStyle.NONE -> "none"
         }
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
+        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Divider block does not accept data"))
 }
 
 @Serializable
@@ -529,4 +597,27 @@ data class TableBlock(
             is JsonPrimitive -> value.content
             else -> value.toString()
         }
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> =
+        config.columns.flatMapIndexed { index, column ->
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) emptyList()
+            else listOf(
+                issue(
+                    path.child("config").child("columns").index(index).child("key"),
+                    ValidationCodes.INVALID_KEY,
+                    "Table column key is invalid: ${column.key}",
+                ),
+            )
+        }
+
+    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+        val (arr, errs) = requireArray(value, path)
+        if (arr == null) return errs
+        val allowed = config.columns.map { it.key }.toSet()
+        return arr.flatMapIndexed { i, row ->
+            val rowPath = path.index(i)
+            val (obj, rowErrs) = requireObject(row, rowPath)
+            if (obj == null) rowErrs else allowedKeys(obj, allowed, rowPath)
+        }
+    }
 }

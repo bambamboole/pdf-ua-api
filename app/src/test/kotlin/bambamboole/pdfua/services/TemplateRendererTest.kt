@@ -97,7 +97,7 @@ class TemplateRendererTest {
 
     @Test
     fun rejectsInvalidHeadingLevel() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<IllegalStateException> {
             TemplateRenderer.render(template(HeadingBlock(text = "Bad", config = HeadingConfig(level = 7))))
         }
     }
@@ -217,7 +217,7 @@ class TemplateRendererTest {
     @Test
     fun rejectsNonPositiveCustomDimension() {
         val cfg = TemplateConfig(page = PageConfig(size = CustomPageSize(0, 297)))
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<IllegalStateException> {
             TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         }
     }
@@ -350,7 +350,7 @@ class TemplateRendererTest {
 
     @Test
     fun rejectsUnsupportedVersion() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<IllegalStateException> {
             TemplateRenderer.render(Template(version = 2))
         }
     }
@@ -385,7 +385,7 @@ class TemplateRendererTest {
     fun rejectsUnsafePageBackgroundSrc() {
         val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "file:///etc/passwd")))
 
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<IllegalStateException> {
             TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         }
     }

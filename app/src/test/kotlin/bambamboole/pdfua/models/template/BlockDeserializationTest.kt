@@ -412,7 +412,7 @@ class BlockDeserializationTest {
 
     @Test
     fun keyValueRejectsInvalidFieldKeys() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<IllegalStateException> {
             KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("1bad", "Bad")))).render()
         }
     }

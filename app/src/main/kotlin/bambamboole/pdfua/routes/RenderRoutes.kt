@@ -1,6 +1,11 @@
 package bambamboole.pdfua.routes
 
 import bambamboole.pdfua.models.RenderRequest
+import bambamboole.pdfua.models.template.ValidationCodes
+import bambamboole.pdfua.models.template.ValidationErrorResponse
+import bambamboole.pdfua.models.template.ValidationIssue
+import bambamboole.pdfua.models.template.serializationIssue
+import bambamboole.pdfua.models.template.validate
 import bambamboole.pdfua.services.PdfService
 import bambamboole.pdfua.services.TemplateRenderer
 import com.openhtmltopdf.extend.FSStreamFactory
@@ -13,6 +18,16 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.SerializationException
+
+private fun Throwable.unwrapToSerializationException(): SerializationException? {
+    var current: Throwable? = this
+    repeat(4) {
+        if (current is SerializationException) return current as SerializationException
+        current = current?.cause
+    }
+    return null
+}
 
 @GenerateOpenApi
 @Tag(["Rendering"])
@@ -26,14 +41,23 @@ fun Route.renderRoutes(
     )
     @KtorResponds([
         ResponseEntry("200", ByteArray::class, description = "PDF document"),
-        ResponseEntry("400", Nothing::class, description = "Invalid template or request"),
+        ResponseEntry("400", ValidationErrorResponse::class, description = "Invalid template, data, or request"),
         ResponseEntry("500", Nothing::class, description = "Rendering failed"),
     ])
     post("/render/template") {
         val request = try {
             call.receive<RenderRequest>()
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid render request: ${e.message}"))
+            val serializationCause = e.unwrapToSerializationException()
+            val issue = serializationCause?.let(::serializationIssue)
+                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
+            call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
+            return@post
+        }
+
+        val issues = request.template.validate(request.data)
+        if (issues.isNotEmpty()) {
+            call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = issues))
             return@post
         }
 

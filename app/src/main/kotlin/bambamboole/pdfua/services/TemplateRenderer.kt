@@ -46,7 +46,7 @@ private fun pageSizeCss(size: PageSize): String = when (size) {
         "${mm(w)} ${mm(h)}"
     }
     is CustomPageSize -> {
-        require(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
+        check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
         "${size.width}mm ${size.height}mm"
     }
 }
@@ -58,7 +58,7 @@ object TemplateRenderer {
         data: Map<String, JsonElement> = emptyMap(),
         options: RenderOptions = RenderOptions(),
     ): String {
-        require(template.version == 1) { "Unsupported template version: ${template.version}" }
+        check(template.version == 1) { "Unsupported template version: ${template.version}" }
 
         val ctx = RenderContext()
         var counter = 0
@@ -215,16 +215,16 @@ $bodyPrefix$bodyHtml
     private fun PageFooterConfig.hasRepeatedRows(): Boolean = repeat && rows.isNotEmpty()
 
     private fun validateBackground(background: PageBackgroundConfig) {
-        require(background.src.isNotBlank()) { "Page background src cannot be blank" }
-        require(!background.src.any { it < ' ' || it == '\u007f' }) { "Page background src contains control characters" }
+        check(background.src.isNotBlank()) { "Page background src cannot be blank" }
+        check(!background.src.any { it < ' ' || it == '\u007f' }) { "Page background src contains control characters" }
 
         val scheme = URI.create(background.src).scheme?.lowercase()
-        require(scheme == "http" || scheme == "https" || scheme == "data") {
+        check(scheme == "http" || scheme == "https" || scheme == "data") {
             "Page background src must use http, https, or data URI"
         }
         if (scheme == "data") {
             val lower = background.src.lowercase()
-            require(lower.startsWith("data:image/") || lower.startsWith("data:application/pdf;base64,")) {
+            check(lower.startsWith("data:image/") || lower.startsWith("data:application/pdf;base64,")) {
                 "Page background data URI must be an image or application/pdf base64 URI"
             }
         }
