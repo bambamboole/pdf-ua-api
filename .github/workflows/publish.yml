@@ -9,13 +9,21 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  build-platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-24.04
+          suffix: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          suffix: arm64
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
-      id-token: write
-      attestations: write
 
     steps:
     - uses: actions/checkout@v5
@@ -48,25 +56,114 @@ jobs:
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
+    - name: Build and push ${{ matrix.platform }} image
       id: build
       uses: docker/build-push-action@v6
       with:
         context: .
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-${{ matrix.suffix }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/pdf-ua-api:${{ steps.meta.outputs.version }}-${{ matrix.suffix }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           APP_VERSION=${{ github.event.release.tag_name }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
+        cache-from: type=gha,scope=pdf-ua-api-${{ matrix.suffix }}
+        cache-to: type=gha,mode=max,scope=pdf-ua-api-${{ matrix.suffix }}
+        platforms: ${{ matrix.platform }}
+
+  merge-manifests:
+    needs: build-platform
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+    steps:
+    - uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/pdf-ua-api
+        tags: |
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Create multi-platform manifests
+      id: manifest
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        VERSION: ${{ steps.meta.outputs.version }}
+        TAGS: ${{ steps.meta.outputs.tags }}
+      run: |
+        set -euo pipefail
+
+        ghcr_image="${REGISTRY}/${IMAGE_NAME}"
+        dockerhub_image="${DOCKERHUB_USERNAME}/pdf-ua-api"
+        ghcr_tag_args=()
+        dockerhub_tag_args=()
+
+        while IFS= read -r tag; do
+          if [ -z "${tag}" ]; then
+            continue
+          fi
+
+          case "${tag}" in
+            "${ghcr_image}":*) ghcr_tag_args+=("-t" "${tag}") ;;
+            "${dockerhub_image}":*) dockerhub_tag_args+=("-t" "${tag}") ;;
+          esac
+        done <<< "${TAGS}"
+
+        if [ "${#ghcr_tag_args[@]}" -eq 0 ]; then
+          echo "No GHCR tags were generated" >&2
+          exit 1
+        fi
+
+        if [ "${#dockerhub_tag_args[@]}" -eq 0 ]; then
+          echo "No Docker Hub tags were generated" >&2
+          exit 1
+        fi
+
+        docker buildx imagetools create "${ghcr_tag_args[@]}" \
+          "${ghcr_image}:${VERSION}-amd64" \
+          "${ghcr_image}:${VERSION}-arm64"
+
+        docker buildx imagetools create "${dockerhub_tag_args[@]}" \
+          "${dockerhub_image}:${VERSION}-amd64" \
+          "${dockerhub_image}:${VERSION}-arm64"
+
+        digest="$(
+          docker buildx imagetools inspect "${ghcr_image}:${VERSION}" \
+            --format '{{json .Manifest.Digest}}' | tr -d '"'
+        )"
+        echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
 
     - name: Generate artifact attestation
       uses: actions/attest-build-provenance@v1
       with:
         subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        subject-digest: ${{ steps.build.outputs.digest }}
+        subject-digest: ${{ steps.manifest.outputs.digest }}
         push-to-registry: true
 
     - name: Update repo description
