@@ -9,6 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
 
     - uses: actions/setup-java@v5
       with:
@@ -19,17 +21,22 @@ jobs:
       with:
         gradle-version: '9.1.0'
 
+    - name: Check code quality
+      run: ./gradlew spotlessCheck detekt --no-daemon
+
     - name: Run tests
       run: ./gradlew test --no-daemon
       env:
         JAVA_TOOL_OPTIONS: '--enable-native-access=ALL-UNNAMED'
 
-    - name: Upload comparison diffs and test report on failure
+    - name: Upload failure reports
       if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: test-failures
         path: |
+          build/reports/spotless/
+          app/build/reports/detekt/
           app/src/test/resources/fixtures/**/generated.*
           app/src/test/resources/fixtures/**/*diff*.png
           app/src/test/resources/fixtures/**/diff.*

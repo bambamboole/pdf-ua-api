@@ -12,6 +12,9 @@ logback = "1.5.28"
 logstashLogbackEncoder = "8.1"
 verapdf = "1.28.2"
 jsoup = "1.18.3"
+spotless = "8.5.1"
+detekt = "2.0.0-alpha.3"
+ktlint = "1.8.0"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -51,3 +54,5 @@ verapdfCore = { module = "org.verapdf:core", version.ref = "verapdf" }
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
