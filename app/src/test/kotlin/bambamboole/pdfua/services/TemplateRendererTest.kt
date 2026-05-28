@@ -394,7 +394,7 @@ class TemplateRendererTest {
     fun externalFontEmitsFontFaceAndUsesFamily() {
         val tpl = Template(
             version = 1,
-            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf")),
+            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
             rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
         )
         val html = TemplateRenderer.render(tpl)
@@ -402,6 +402,26 @@ class TemplateRendererTest {
             html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
         )
         assertTrue(html.contains(".block-1 { font-family: 'Lobster'; }"))
+    }
+
+    @Test
+    fun externalFontMultiWeightEmitsOneFontFaceRulePerWeight() {
+        val tpl = Template(
+            version = 1,
+            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
+            rows = listOf(Row(listOf(TextBlock(text = "x")))),
+        )
+
+        val html = TemplateRenderer.render(tpl)
+
+        assertTrue(
+            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
+            "should emit a regular @font-face rule",
+        )
+        assertTrue(
+            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 700; font-style: normal; }"),
+            "should emit a bold @font-face rule from the same src",
+        )
     }
 
     @Test

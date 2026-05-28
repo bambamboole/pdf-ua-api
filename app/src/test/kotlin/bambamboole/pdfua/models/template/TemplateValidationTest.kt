@@ -173,6 +173,46 @@ class TemplateValidationTest {
     }
 
     @Test
+    fun fontsWithValidWeightsValidate() {
+        val template = Template(
+            version = 1,
+            fonts = mapOf(
+                "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400"),
+                "Heavy" to FontFace(src = "https://cdn.example.com/heavy.ttf", weight = "400 700"),
+            ),
+        )
+        assertTrue(template.validate(emptyMap()).isEmpty())
+    }
+
+    @Test
+    fun fontWithUnknownWeightTokenIsFlagged() {
+        val template = Template(
+            version = 1,
+            fonts = mapOf(
+                "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 999"),
+            ),
+        )
+
+        val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_VALUE }
+
+        assertEquals(1, errs.size)
+        assertEquals("\$.template.fonts.Lobster.weight", errs[0].path)
+    }
+
+    @Test
+    fun fontWithBlankWeightIsFlagged() {
+        val template = Template(
+            version = 1,
+            fonts = mapOf("X" to FontFace(src = "https://cdn.example.com/x.ttf", weight = "")),
+        )
+
+        val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_VALUE }
+
+        assertEquals(1, errs.size)
+        assertEquals("\$.template.fonts.X.weight", errs[0].path)
+    }
+
+    @Test
     fun multipleIndependentIssuesAreCollected() {
         val template = Template(
             version = 1,

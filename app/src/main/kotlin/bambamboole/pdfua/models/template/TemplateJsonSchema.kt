@@ -107,6 +107,7 @@ object TemplateJsonSchema {
             "orientation" to stringEnum("Orientation", Orientation.entries.map { it.serializedName() }),
             "dividerStyle" to stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }),
             "tableStyle" to stringEnum("TableStyle", TableStyle.entries.map { it.serializedName() }),
+            "fontWeight" to stringEnum("FontWeight", FontWeight.entries.map { it.serializedName() }),
             "pageBackgroundType" to stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }),
             "typographyConfig" to typographyConfig(),
             "spacingConfig" to spacingConfig(),
@@ -181,7 +182,10 @@ object TemplateJsonSchema {
         schemaObject("TypographyConfig") {
             "family" to nullableString(description = "Bundled or external font family key.")
             "size" to nullableInt(min = 1, description = "Font size in points.")
-            "weight" to nullableInt(description = "Numeric font weight.")
+            "weight" to nullableEnum(
+                FontWeight.entries.map { it.serializedName() },
+                description = "Font weight; one of the FontWeight enum values.",
+            )
             "align" to nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope.")
             "color" to nullableString(description = "CSS color value used for text.")
         }
@@ -313,7 +317,10 @@ object TemplateJsonSchema {
     private fun fontFace(): PropertyDefinition =
         schemaObject("FontFace", required = listOf("src")) {
             "src" to string()
-            "weight" to int(default = 400)
+            "weight" to string(
+                default = "400",
+                description = "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
+            )
             "style" to string(default = "normal")
         }
 
@@ -471,6 +478,9 @@ object TemplateJsonSchema {
 
     private fun PageBackgroundType.serializedName(): String =
         PageBackgroundType.serializer().descriptor.getElementName(ordinal)
+
+    private fun FontWeight.serializedName(): String =
+        FontWeight.serializer().descriptor.getElementName(ordinal)
 
     private fun String.camelCase(): String =
         replace(Regex("-([a-z])")) { it.groupValues[1].uppercase() }

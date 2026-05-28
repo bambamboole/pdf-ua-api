@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class TypographyConfig(
     val family: String? = null,
     val size: Int? = null,
-    val weight: Int? = null,
+    val weight: FontWeight? = null,
     val align: Align? = null,
     val color: String? = null,
 )
