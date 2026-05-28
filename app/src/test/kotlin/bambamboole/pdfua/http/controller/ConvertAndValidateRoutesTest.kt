@@ -1,7 +1,7 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.ConvertAndValidateResponse
-import bambamboole.pdfua.models.ConvertRequest
+import bambamboole.pdfua.http.controller.ConvertAndValidateResponse
+import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.module
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

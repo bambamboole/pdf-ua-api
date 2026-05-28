@@ -1,6 +1,6 @@
 package bambamboole.pdfua
 
-import bambamboole.pdfua.models.ConvertRequest
+import bambamboole.pdfua.http.ConvertRequest
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*

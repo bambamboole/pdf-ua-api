@@ -1,6 +1,5 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.RenderImageRequest
 import bambamboole.pdfua.services.ImageRenderService
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
@@ -12,18 +11,27 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RenderImageRequest(
+    val html: String,
+    val baseUrl: String? = null,
+    val format: String = "png",
+    val width: Int = 800,
+)
 
 @GenerateOpenApi
 @Tag(["Rendering"])
 fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
     @KtorDescription(
         summary = "Render HTML to image",
-        description = "Renders HTML to a PNG or JPEG image. Returns the image binary."
+        description = "Renders HTML to a PNG or JPEG image. Returns the image binary.",
     )
     @KtorResponds([
         ResponseEntry("200", ByteArray::class, description = "Rendered image"),
         ResponseEntry("400", Nothing::class, description = "Invalid request"),
-        ResponseEntry("500", Nothing::class, description = "Rendering failed")
+        ResponseEntry("500", Nothing::class, description = "Rendering failed"),
     ])
     post("/render") {
         try {
@@ -32,7 +40,7 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty")
+                    mapOf("error" to "HTML content cannot be empty"),
                 )
                 return@post
             }
@@ -41,7 +49,7 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
             if (format !in listOf("png", "jpg")) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "Unsupported format '$format'. Supported formats: png, jpg")
+                    mapOf("error" to "Unsupported format '$format'. Supported formats: png, jpg"),
                 )
                 return@post
             }
@@ -49,7 +57,7 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
             if (request.width !in 1..4096) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "Width must be between 1 and 4096")
+                    mapOf("error" to "Width must be between 1 and 4096"),
                 )
                 return@post
             }
@@ -61,7 +69,7 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
                 format = format,
                 width = request.width,
                 assetResolver = assetResolver,
-                baseUrl = baseUrl
+                baseUrl = baseUrl,
             )
 
             val contentType = if (format == "jpg") ContentType.Image.JPEG else ContentType.Image.PNG
@@ -71,24 +79,24 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
                 HttpHeaders.ContentDisposition,
                 ContentDisposition.Attachment.withParameter(
                     ContentDisposition.Parameters.FileName,
-                    "output.$extension"
-                ).toString()
+                    "output.$extension",
+                ).toString(),
             )
 
             call.respondBytes(
                 bytes = imageBytes,
                 contentType = contentType,
-                status = HttpStatusCode.OK
+                status = HttpStatusCode.OK,
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request"))
+                mapOf("error" to (e.message ?: "Invalid request")),
             )
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to render HTML to image: ${e.message}")
+                mapOf("error" to "Failed to render HTML to image: ${e.message}"),
             )
         }
     }

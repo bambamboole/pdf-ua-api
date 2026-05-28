@@ -1,6 +1,6 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.ConvertRequest
+import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.services.PdfService
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
@@ -18,16 +18,16 @@ import java.net.URI
 @Tag(["Conversion"])
 fun Route.convertRoutes(
     pdfProducer: String = "pdf-ua-api.com",
-    assetResolver: FSStreamFactory? = null
+    assetResolver: FSStreamFactory? = null,
 ) {
     @KtorDescription(
         summary = "Convert HTML to PDF",
-        description = "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary."
+        description = "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary.",
     )
     @KtorResponds([
         ResponseEntry("200", ByteArray::class, description = "PDF document"),
         ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
-        ResponseEntry("500", Nothing::class, description = "Conversion failed")
+        ResponseEntry("500", Nothing::class, description = "Conversion failed"),
     ])
     post("/convert") {
         try {
@@ -36,7 +36,7 @@ fun Route.convertRoutes(
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty")
+                    mapOf("error" to "HTML content cannot be empty"),
                 )
                 return@post
             }
@@ -48,7 +48,7 @@ fun Route.convertRoutes(
                 producer = pdfProducer,
                 assetResolver = assetResolver,
                 baseUrl = baseUrl,
-                attachments = request.attachments
+                attachments = request.attachments,
             )
 
             call.response.header("X-Document-UUID", result.documentId)
@@ -56,24 +56,24 @@ fun Route.convertRoutes(
                 HttpHeaders.ContentDisposition,
                 ContentDisposition.Attachment.withParameter(
                     ContentDisposition.Parameters.FileName,
-                    "output.pdf"
-                ).toString()
+                    "output.pdf",
+                ).toString(),
             )
 
             call.respondBytes(
                 bytes = result.bytes,
                 contentType = ContentType.Application.Pdf,
-                status = HttpStatusCode.OK
+                status = HttpStatusCode.OK,
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request"))
+                mapOf("error" to (e.message ?: "Invalid request")),
             )
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert HTML to PDF: ${e.message}")
+                mapOf("error" to "Failed to convert HTML to PDF: ${e.message}"),
             )
         }
     }

@@ -1,6 +1,6 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.IdentifyResponse
+import bambamboole.pdfua.http.controller.IdentifyResponse
 import bambamboole.pdfua.module
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

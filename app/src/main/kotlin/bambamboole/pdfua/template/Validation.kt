@@ -2,7 +2,6 @@ package bambamboole.pdfua.template
 
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.fonts.FontWeight
-import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -18,12 +17,6 @@ data class ValidationIssue(
     val path: String,
     val code: String,
     val message: String,
-)
-
-@Serializable
-data class ValidationErrorResponse(
-    @EncodeDefault val error: String = "validation_failed",
-    val issues: List<ValidationIssue>,
 )
 
 object ValidationCodes {

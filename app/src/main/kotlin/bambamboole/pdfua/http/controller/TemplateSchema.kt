@@ -1,4 +1,4 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.services.TemplateJsonSchema
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi

@@ -1,7 +1,7 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.ConvertAndValidateResponse
-import bambamboole.pdfua.models.ConvertRequest
+import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.services.PdfService
 import bambamboole.pdfua.services.PdfValidationService
 import com.openhtmltopdf.extend.FSStreamFactory
@@ -14,22 +14,29 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import java.util.Base64
+
+@Serializable
+data class ConvertAndValidateResponse(
+    val validation: ValidationResponse,
+    val pdf: String,
+)
 
 @GenerateOpenApi
 @Tag(["Conversion"])
 fun Route.convertAndValidateRoutes(
     pdfProducer: String = "pdf-ua-api.com",
-    assetResolver: FSStreamFactory? = null
+    assetResolver: FSStreamFactory? = null,
 ) {
     @KtorDescription(
         summary = "Convert and validate HTML to PDF",
-        description = "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF."
+        description = "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF.",
     )
     @KtorResponds([
         ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF"),
         ResponseEntry("400", Nothing::class, description = "Invalid request"),
-        ResponseEntry("500", Nothing::class, description = "Conversion or validation failed")
+        ResponseEntry("500", Nothing::class, description = "Conversion or validation failed"),
     ])
     post("/convert-and-validate") {
         try {
@@ -38,7 +45,7 @@ fun Route.convertAndValidateRoutes(
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty")
+                    mapOf("error" to "HTML content cannot be empty"),
                 )
                 return@post
             }
@@ -50,7 +57,7 @@ fun Route.convertAndValidateRoutes(
                 producer = pdfProducer,
                 assetResolver = assetResolver,
                 baseUrl = baseUrl,
-                attachments = request.attachments
+                attachments = request.attachments,
             )
             val validation = PdfValidationService.validatePdf(result.bytes)
             val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
@@ -60,18 +67,18 @@ fun Route.convertAndValidateRoutes(
                 HttpStatusCode.OK,
                 ConvertAndValidateResponse(
                     validation = validation,
-                    pdf = pdfBase64
-                )
+                    pdf = pdfBase64,
+                ),
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request"))
+                mapOf("error" to (e.message ?: "Invalid request")),
             )
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert and validate PDF: ${e.message}")
+                mapOf("error" to "Failed to convert and validate PDF: ${e.message}"),
             )
         }
     }

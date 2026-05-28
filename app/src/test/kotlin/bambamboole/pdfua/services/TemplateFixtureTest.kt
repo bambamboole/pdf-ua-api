@@ -1,6 +1,6 @@
 package bambamboole.pdfua.services
 
-import bambamboole.pdfua.models.RenderRequest
+import bambamboole.pdfua.http.controller.RenderRequest
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.test.Test

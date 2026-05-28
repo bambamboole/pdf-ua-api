@@ -1,4 +1,4 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -11,7 +11,7 @@ import io.ktor.server.routing.*
 fun Route.healthRoutes() {
     @KtorDescription(
         summary = "Health check",
-        description = "Returns the health status of the API. Always accessible without authentication."
+        description = "Returns the health status of the API. Always accessible without authentication.",
     )
     get("/health") {
         call.respond(mapOf("status" to "ok"))

@@ -1,7 +1,7 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.ConvertRequest
-import bambamboole.pdfua.models.FileAttachment
+import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.module
 import bambamboole.pdfua.services.PdfValidationService
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester

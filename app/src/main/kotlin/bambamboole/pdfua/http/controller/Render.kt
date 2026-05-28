@@ -1,13 +1,14 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.RenderRequest
+import bambamboole.pdfua.http.ValidationErrorResponse
+import bambamboole.pdfua.services.PdfService
+import bambamboole.pdfua.services.RenderOptions
+import bambamboole.pdfua.services.TemplateRenderer
+import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
-import bambamboole.pdfua.template.ValidationErrorResponse
 import bambamboole.pdfua.template.ValidationIssue
 import bambamboole.pdfua.template.serializationIssue
 import bambamboole.pdfua.template.validate
-import bambamboole.pdfua.services.PdfService
-import bambamboole.pdfua.services.TemplateRenderer
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -18,7 +19,17 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonElement
+
+@Serializable
+data class RenderRequest(
+    val template: Template,
+    /** Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables. */
+    val data: Map<String, JsonElement> = emptyMap(),
+    val options: RenderOptions = RenderOptions(),
+)
 
 private fun Throwable.unwrapToSerializationException(): SerializationException? {
     var current: Throwable? = this

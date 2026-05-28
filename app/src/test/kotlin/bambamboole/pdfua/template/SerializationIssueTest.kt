@@ -1,6 +1,6 @@
 package bambamboole.pdfua.template
 
-import bambamboole.pdfua.models.RenderRequest
+import bambamboole.pdfua.http.controller.RenderRequest
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json

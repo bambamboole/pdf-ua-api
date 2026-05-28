@@ -1,6 +1,6 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.RenderImageRequest
+import bambamboole.pdfua.http.controller.RenderImageRequest
 import bambamboole.pdfua.module
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*

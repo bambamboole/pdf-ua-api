@@ -1,4 +1,4 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
 import io.ktor.http.*
 import io.ktor.server.http.content.*

@@ -1,6 +1,5 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.IdentifyResponse
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
@@ -10,19 +9,23 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.apache.pdfbox.Loader
+
+@Serializable
+data class IdentifyResponse(val documentId: String?)
 
 @GenerateOpenApi
 @Tag(["Identification"])
 fun Route.identifyRoutes() {
     @KtorDescription(
         summary = "Identify PDF",
-        description = "Checks whether a PDF was produced by this API and returns its document UUID if found."
+        description = "Checks whether a PDF was produced by this API and returns its document UUID if found.",
     )
     @KtorResponds([
         ResponseEntry("200", IdentifyResponse::class, description = "Identification result"),
         ResponseEntry("400", Nothing::class, description = "PDF content is empty or invalid"),
-        ResponseEntry("500", Nothing::class, description = "Failed to read PDF")
+        ResponseEntry("500", Nothing::class, description = "Failed to read PDF"),
     ])
     post("/identify") {
         try {
@@ -31,7 +34,7 @@ fun Route.identifyRoutes() {
             if (pdfBytes.isEmpty()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "PDF content cannot be empty")
+                    mapOf("error" to "PDF content cannot be empty"),
                 )
                 return@post
             }
@@ -44,7 +47,7 @@ fun Route.identifyRoutes() {
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to "Failed to read PDF: ${e.message}")
+                mapOf("error" to "Failed to read PDF: ${e.message}"),
             )
         }
     }

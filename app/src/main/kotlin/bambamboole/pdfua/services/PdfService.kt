@@ -1,7 +1,7 @@
 package bambamboole.pdfua.services
 
 import bambamboole.pdfua.fonts.BundledFonts
-import bambamboole.pdfua.models.FileAttachment
+import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase

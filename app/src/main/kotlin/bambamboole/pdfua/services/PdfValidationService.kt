@@ -1,6 +1,6 @@
 package bambamboole.pdfua.services
 
-import bambamboole.pdfua.models.*
+import bambamboole.pdfua.http.*
 import org.apache.pdfbox.Loader
 import org.slf4j.LoggerFactory
 import org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider

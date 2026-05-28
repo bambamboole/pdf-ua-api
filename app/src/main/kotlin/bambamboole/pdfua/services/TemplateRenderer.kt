@@ -1,6 +1,5 @@
 package bambamboole.pdfua.services
 
-import bambamboole.pdfua.models.RenderOptions
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.Block
 import bambamboole.pdfua.template.BlockConfig

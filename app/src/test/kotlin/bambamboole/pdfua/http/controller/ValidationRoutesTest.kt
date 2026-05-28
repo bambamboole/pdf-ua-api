@@ -1,7 +1,7 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.models.ConvertRequest
-import bambamboole.pdfua.models.ValidationResponse
+import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.module
 import bambamboole.pdfua.services.PdfValidationService
 import io.ktor.client.request.*

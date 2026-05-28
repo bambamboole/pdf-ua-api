@@ -1,4 +1,4 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.module

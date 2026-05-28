@@ -2,7 +2,6 @@ package bambamboole.pdfua.template
 
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.fonts.FontWeight
-import bambamboole.pdfua.models.FileAttachment
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

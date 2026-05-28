@@ -1,4 +1,4 @@
-package bambamboole.pdfua.routes
+package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.services.PdfService
 import bambamboole.pdfua.services.PdfValidationService
