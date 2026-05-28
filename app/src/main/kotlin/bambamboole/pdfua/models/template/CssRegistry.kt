@@ -58,8 +58,7 @@ internal class CssRegistry {
         }.joinToString("\n")
 
     private fun add(selector: CssSelector, rules: CssRules.() -> Unit) {
-        val declaration = CssRules().apply(rules).declaration(selector) ?: return
-        add(declaration)
+        add(CssRules().apply(rules).declaration(selector))
     }
 }
 
@@ -72,15 +71,15 @@ internal class CssRules {
         }
     }
 
-    fun declaration(selector: String): CssDeclaration? =
+    fun declaration(selector: String): CssDeclaration =
         declaration(CssSelector.Rule(selector))
 
-    fun declaration(selector: CssSelector): CssDeclaration? =
-        if (rules.isEmpty()) null else CssDeclaration(selector, rules.toList())
+    fun declaration(selector: CssSelector): CssDeclaration =
+        CssDeclaration(selector, rules.toList())
 }
 
-internal fun css(selector: String, rules: CssRules.() -> Unit): CssDeclaration? =
+internal fun css(selector: String, rules: CssRules.() -> Unit): CssDeclaration =
     CssRules().apply(rules).declaration(selector)
 
-internal fun nestedCss(parent: String, child: String, rules: CssRules.() -> Unit): CssDeclaration? =
+internal fun nestedCss(parent: String, child: String, rules: CssRules.() -> Unit): CssDeclaration =
     CssRules().apply(rules).declaration(CssSelector.Nested(parent, child))

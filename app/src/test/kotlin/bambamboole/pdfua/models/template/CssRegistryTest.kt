@@ -48,6 +48,16 @@ class CssRegistryTest {
     }
 
     @Test
+    fun cssHelperReturnsDeclarationEvenWhenRulesAreEmpty() {
+        val declaration = css(".block-1") {
+            rule("width", null)
+            rule("color", "")
+        }
+
+        assertEquals(CssDeclaration(CssSelector.Rule(".block-1"), emptyList()), declaration)
+    }
+
+    @Test
     fun emitsNestedAtRuleForPageMarginBox() {
         val css = CssRegistry()
             .nestedCss("@page", "@bottom-right") {

@@ -19,8 +19,8 @@ internal class RenderContext {
         css.fontFace(rules)
     }
 
-    fun addCss(declaration: CssDeclaration?) {
-        declaration?.let(css::add)
+    fun addCss(declaration: CssDeclaration) {
+        css.add(declaration)
     }
 
     fun collectedCss(): String = css.render()

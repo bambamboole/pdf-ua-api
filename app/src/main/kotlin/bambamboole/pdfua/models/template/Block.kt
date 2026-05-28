@@ -242,7 +242,7 @@ data class ImageBlock(
         nonNegative(config.maxHeight)
             ?.takeIf { it > 0 }
             ?.let {
-                listOfNotNull(
+                listOf(
                     css(".$cssId img, .$cssId svg") {
                         rule("max-height", cssPx(it))
                     },
@@ -298,7 +298,7 @@ data class KeyValueBlock(
     override fun renderCss(cssId: String): List<CssDeclaration> {
         validateFields()
         val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
-        return listOfNotNull(
+        return listOf(
             css(".$cssId .key-value td:first-child") {
                 rule("width", labelWidth)
             },
@@ -452,7 +452,7 @@ data class SpacerBlock(
     override fun renderCss(cssId: String): List<CssDeclaration> =
         nonNegative(config.height)
             ?.let {
-                listOfNotNull(
+                listOf(
                     css(".$cssId") {
                         rule("height", cssMm(it))
                     },
@@ -486,7 +486,7 @@ data class DividerBlock(
     override fun render(): String = "<hr>"
 
     override fun renderCss(cssId: String): List<CssDeclaration> {
-        return listOfNotNull(
+        return listOf(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
@@ -563,12 +563,12 @@ data class TableBlock(
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
         when (config.style) {
-            TableStyle.STRIPED -> listOfNotNull(
+            TableStyle.STRIPED -> listOf(
                 css(".$cssId tbody tr:nth-child(even)") {
                     rule("background-color", "#f9fafb")
                 },
             )
-            TableStyle.BORDERED -> listOfNotNull(
+            TableStyle.BORDERED -> listOf(
                 css(".$cssId") {
                     rule("border-collapse", "collapse")
                 },
@@ -576,7 +576,7 @@ data class TableBlock(
                     rule("border", "1px solid #d1d5db")
                 },
             )
-            TableStyle.MINIMAL -> listOfNotNull(
+            TableStyle.MINIMAL -> listOf(
                 css(".$cssId thead tr") {
                     rule("border-bottom", "2px solid #1a1a2e")
                 },
