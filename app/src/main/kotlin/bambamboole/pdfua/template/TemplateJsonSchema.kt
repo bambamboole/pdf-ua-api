@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.template
 
 import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.fonts.FontWeight

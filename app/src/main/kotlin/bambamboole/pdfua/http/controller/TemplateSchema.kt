@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.services.TemplateJsonSchema
+import bambamboole.pdfua.template.TemplateJsonSchema
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
