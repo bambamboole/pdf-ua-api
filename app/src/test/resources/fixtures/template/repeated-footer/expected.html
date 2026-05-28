@@ -4,11 +4,17 @@
 <meta charset="UTF-8">
 <title>Document</title>
 <style>
-@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } .page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; } .page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; }
+.page-footer { font-size: 8pt; color: #6b7280; }
+.page-footer .row { margin: 0; }
+.page-footer-repeated { position: running(pageFooter); width: 100%; }
+@page { @bottom-center { content: element(pageFooter); } }
+.page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; }
+.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
 img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
-h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; page-break-after: avoid; break-after: avoid; }
 .key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
 .key-value td { vertical-align: top; padding: 0 0 2mm; }
 .key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
@@ -19,7 +25,6 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
-h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
 </style>
 </head>
 <body>

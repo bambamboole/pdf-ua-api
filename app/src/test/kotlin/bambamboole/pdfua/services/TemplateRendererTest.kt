@@ -428,7 +428,7 @@ class TemplateRendererTest {
     fun bundledFamilyIsUsedAsIsWithoutFontFace() {
         val cfg = TemplateConfig(typography = TypographyConfig(family = "Inter"))
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-        assertTrue(html.contains("body { font-family: 'Inter'; }"))
+        assertTrue(html.contains("body { font-family: 'Inter'; color: #111827; line-height: 1.35; }"))
         assertTrue(!html.contains("@font-face"), "bundled family must not emit @font-face")
     }
 

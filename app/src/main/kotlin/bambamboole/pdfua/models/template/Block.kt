@@ -32,7 +32,7 @@ sealed interface Block {
     fun render(): String
 
     /** Emits block-specific CSS for the renderer-generated wrapper class. */
-    fun renderCss(cssId: String): List<String> = emptyList()
+    fun renderCss(cssId: String): List<CssDeclaration> = emptyList()
 
     /** Static invariants on this block declaration (config, keys, ranges). */
     fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
@@ -44,7 +44,6 @@ sealed interface Block {
 private fun JsonElement.string(key: String): String? =
     (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
-private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
 private val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
@@ -120,10 +119,6 @@ private sealed class SvgSource {
     data class Content(val value: String) : SvgSource()
     object Invalid : SvgSource()
 }
-
-private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
-
-private fun safeCssColor(value: String): String? = value.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
 
 private fun JsonObject.stringValues(): Map<String, String?> =
     mapValues { (_, value) ->
@@ -241,11 +236,12 @@ data class ImageBlock(
         inlineSanitizedSvg(src, alt)
             ?: "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
 
-    override fun renderCss(cssId: String): List<String> =
-        nonNegative(config.maxHeight)
-            ?.takeIf { it > 0 }
-            ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
-            ?: emptyList()
+    override fun renderCss(cssId: String): List<CssDeclaration> =
+        listOf(
+            css(".$cssId img, .$cssId svg") {
+                rule("max-height", cssPx(config.maxHeight))
+            },
+        )
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
@@ -292,10 +288,14 @@ data class KeyValueBlock(
         return "<table class=\"key-value\"><tbody>$rows</tbody></table>"
     }
 
-    override fun renderCss(cssId: String): List<String> {
+    override fun renderCss(cssId: String): List<CssDeclaration> {
         validateFields()
         val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
-        return listOf(".$cssId .key-value td:first-child { width: $labelWidth; }")
+        return listOf(
+            css(".$cssId .key-value td:first-child") {
+                rule("width", labelWidth)
+            },
+        )
     }
 
     private fun validateFields() {
@@ -442,10 +442,12 @@ data class SpacerBlock(
 
     override fun render(): String = ""
 
-    override fun renderCss(cssId: String): List<String> =
-        nonNegative(config.height)
-            ?.let { listOf(".$cssId { height: ${it}mm; }") }
-            ?: emptyList()
+    override fun renderCss(cssId: String): List<CssDeclaration> =
+        listOf(
+            css(".$cssId") {
+                rule("height", cssMm(config.height))
+            },
+        )
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
         listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
@@ -472,19 +474,16 @@ data class DividerBlock(
 
     override fun render(): String = "<hr>"
 
-    override fun renderCss(cssId: String): List<String> {
-        val declarations = buildList {
-            add("border: none")
-            add("margin: 2.5mm 0")
-            nonNegative(config.thickness)?.let { add("border-top-width: ${it}pt") }
-            safeCssColor(config.lineColor)?.let { add("border-top-color: $it") }
-            add("border-top-style: ${config.style.cssValue()}")
-        }
-        return if (declarations.isEmpty()) {
-            emptyList()
-        } else {
-            listOf(".$cssId hr { ${declarations.joinToString("; ")}; }")
-        }
+    override fun renderCss(cssId: String): List<CssDeclaration> {
+        return listOf(
+            css(".$cssId hr") {
+                rule("border", "none")
+                rule("margin", "2.5mm 0")
+                rule("border-top-width", cssPt(config.thickness))
+                rule("border-top-color", safeCssColor(config.lineColor))
+                rule("border-top-style", config.style.cssValue())
+            },
+        )
     }
 
     private fun DividerStyle.cssValue(): String =
@@ -551,16 +550,28 @@ data class TableBlock(
         return "<table class=\"data-table\">${colgroup()}$thead$tbody</table>"
     }
 
-    override fun renderCss(cssId: String): List<String> =
+    override fun renderCss(cssId: String): List<CssDeclaration> =
         when (config.style) {
-            TableStyle.STRIPED -> listOf(".$cssId tbody tr:nth-child(even) { background-color: #f9fafb; }")
+            TableStyle.STRIPED -> listOf(
+                css(".$cssId tbody tr:nth-child(even)") {
+                    rule("background-color", "#f9fafb")
+                },
+            )
             TableStyle.BORDERED -> listOf(
-                ".$cssId { border-collapse: collapse; }",
-                ".$cssId th, .$cssId td { border: 1px solid #d1d5db; }",
+                css(".$cssId") {
+                    rule("border-collapse", "collapse")
+                },
+                css(".$cssId th, .$cssId td") {
+                    rule("border", "1px solid #d1d5db")
+                },
             )
             TableStyle.MINIMAL -> listOf(
-                ".$cssId thead tr { border-bottom: 2px solid #1a1a2e; }",
-                ".$cssId tbody tr { border-bottom: 1px solid #e5e7eb; }",
+                css(".$cssId thead tr") {
+                    rule("border-bottom", "2px solid #1a1a2e")
+                },
+                css(".$cssId tbody tr") {
+                    rule("border-bottom", "1px solid #e5e7eb")
+                },
             )
         }
 

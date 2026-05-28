@@ -4,11 +4,16 @@
 <meta charset="UTF-8">
 <title>Document</title>
 <style>
-@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } @page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }
-body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; }
+.page-footer { font-size: 8pt; color: #6b7280; }
+.page-footer .row { margin: 0; }
+.page-footer-repeated { position: running(pageFooter); width: 100%; }
+@page { @bottom-center { content: element(pageFooter); } }
+@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }
+body { font-family: 'Inter'; color: #111827; line-height: 1.35; font-size: 10pt; }
 img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
-h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; page-break-after: avoid; break-after: avoid; }
 .key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
 .key-value td { vertical-align: top; padding: 0 0 2mm; }
 .key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
@@ -19,8 +24,6 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
-h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
-body { font-family: 'Inter'; font-size: 10pt; }
 .block-1 { font-size: 8pt; color: #6b7280; }
 .block-2 img, .block-2 svg { max-height: 32px; }
 .block-3 { margin-left: auto; text-align: right; }
@@ -36,11 +39,9 @@ body { font-family: 'Inter'; font-size: 10pt; }
 .block-11 th, .block-11 td { border: 1px solid #d1d5db; }
 .block-12 { height: 4mm; }
 .block-13 { font-size: 9pt; color: #374151; }
-.block-14 { margin-left: auto; text-align: right; }
-.block-14 { font-weight: 500; }
+.block-14 { margin-left: auto; text-align: right; font-weight: 500; }
 .block-14 .key-value td:first-child { width: 32mm; }
 .block-15 { height: 8mm; }
-
 </style>
 </head>
 <body>

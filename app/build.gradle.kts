@@ -20,6 +20,7 @@ val skipTemplateBuilderWebUiBuild = providers.gradleProperty("skipTemplateBuilde
     .orElse(false)
 val templateBuilderWebUiDir = layout.projectDirectory.dir("src/webui/template-builder")
 val templateBuilderWebUiOutput = layout.buildDirectory.dir("generated-resources/webui/template-builder")
+val openApiOutputDir = layout.buildDirectory.dir("resources/main/openapi")
 
 dependencies {
     // Ktor Server
@@ -123,6 +124,17 @@ tasks.processResources {
     if (!skipTemplateBuilderWebUiBuild.get()) {
         dependsOn(buildTemplateBuilderWebUi)
     }
+}
+
+val prepareOpenApiOutputDirectory by tasks.registering {
+    outputs.dir(openApiOutputDir)
+    doLast {
+        outputs.files.singleFile.mkdirs()
+    }
+}
+
+tasks.compileKotlin {
+    dependsOn(prepareOpenApiOutputDirectory)
 }
 
 tasks.test {
