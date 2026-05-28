@@ -1,7 +1,14 @@
 package bambamboole.pdfua.models.template
 
-import bambamboole.pdfua.util.Html
-import bambamboole.pdfua.util.html
+import bambamboole.pdfua.rendering.CssDeclaration
+import bambamboole.pdfua.rendering.Html
+import bambamboole.pdfua.rendering.css
+import bambamboole.pdfua.rendering.cssMm
+import bambamboole.pdfua.rendering.cssPt
+import bambamboole.pdfua.rendering.cssPx
+import bambamboole.pdfua.rendering.html
+import bambamboole.pdfua.rendering.safeCssColor
+import bambamboole.pdfua.rendering.safeCssWidth
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray

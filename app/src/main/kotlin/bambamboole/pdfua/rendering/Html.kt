@@ -1,4 +1,4 @@
-package bambamboole.pdfua.util
+package bambamboole.pdfua.rendering
 
 @JvmInline
 value class Html internal constructor(internal val raw: String) {

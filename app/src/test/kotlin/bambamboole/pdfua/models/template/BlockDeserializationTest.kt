@@ -1,5 +1,7 @@
 package bambamboole.pdfua.models.template
 
+import bambamboole.pdfua.rendering.CssDeclaration
+import bambamboole.pdfua.rendering.CssRegistry
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json

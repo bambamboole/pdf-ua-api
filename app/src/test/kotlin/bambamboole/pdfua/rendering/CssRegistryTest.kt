@@ -1,4 +1,4 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.rendering
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

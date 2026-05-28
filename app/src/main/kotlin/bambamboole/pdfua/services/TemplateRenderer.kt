@@ -4,8 +4,6 @@ import bambamboole.pdfua.models.RenderOptions
 import bambamboole.pdfua.models.template.Align
 import bambamboole.pdfua.models.template.Block
 import bambamboole.pdfua.models.template.BlockConfig
-import bambamboole.pdfua.models.template.CssRegistry
-import bambamboole.pdfua.models.template.CssRule
 import bambamboole.pdfua.models.template.CustomPageSize
 import bambamboole.pdfua.models.template.FontFace
 import bambamboole.pdfua.models.template.Orientation
@@ -19,15 +17,17 @@ import bambamboole.pdfua.models.template.Row
 import bambamboole.pdfua.models.template.SpacingConfig
 import bambamboole.pdfua.models.template.Template
 import bambamboole.pdfua.models.template.TypographyConfig
-import bambamboole.pdfua.models.template.cssIdentifierLikeValue
-import bambamboole.pdfua.models.template.cssMm
-import bambamboole.pdfua.models.template.cssPt
-import bambamboole.pdfua.models.template.cssQuotedString
-import bambamboole.pdfua.models.template.cssUrlValue
-import bambamboole.pdfua.models.template.safeCssColor
-import bambamboole.pdfua.models.template.safeCssWidth
-import bambamboole.pdfua.util.Html
-import bambamboole.pdfua.util.html
+import bambamboole.pdfua.rendering.CssRegistry
+import bambamboole.pdfua.rendering.CssRule
+import bambamboole.pdfua.rendering.Html
+import bambamboole.pdfua.rendering.cssIdentifierLikeValue
+import bambamboole.pdfua.rendering.cssMm
+import bambamboole.pdfua.rendering.cssPt
+import bambamboole.pdfua.rendering.cssQuotedString
+import bambamboole.pdfua.rendering.cssUrlValue
+import bambamboole.pdfua.rendering.html
+import bambamboole.pdfua.rendering.safeCssColor
+import bambamboole.pdfua.rendering.safeCssWidth
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
