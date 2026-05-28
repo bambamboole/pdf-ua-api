@@ -60,7 +60,7 @@
     <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun loadBytes: ByteArray?</ID>
     <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun resolveXObject: PDXObject?</ID>
     <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun stamp</ID>
-    <ID>ReturnCount:Block.kt:TableBlock$private fun alignStyle: String</ID>
+    <ID>ReturnCount:Block.kt:TableBlock$private fun alignStyle: String?</ID>
     <ID>ReturnCount:Block.kt:private fun inlineSanitizedSvg: String?</ID>
     <ID>ReturnCount:Block.kt:private fun svgSource: SvgSource?</ID>
     <ID>ReturnCount:ImageOptimizer.kt:ImageOptimizer$fun optimizeImage: ByteArray</ID>
