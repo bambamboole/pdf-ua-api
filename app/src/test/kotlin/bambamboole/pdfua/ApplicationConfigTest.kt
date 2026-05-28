@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 import org.apache.pdfbox.Loader
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
+import kotlin.test.assertTrue
 
 class ApplicationConfigTest {
 
@@ -35,6 +35,45 @@ class ApplicationConfigTest {
 
         val response = client.get("/")
         assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun testTemplateBuilderUIEnabledByDefault() = testApplication {
+        application {
+            module()
+        }
+
+        val response = client.get("/template-builder")
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Text.Html, response.contentType()?.withoutParameters())
+        assertTrue(response.bodyAsText().contains("template-builder-root"))
+    }
+
+    @Test
+    fun testTemplateBuilderUIDisabledReturns404() = testApplication {
+        environment {
+            config = MapApplicationConfig("ui.enabled" to "false")
+        }
+        application {
+            module()
+        }
+
+        val response = client.get("/template-builder")
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun testTemplateBuilderAssetIsServed() = testApplication {
+        application {
+            module()
+        }
+
+        val response = client.get("/template-builder/assets/app.js")
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Text.JavaScript, response.contentType()?.withoutParameters())
+        val body = response.bodyAsText()
+        assertTrue(body.contains("/schema"))
+        assertTrue(body.contains("render/template"))
     }
 
     @Test
