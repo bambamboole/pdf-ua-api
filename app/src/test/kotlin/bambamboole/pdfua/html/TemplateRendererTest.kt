@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.html
 
 import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.Align

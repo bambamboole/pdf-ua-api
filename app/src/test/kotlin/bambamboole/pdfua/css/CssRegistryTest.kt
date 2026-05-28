@@ -1,4 +1,4 @@
-package bambamboole.pdfua.rendering
+package bambamboole.pdfua.css
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

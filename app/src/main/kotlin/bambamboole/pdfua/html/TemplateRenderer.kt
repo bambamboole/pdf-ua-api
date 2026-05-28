@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.html
 
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.Block
@@ -16,17 +16,17 @@ import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.SpacingConfig
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.TypographyConfig
-import bambamboole.pdfua.rendering.CssRegistry
-import bambamboole.pdfua.rendering.CssRule
-import bambamboole.pdfua.rendering.Html
-import bambamboole.pdfua.rendering.cssIdentifierLikeValue
-import bambamboole.pdfua.rendering.cssMm
-import bambamboole.pdfua.rendering.cssPt
-import bambamboole.pdfua.rendering.cssQuotedString
-import bambamboole.pdfua.rendering.cssUrlValue
-import bambamboole.pdfua.rendering.html
-import bambamboole.pdfua.rendering.safeCssColor
-import bambamboole.pdfua.rendering.safeCssWidth
+import bambamboole.pdfua.css.CssRegistry
+import bambamboole.pdfua.css.CssRule
+import bambamboole.pdfua.css.cssIdentifierLikeValue
+import bambamboole.pdfua.css.cssMm
+import bambamboole.pdfua.css.cssPt
+import bambamboole.pdfua.css.cssQuotedString
+import bambamboole.pdfua.css.cssUrlValue
+import bambamboole.pdfua.css.safeCssColor
+import bambamboole.pdfua.css.safeCssWidth
+import bambamboole.pdfua.services.BackgroundObjectDrawer
+import bambamboole.pdfua.services.RenderOptions
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 

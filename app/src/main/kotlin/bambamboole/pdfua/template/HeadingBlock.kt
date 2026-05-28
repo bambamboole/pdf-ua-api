@@ -1,7 +1,7 @@
 package bambamboole.pdfua.template
 
-import bambamboole.pdfua.rendering.Html
-import bambamboole.pdfua.rendering.html
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

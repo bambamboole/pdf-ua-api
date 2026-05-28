@@ -1,9 +1,9 @@
 package bambamboole.pdfua.template
 
-import bambamboole.pdfua.rendering.CssDeclaration
-import bambamboole.pdfua.rendering.Html
-import bambamboole.pdfua.rendering.css
-import bambamboole.pdfua.rendering.cssMm
+import bambamboole.pdfua.css.CssDeclaration
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.css.css
+import bambamboole.pdfua.css.cssMm
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

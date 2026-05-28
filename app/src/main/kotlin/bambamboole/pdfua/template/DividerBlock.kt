@@ -1,11 +1,11 @@
 package bambamboole.pdfua.template
 
-import bambamboole.pdfua.rendering.CssDeclaration
-import bambamboole.pdfua.rendering.Html
-import bambamboole.pdfua.rendering.css
-import bambamboole.pdfua.rendering.cssPt
-import bambamboole.pdfua.rendering.html
-import bambamboole.pdfua.rendering.safeCssColor
+import bambamboole.pdfua.css.CssDeclaration
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.css.css
+import bambamboole.pdfua.css.cssPt
+import bambamboole.pdfua.html.html
+import bambamboole.pdfua.css.safeCssColor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

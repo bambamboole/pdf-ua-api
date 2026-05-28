@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.html
 
 import bambamboole.pdfua.http.controller.RenderRequest
 import kotlinx.serialization.json.Json

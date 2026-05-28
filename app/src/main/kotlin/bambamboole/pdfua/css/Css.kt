@@ -1,4 +1,4 @@
-package bambamboole.pdfua.rendering
+package bambamboole.pdfua.css
 
 data class CssDeclaration(
     val selector: CssSelector,

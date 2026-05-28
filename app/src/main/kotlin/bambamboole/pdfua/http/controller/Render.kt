@@ -3,7 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.services.PdfService
 import bambamboole.pdfua.services.RenderOptions
-import bambamboole.pdfua.services.TemplateRenderer
+import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.template.ValidationIssue
