@@ -13,8 +13,8 @@ import java.io.ByteArrayInputStream
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-object PdfValidationService {
-    private val logger = LoggerFactory.getLogger(PdfValidationService::class.java)
+object PdfValidator {
+    private val logger = LoggerFactory.getLogger(PdfValidator::class.java)
 
     private val validationFlavours = listOf(PDFAFlavour.PDFA_3_A, PDFAFlavour.PDFUA_1)
 
@@ -29,9 +29,9 @@ object PdfValidationService {
     }
 
     fun warmup() {
-        logger.info("Warming up PdfValidationService...")
+        logger.info("Warming up PdfValidator...")
         initialized
-        logger.info("PdfValidationService warmup complete")
+        logger.info("PdfValidator warmup complete")
     }
 
     fun validatePdf(pdfBytes: ByteArray): ValidationResponse {

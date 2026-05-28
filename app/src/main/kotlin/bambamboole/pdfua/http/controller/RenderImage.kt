@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.image.ImageRenderService
+import bambamboole.pdfua.image.ImageRenderer
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -64,7 +64,7 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val imageBytes = ImageRenderService.renderHtmlToImage(
+            val imageBytes = ImageRenderer.renderHtmlToImage(
                 html = request.html,
                 format = format,
                 width = request.width,

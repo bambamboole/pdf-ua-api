@@ -12,9 +12,9 @@ import bambamboole.pdfua.http.controller.templateBuilderWebRoutes
 import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
 import bambamboole.pdfua.services.AssetResolver
-import bambamboole.pdfua.image.ImageRenderService
+import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.pdf.PdfRenderer
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -49,8 +49,8 @@ fun Application.module() {
         .info("PDF API version {} started", version)
 
     PdfRenderer.warmup()
-    PdfValidationService.warmup()
-    ImageRenderService.warmup()
+    PdfValidator.warmup()
+    ImageRenderer.warmup()
 
     val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
     val assetResolver = AssetResolver(

@@ -3,7 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.module
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -211,7 +211,7 @@ class ValidationRoutesTest {
         val pdfBytes = convertResponse.readRawBytes()
 
         // Validate the PDF
-        val validationResult = PdfValidationService.validatePdf(pdfBytes)
+        val validationResult = PdfValidator.validatePdf(pdfBytes)
 
         assertNotNull(validationResult, "Validation should complete for any PDF")
         assertTrue(validationResult.profiles.isNotEmpty(), "Should have profile results")

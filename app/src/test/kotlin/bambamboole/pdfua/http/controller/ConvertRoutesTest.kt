@@ -3,7 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.module
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -440,7 +440,7 @@ class ConvertRoutesTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val pdfBytes = response.readRawBytes()
 
-        val validation = PdfValidationService.validatePdf(pdfBytes)
+        val validation = PdfValidator.validatePdf(pdfBytes)
         assertTrue(validation.isCompliant, "PDF with @font-face should be PDF/A-3a compliant")
 
         assertNotNull(validation.documentInfo)
@@ -490,7 +490,7 @@ class ConvertRoutesTest {
         val pdfBytes = response.readRawBytes()
         assertTrue(pdfBytes.size > 1000, "PDF should not be blank (fallback fonts should render text)")
 
-        val validation = PdfValidationService.validatePdf(pdfBytes)
+        val validation = PdfValidator.validatePdf(pdfBytes)
         assertTrue(validation.isCompliant, "PDF with unreachable font URL should still be compliant via fallback fonts")
     }
 
@@ -551,7 +551,7 @@ class ConvertRoutesTest {
             assertEquals("Alternative", fileSpec.cosObject.getNameAsString(COSName.AF_RELATIONSHIP))
         }
 
-        val validation = PdfValidationService.validatePdf(pdfBytes)
+        val validation = PdfValidator.validatePdf(pdfBytes)
         assertTrue(validation.isCompliant, "PDF with attachment must remain PDF/A-3a compliant")
     }
 
@@ -595,7 +595,7 @@ class ConvertRoutesTest {
             assertTrue(embeddedFiles.containsKey("additional-data.csv"))
         }
 
-        val validation = PdfValidationService.validatePdf(pdfBytes)
+        val validation = PdfValidator.validatePdf(pdfBytes)
         assertTrue(validation.isCompliant)
     }
 

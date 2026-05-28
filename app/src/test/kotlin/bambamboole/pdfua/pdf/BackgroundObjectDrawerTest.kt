@@ -61,7 +61,7 @@ class BackgroundObjectDrawerTest {
             assertTrue(hasImage, "background image must be stamped as an image XObject")
         }
         assertTrue(
-            PdfValidationService.validatePdf(pdf).isCompliant,
+            PdfValidator.validatePdf(pdf).isCompliant,
             "image background PDF must be PDF/A-3a compliant (background must be artifact-marked)",
         )
     }
@@ -78,7 +78,7 @@ class BackgroundObjectDrawerTest {
             )
         }
         assertTrue(
-            PdfValidationService.validatePdf(pdf).isCompliant,
+            PdfValidator.validatePdf(pdf).isCompliant,
             "pdf background must be PDF/A-3a compliant",
         )
     }

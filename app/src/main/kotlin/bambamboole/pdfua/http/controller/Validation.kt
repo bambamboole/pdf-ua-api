@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ValidationResponse
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
@@ -36,7 +36,7 @@ fun Route.validationRoutes() {
                 return@post
             }
 
-            val validationResult = PdfValidationService.validatePdf(pdfBytes)
+            val validationResult = PdfValidator.validatePdf(pdfBytes)
             call.respond(HttpStatusCode.OK, validationResult)
         } catch (e: IllegalStateException) {
             call.respond(

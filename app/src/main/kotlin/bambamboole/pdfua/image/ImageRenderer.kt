@@ -16,8 +16,8 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import javax.imageio.ImageIO
 
-object ImageRenderService {
-    private val logger = LoggerFactory.getLogger(ImageRenderService::class.java)
+object ImageRenderer {
+    private val logger = LoggerFactory.getLogger(ImageRenderer::class.java)
     private val w3cDom = W3CDom()
 
     private fun parseAndInjectViewportWidth(html: String, width: Int): org.w3c.dom.Document {
@@ -30,9 +30,9 @@ object ImageRenderService {
     }
 
     fun warmup() {
-        logger.info("Warming up ImageRenderService...")
+        logger.info("Warming up ImageRenderer...")
         BundledFonts.fontBytes
-        logger.info("ImageRenderService warmup complete")
+        logger.info("ImageRenderer warmup complete")
     }
 
     fun renderHtmlToImage(

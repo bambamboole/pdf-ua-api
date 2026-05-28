@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.module
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -47,7 +47,7 @@ class TemplatePdfFixtureTest {
             val pdf = response.readRawBytes()
             assertTrue(pdf.isNotEmpty(), "Fixture '$name': PDF should not be empty")
 
-            val validation = PdfValidationService.validatePdf(pdf)
+            val validation = PdfValidator.validatePdf(pdf)
             assertTrue(validation.isCompliant, "Fixture '$name': PDF must be PDF/A-3a compliant")
             val fontNames = validation.documentInfo!!.fonts.map { it.name }
             assertTrue(

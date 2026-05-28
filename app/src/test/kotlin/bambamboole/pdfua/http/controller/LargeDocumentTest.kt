@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.pdf.PdfRenderer
-import bambamboole.pdfua.pdf.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidator
 import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -22,7 +22,7 @@ class LargeDocumentTest {
         println("Conversion time: ${conversionTime}ms, PDF size: ${pdfBytes.size / 1024} KB")
         assertTrue(pdfBytes.size > 1000, "PDF should not be blank")
 
-        val validation = PdfValidationService.validatePdf(pdfBytes)
+        val validation = PdfValidator.validatePdf(pdfBytes)
         assertTrue(validation.isCompliant, "Large document must remain PDF/A-3a compliant: ${validation.failures}")
     }
 
