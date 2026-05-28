@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.image
 
 import java.awt.Color
 import java.awt.image.BufferedImage

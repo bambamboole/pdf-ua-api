@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.image
 
 import bambamboole.pdfua.fonts.BundledFonts
 import com.openhtmltopdf.extend.FSStreamFactory

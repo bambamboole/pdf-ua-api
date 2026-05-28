@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.image
 
 import org.slf4j.LoggerFactory
 import java.awt.Image

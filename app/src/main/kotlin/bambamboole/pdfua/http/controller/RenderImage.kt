@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.services.ImageRenderService
+import bambamboole.pdfua.image.ImageRenderService
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription

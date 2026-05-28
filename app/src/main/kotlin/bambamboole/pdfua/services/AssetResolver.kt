@@ -1,5 +1,6 @@
 package bambamboole.pdfua.services
 
+import bambamboole.pdfua.image.ImageOptimizer
 import com.openhtmltopdf.extend.FSStream
 import com.openhtmltopdf.extend.FSStreamFactory
 import org.slf4j.LoggerFactory
