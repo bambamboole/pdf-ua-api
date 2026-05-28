@@ -1,11 +1,27 @@
 package bambamboole.pdfua.services
 
-class RenderContext {
-    private val rules = StringBuilder()
+import bambamboole.pdfua.models.template.CssDeclaration
+import bambamboole.pdfua.models.template.CssRegistry
+import bambamboole.pdfua.models.template.CssRules
 
-    fun addCss(rule: String) {
-        if (rule.isNotBlank()) rules.append(rule).append('\n')
+internal class RenderContext {
+    private val css = CssRegistry()
+
+    fun css(selector: String, rules: CssRules.() -> Unit) {
+        css.css(selector, rules)
     }
 
-    fun collectedCss(): String = rules.toString()
+    fun nestedCss(parent: String, child: String, rules: CssRules.() -> Unit) {
+        css.nestedCss(parent, child, rules)
+    }
+
+    fun fontFace(rules: CssRules.() -> Unit) {
+        css.fontFace(rules)
+    }
+
+    fun addCss(declaration: CssDeclaration?) {
+        declaration?.let(css::add)
+    }
+
+    fun collectedCss(): String = css.render()
 }

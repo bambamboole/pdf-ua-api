@@ -321,23 +321,29 @@ class BlockDeserializationTest {
     @Test
     fun tableStylePresetsEmitScopedCss() {
         assertEquals(
-            listOf(".block-1 tbody tr:nth-child(even) { background-color: #f9fafb; }"),
-            TableBlock(config = TableConfig(style = TableStyle.STRIPED)).renderCss("block-1"),
+            ".block-1 tbody tr:nth-child(even) { background-color: #f9fafb; }",
+            renderCss(TableBlock(config = TableConfig(style = TableStyle.STRIPED)).renderCss("block-1")),
         )
         assertEquals(
-            listOf(
-                ".block-1 { border-collapse: collapse; }",
-                ".block-1 th, .block-1 td { border: 1px solid #d1d5db; }",
-            ),
-            TableBlock(config = TableConfig(style = TableStyle.BORDERED)).renderCss("block-1"),
+            """
+            .block-1 { border-collapse: collapse; }
+            .block-1 th, .block-1 td { border: 1px solid #d1d5db; }
+            """.trimIndent(),
+            renderCss(TableBlock(config = TableConfig(style = TableStyle.BORDERED)).renderCss("block-1")),
         )
         assertEquals(
-            listOf(
-                ".block-1 thead tr { border-bottom: 2px solid #1a1a2e; }",
-                ".block-1 tbody tr { border-bottom: 1px solid #e5e7eb; }",
-            ),
-            TableBlock(config = TableConfig(style = TableStyle.MINIMAL)).renderCss("block-1"),
+            """
+            .block-1 thead tr { border-bottom: 2px solid #1a1a2e; }
+            .block-1 tbody tr { border-bottom: 1px solid #e5e7eb; }
+            """.trimIndent(),
+            renderCss(TableBlock(config = TableConfig(style = TableStyle.MINIMAL)).renderCss("block-1")),
         )
+    }
+
+    private fun renderCss(declarations: List<CssDeclaration>): String {
+        val registry = CssRegistry()
+        declarations.forEach(registry::add)
+        return registry.render()
     }
 
     @Test

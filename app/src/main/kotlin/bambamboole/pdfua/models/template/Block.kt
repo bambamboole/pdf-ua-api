@@ -32,7 +32,7 @@ sealed interface Block {
     fun render(): String
 
     /** Emits block-specific CSS for the renderer-generated wrapper class. */
-    fun renderCss(cssId: String): List<String> = emptyList()
+    fun renderCss(cssId: String): List<CssDeclaration> = emptyList()
 
     /** Static invariants on this block declaration (config, keys, ranges). */
     fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
@@ -238,15 +238,15 @@ data class ImageBlock(
         inlineSanitizedSvg(src, alt)
             ?: "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
 
-    override fun renderCss(cssId: String): List<String> =
+    override fun renderCss(cssId: String): List<CssDeclaration> =
         nonNegative(config.maxHeight)
             ?.takeIf { it > 0 }
             ?.let {
-                CssBuilder()
-                    .rule(".$cssId img, .$cssId svg") {
-                        declaration("max-height", cssPx(it))
-                    }
-                    .buildRules()
+                listOfNotNull(
+                    css(".$cssId img, .$cssId svg") {
+                        rule("max-height", cssPx(it))
+                    },
+                )
             }
             ?: emptyList()
 
@@ -295,14 +295,14 @@ data class KeyValueBlock(
         return "<table class=\"key-value\"><tbody>$rows</tbody></table>"
     }
 
-    override fun renderCss(cssId: String): List<String> {
+    override fun renderCss(cssId: String): List<CssDeclaration> {
         validateFields()
         val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
-        return CssBuilder()
-            .rule(".$cssId .key-value td:first-child") {
-                declaration("width", labelWidth)
-            }
-            .buildRules()
+        return listOfNotNull(
+            css(".$cssId .key-value td:first-child") {
+                rule("width", labelWidth)
+            },
+        )
     }
 
     private fun validateFields() {
@@ -449,14 +449,14 @@ data class SpacerBlock(
 
     override fun render(): String = ""
 
-    override fun renderCss(cssId: String): List<String> =
+    override fun renderCss(cssId: String): List<CssDeclaration> =
         nonNegative(config.height)
             ?.let {
-                CssBuilder()
-                    .rule(".$cssId") {
-                        declaration("height", cssMm(it))
-                    }
-                    .buildRules()
+                listOfNotNull(
+                    css(".$cssId") {
+                        rule("height", cssMm(it))
+                    },
+                )
             }
             ?: emptyList()
 
@@ -485,16 +485,16 @@ data class DividerBlock(
 
     override fun render(): String = "<hr>"
 
-    override fun renderCss(cssId: String): List<String> {
-        return CssBuilder()
-            .rule(".$cssId hr") {
-                declaration("border", "none")
-                declaration("margin", "2.5mm 0")
-                declaration("border-top-width", nonNegative(config.thickness)?.let { cssPt(it) })
-                declaration("border-top-color", safeCssColor(config.lineColor))
-                declaration("border-top-style", config.style.cssValue())
-            }
-            .buildRules()
+    override fun renderCss(cssId: String): List<CssDeclaration> {
+        return listOfNotNull(
+            css(".$cssId hr") {
+                rule("border", "none")
+                rule("margin", "2.5mm 0")
+                rule("border-top-width", nonNegative(config.thickness)?.let { cssPt(it) })
+                rule("border-top-color", safeCssColor(config.lineColor))
+                rule("border-top-style", config.style.cssValue())
+            },
+        )
     }
 
     private fun DividerStyle.cssValue(): String =
@@ -561,29 +561,29 @@ data class TableBlock(
         return "<table class=\"data-table\">${colgroup()}$thead$tbody</table>"
     }
 
-    override fun renderCss(cssId: String): List<String> =
+    override fun renderCss(cssId: String): List<CssDeclaration> =
         when (config.style) {
-            TableStyle.STRIPED -> CssBuilder()
-                .rule(".$cssId tbody tr:nth-child(even)") {
-                    declaration("background-color", "#f9fafb")
-                }
-                .buildRules()
-            TableStyle.BORDERED -> CssBuilder()
-                .rule(".$cssId") {
-                    declaration("border-collapse", "collapse")
-                }
-                .rule(".$cssId th, .$cssId td") {
-                    declaration("border", "1px solid #d1d5db")
-                }
-                .buildRules()
-            TableStyle.MINIMAL -> CssBuilder()
-                .rule(".$cssId thead tr") {
-                    declaration("border-bottom", "2px solid #1a1a2e")
-                }
-                .rule(".$cssId tbody tr") {
-                    declaration("border-bottom", "1px solid #e5e7eb")
-                }
-                .buildRules()
+            TableStyle.STRIPED -> listOfNotNull(
+                css(".$cssId tbody tr:nth-child(even)") {
+                    rule("background-color", "#f9fafb")
+                },
+            )
+            TableStyle.BORDERED -> listOfNotNull(
+                css(".$cssId") {
+                    rule("border-collapse", "collapse")
+                },
+                css(".$cssId th, .$cssId td") {
+                    rule("border", "1px solid #d1d5db")
+                },
+            )
+            TableStyle.MINIMAL -> listOfNotNull(
+                css(".$cssId thead tr") {
+                    rule("border-bottom", "2px solid #1a1a2e")
+                },
+                css(".$cssId tbody tr") {
+                    rule("border-bottom", "1px solid #e5e7eb")
+                },
+            )
         }
 
     private fun cellsFor(row: JsonObject, rowIndex: Int): List<String> =
