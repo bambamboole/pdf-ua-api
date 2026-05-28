@@ -21,6 +21,10 @@ out/
 ### Kotlin ###
 .kotlin
 
+### Node ###
+node_modules/
+app/src/webui/**/dist/
+
 ### Eclipse ###
 .apt_generated
 .classpath
@@ -48,6 +52,7 @@ bin/
 
 ### Test Fixtures ###
 **/fixtures/**/generated.pdf
+**/fixtures/**/generated.png
 **/fixtures/**/page-*-diff.png
 **/image-fixtures/**/generated.png
 **/image-fixtures/**/diff.png

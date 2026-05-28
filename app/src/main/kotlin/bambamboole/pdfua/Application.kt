@@ -8,6 +8,7 @@ import bambamboole.pdfua.routes.identifyRoutes
 import bambamboole.pdfua.routes.indexRoutes
 import bambamboole.pdfua.routes.convertAndValidateRoutes
 import bambamboole.pdfua.routes.renderImageRoutes
+import bambamboole.pdfua.routes.templateBuilderWebRoutes
 import bambamboole.pdfua.routes.templateSchemaRoutes
 import bambamboole.pdfua.routes.validationRoutes
 import bambamboole.pdfua.services.AssetResolver
@@ -103,6 +104,7 @@ fun Application.module() {
         swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.yaml")
         if (config.webUIEnabled) {
             indexRoutes()
+            templateBuilderWebRoutes()
         }
         healthRoutes()
         templateSchemaRoutes()

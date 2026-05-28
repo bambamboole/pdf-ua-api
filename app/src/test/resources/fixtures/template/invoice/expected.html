@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+<style>
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } .page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; } .page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
+body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
+img, svg { max-width: 100%; height: auto; }
+p { margin: 0 0 2mm; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+.key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
+.key-value td { vertical-align: top; padding: 0 0 2mm; }
+.key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
+.row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+.key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
+body { font-family: 'Inter'; font-size: 10pt; }
+.block-1 { font-size: 8pt; color: #6b7280; }
+.block-2 { margin-left: auto; text-align: right; }
+.block-2 { font-size: 8pt; color: #6b7280; }
+.block-2 .key-value td:first-child { width: 24mm; }
+.block-3 img, .block-3 svg { max-height: 32px; }
+.block-4 { margin-left: auto; text-align: right; }
+.block-4 .key-value td:first-child { width: 32mm; }
+.block-5 { height: 6mm; }
+.block-6 .key-value td:first-child { width: 20mm; }
+.block-7 .key-value td:first-child { width: 26mm; }
+.block-8 { height: 6mm; }
+.block-9 { font-weight: 700; }
+.block-10 { color: #374151; }
+.block-11 { height: 4mm; }
+.block-12 tbody tr:nth-child(even) { background-color: #f9fafb; }
+.block-13 { height: 4mm; }
+.block-14 { color: #374151; }
+.block-15 { margin-left: auto; text-align: right; }
+.block-15 { font-weight: 500; }
+.block-15 .key-value td:first-child { width: 32mm; }
+
+</style>
+</head>
+<body>
+<footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td style="width: 68%;"><div class="block-1"><p>PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany<br>Bank Musterbank Berlin · IBAN DE89 3704 0044 0532 0130 00 · BIC COBADEFFXXX</p></div></td><td style="width: 32%;"><div class="block-2"><table class="key-value"><tbody><tr><td>Registry</td><td>HRB 123456 B</td></tr><tr><td>Tax no.</td><td>DE123456789</td></tr></tbody></table></div></td></tr></table><div class="page-footer-page-numbers" aria-hidden="true"></div></footer><table class="row" role="presentation"><tr><td style="width: 55%;"><div class="block-3"><svg xmlns="http://www.w3.org/2000/svg" aria-label="PUA Kit" height="32" role="img" viewBox="0 0 140 32" width="140"><rect fill="#1f2937" height="32" rx="4" width="140"/><text fill="#ffffff" font-family="Inter" font-size="14" font-weight="700" text-anchor="middle" x="70" y="22">PUA Kit</text></svg></div></td><td style="width: 45%;"><div class="block-4"><table class="key-value"><tbody><tr><td>Invoice no.</td><td>RE-2026-001234</td></tr><tr><td>Issue date</td><td>2026-02-17</td></tr><tr><td>Due date</td><td>2026-03-19</td></tr><tr><td>Currency</td><td>EUR</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-5"></div></td></tr></table><table class="row" role="presentation"><tr><td style="width: 50%;"><div class="block-6"><table class="key-value"><tbody><tr><td>Seller</td><td>PUA Kit GmbH</td></tr><tr><td>Address</td><td>Musterstraße 1, 10115 Berlin, DE</td></tr><tr><td>Contact</td><td>Max Mustermann</td></tr><tr><td>Email</td><td>billing@pdfua-kit.example</td></tr><tr><td>VAT ID</td><td>DE123456789</td></tr></tbody></table></div></td><td style="width: 50%;"><div class="block-7"><table class="key-value"><tbody><tr><td>Buyer</td><td>Musterkunde AG</td></tr><tr><td>Address</td><td>Käuferweg 2, 80331 München, DE</td></tr><tr><td>Email</td><td>invoice@musterkunde.example</td></tr><tr><td>Buyer reference</td><td>04011000-12345-67</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-8"></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-9"><h1>Invoice</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-10"><p>Thank you for your business. The services below were rendered between 2026-01-15 and 2026-02-15.</p></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-11"></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-12"><table class="data-table"><colgroup><col><col style="width: 44%;"><col style="width: 12%;"><col style="width: 18%;"><col style="width: 10%;"><col style="width: 16%;"></colgroup><thead><tr><th style="text-align: right;">#</th><th style="text-align: left;">Description</th><th style="text-align: right;">Qty</th><th style="text-align: right;">Unit price</th><th style="text-align: right;">VAT</th><th style="text-align: right;">Total</th></tr></thead><tbody><tr><td style="text-align: right;">1</td><td style="text-align: left;">Accessible PDF template implementation</td><td style="text-align: right;">40</td><td style="text-align: right;">95,00 €</td><td style="text-align: right;">19%</td><td style="text-align: right;">3.800,00 €</td></tr><tr><td style="text-align: right;">2</td><td style="text-align: left;">Document structure and tagging review</td><td style="text-align: right;">16</td><td style="text-align: right;">85,00 €</td><td style="text-align: right;">19%</td><td style="text-align: right;">1.360,00 €</td></tr><tr><td style="text-align: right;">3</td><td style="text-align: left;">Project management and acceptance testing</td><td style="text-align: right;">8</td><td style="text-align: right;">90,00 €</td><td style="text-align: right;">19%</td><td style="text-align: right;">720,00 €</td></tr><tr><td style="text-align: right;">4</td><td style="text-align: left;">Annual hosting and maintenance package</td><td style="text-align: right;">1</td><td style="text-align: right;">240,00 €</td><td style="text-align: right;">19%</td><td style="text-align: right;">240,00 €</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-13"></div></td></tr></table><table class="row" role="presentation"><tr><td style="width: 55%;"><div class="block-14"><p>Payment within the due date. Please include the invoice number with the payment reference.</p></div></td><td style="width: 45%;"><div class="block-15"><table class="key-value"><tbody><tr><td>Subtotal</td><td>6.120,00 €</td></tr><tr><td>VAT 19%</td><td>1.162,80 €</td></tr><tr><td>Grand total</td><td>7.282,80 €</td></tr></tbody></table></div></td></tr></table>
+</body>
+</html>

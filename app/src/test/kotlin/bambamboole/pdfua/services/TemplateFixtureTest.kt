@@ -75,4 +75,13 @@ class TemplateFixtureTest {
 
     @Test
     fun footerWithRightPageNumbers() = assertTemplateFixture("footer-with-right-page-numbers")
+
+    @Test
+    fun invoice() = assertTemplateFixture("invoice")
+
+    @Test
+    fun dunningNotice() = assertTemplateFixture("dunning-notice")
+
+    @Test
+    fun quote() = assertTemplateFixture("quote")
 }

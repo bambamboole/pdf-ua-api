@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+<style>
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } @page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }
+body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
+img, svg { max-width: 100%; height: auto; }
+p { margin: 0 0 2mm; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+.key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
+.key-value td { vertical-align: top; padding: 0 0 2mm; }
+.key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
+.row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+.key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
+body { font-family: 'Inter'; font-size: 10pt; }
+.block-1 { font-size: 8pt; color: #6b7280; }
+.block-2 img, .block-2 svg { max-height: 32px; }
+.block-3 { margin-left: auto; text-align: right; }
+.block-3 .key-value td:first-child { width: 32mm; }
+.block-4 { height: 6mm; }
+.block-5 .key-value td:first-child { width: 22mm; }
+.block-6 .key-value td:first-child { width: 24mm; }
+.block-7 { height: 6mm; }
+.block-8 { font-weight: 700; }
+.block-9 { color: #374151; }
+.block-10 { height: 4mm; }
+.block-11 { border-collapse: collapse; }
+.block-11 th, .block-11 td { border: 1px solid #d1d5db; }
+.block-12 { height: 4mm; }
+.block-13 { font-size: 9pt; color: #374151; }
+.block-14 { margin-left: auto; text-align: right; }
+.block-14 { font-weight: 500; }
+.block-14 .key-value td:first-child { width: 32mm; }
+.block-15 { height: 8mm; }
+
+</style>
+</head>
+<body>
+<footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td><div class="block-1"><p>PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Quote valid for 30 days unless otherwise noted.</p></div></td></tr></table></footer><table class="row" role="presentation"><tr><td style="width: 55%;"><div class="block-2"><svg xmlns="http://www.w3.org/2000/svg" aria-label="PUA Kit" height="32" role="img" viewBox="0 0 140 32" width="140"><rect fill="#0f766e" height="32" rx="4" width="140"/><text fill="#ffffff" font-family="Inter" font-size="14" font-weight="700" text-anchor="middle" x="70" y="22">PUA Kit</text></svg></div></td><td style="width: 45%;"><div class="block-3"><table class="key-value"><tbody><tr><td>Quote no.</td><td>AN-2026-000087</td></tr><tr><td>Issue date</td><td>2026-03-04</td></tr><tr><td>Valid until</td><td>2026-04-03</td></tr><tr><td>Account manager</td><td>Maria Beispiel</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-4"></div></td></tr></table><table class="row" role="presentation"><tr><td style="width: 50%;"><div class="block-5"><table class="key-value"><tbody><tr><td>Provider</td><td>PUA Kit GmbH</td></tr><tr><td>Address</td><td>Musterstraße 1, 10115 Berlin, DE</td></tr><tr><td>Contact</td><td>Max Mustermann</td></tr><tr><td>Email</td><td>sales@pdfua-kit.example</td></tr></tbody></table></div></td><td style="width: 50%;"><div class="block-6"><table class="key-value"><tbody><tr><td>Customer</td><td>Musterkunde AG</td></tr><tr><td>Address</td><td>Käuferweg 2, 80331 München, DE</td></tr><tr><td>Email</td><td>procurement@musterkunde.example</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-7"></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-8"><h1>Quote / Proposal</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-9"><p>Thank you for your interest in PUA Kit. The proposal below covers an accessible PDF/UA template implementation and on-going maintenance for the 2026 fiscal year.</p></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-10"></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-11"><table class="data-table"><colgroup><col style="width: 52%;"><col style="width: 12%;"><col style="width: 18%;"><col style="width: 18%;"></colgroup><thead><tr><th style="text-align: left;">Description</th><th style="text-align: right;">Qty</th><th style="text-align: right;">Unit price</th><th style="text-align: right;">Total</th></tr></thead><tbody><tr><td style="text-align: left;">Accessibility audit of existing document templates</td><td style="text-align: right;">1</td><td style="text-align: right;">1.200,00 €</td><td style="text-align: right;">1.200,00 €</td></tr><tr><td style="text-align: left;">Implementation of accessible invoice and statement templates</td><td style="text-align: right;">1</td><td style="text-align: right;">3.800,00 €</td><td style="text-align: right;">3.800,00 €</td></tr><tr><td style="text-align: left;">Operator training (two half-day sessions)</td><td style="text-align: right;">2</td><td style="text-align: right;">650,00 €</td><td style="text-align: right;">1.300,00 €</td></tr><tr><td style="text-align: left;">Annual maintenance and support package</td><td style="text-align: right;">1</td><td style="text-align: right;">1.440,00 €</td><td style="text-align: right;">1.440,00 €</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-12"></div></td></tr></table><table class="row" role="presentation"><tr><td style="width: 55%;"><div class="block-13"><p>Terms: prices are net and exclude VAT. 50% deposit on acceptance, balance on delivery. Travel costs billed separately at cost.</p></div></td><td style="width: 45%;"><div class="block-14"><table class="key-value"><tbody><tr><td>Subtotal</td><td>7.740,00 €</td></tr><tr><td>VAT 19%</td><td>1.470,60 €</td></tr><tr><td>Grand total</td><td>9.210,60 €</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-15"></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-16"><table style="width: 100%; border-collapse: collapse;"><tr><td style="width: 50%; border-top: 1px solid #1f2937; padding-top: 2mm; font-size: 9pt; color: #374151;">Customer signature</td><td style="width: 4%;"></td><td style="width: 46%; border-top: 1px solid #1f2937; padding-top: 2mm; font-size: 9pt; color: #374151;">PUA Kit GmbH</td></tr></table></div></td></tr></table>
+</body>
+</html>
