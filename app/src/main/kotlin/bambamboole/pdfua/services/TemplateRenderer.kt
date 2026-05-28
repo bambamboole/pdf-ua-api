@@ -95,11 +95,8 @@ object TemplateRenderer {
         }
 
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
-        val bodyHtml = html {
-            html(footerHtml)
-            template.rows.forEach { html(renderRow(it)) }
-        }
-        return wrapDocument(bodyHtml, template, css, options).serialize()
+        val rowsHtml = template.rows.map { renderRow(it) }
+        return wrapDocument(footerHtml, rowsHtml, template, css, options).serialize()
     }
 
     private fun emitPositioningCss(css: CssRegistry, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
@@ -151,7 +148,13 @@ object TemplateRenderer {
         }
     }
 
-    private fun wrapDocument(bodyHtml: Html, template: Template, css: CssRegistry, options: RenderOptions): Html {
+    private fun wrapDocument(
+        footerHtml: Html,
+        rowsHtml: List<Html>,
+        template: Template,
+        css: CssRegistry,
+        options: RenderOptions,
+    ): Html {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
         val style = css.render()
@@ -177,8 +180,14 @@ object TemplateRenderer {
                         html(backgroundHtml)
                         raw("\n")
                     }
-                    html(bodyHtml)
-                    raw("\n")
+                    if (footerHtml.serialize().isNotEmpty()) {
+                        html(footerHtml)
+                        raw("\n")
+                    }
+                    rowsHtml.forEach { row ->
+                        html(row)
+                        raw("\n")
+                    }
                 }
                 raw("\n")
             }
