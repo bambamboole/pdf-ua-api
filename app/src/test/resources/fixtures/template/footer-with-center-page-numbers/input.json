@@ -1,0 +1,65 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "size": { "format": "A4" },
+        "locale": "en_US",
+        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 20 },
+        "pageNumbers": { "enabled": true, "position": "center" },
+        "footer": {
+          "repeat": true,
+          "rows": [
+            {
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Acme Industries GmbH · Hauptstraße 42 · 10115 Berlin · Germany",
+                  "config": { "width": "70%", "typography": { "size": 8, "color": "#6b7280" } }
+                },
+                {
+                  "type": "key-value",
+                  "values": { "registration": "HRB 654321 B", "taxId": "DE987654321" },
+                  "config": {
+                    "width": "30%",
+                    "align": "right",
+                    "labelWidth": "20mm",
+                    "fields": [
+                      { "key": "registration", "label": "Registry" },
+                      { "key": "taxId", "label": "Tax no." }
+                    ],
+                    "typography": { "size": 8, "color": "#6b7280" }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "typography": { "family": "Inter", "size": 10 }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Center page numbers + repeated footer", "config": { "level": 1 } }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Page 1 content. With center-aligned page numbers and a repeated footer, the renderer is expected to put the page-number counter INSIDE the footer (as a row beneath the footer content) instead of in the @bottom-center margin box where the running footer already lives."
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div style=\"page-break-before: always;\"><h2>Page 2</h2><p>The page number should be visually under the footer text, centered, with no overlap.</p></div>"
+          }
+        ]
+      }
+    ]
+  }
+}

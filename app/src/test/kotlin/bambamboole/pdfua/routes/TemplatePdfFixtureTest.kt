@@ -142,4 +142,43 @@ class TemplatePdfFixtureTest {
             pageTextAssertions = mapOf(2 to listOf("Runtime footer plus right page numbers")),
         )
     }
+
+    @Test
+    fun footerWithLeftPageNumbers() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture(
+            "footer-with-left-page-numbers",
+            embeddedFont = "Inter",
+            pageTextAssertions = mapOf(
+                1 to listOf("Acme Industries GmbH"),
+                2 to listOf("Acme Industries GmbH"),
+            ),
+        )
+    }
+
+    @Test
+    fun footerWithCenterPageNumbers() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture(
+            "footer-with-center-page-numbers",
+            embeddedFont = "Inter",
+            pageTextAssertions = mapOf(
+                1 to listOf("Acme Industries GmbH"),
+                2 to listOf("Acme Industries GmbH"),
+            ),
+        )
+    }
+
+    @Test
+    fun footerWithRightPageNumbers() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture(
+            "footer-with-right-page-numbers",
+            embeddedFont = "Inter",
+            pageTextAssertions = mapOf(
+                1 to listOf("Acme Industries GmbH"),
+                2 to listOf("Acme Industries GmbH"),
+            ),
+        )
+    }
 }

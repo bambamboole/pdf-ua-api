@@ -66,4 +66,13 @@ class TemplateFixtureTest {
 
     @Test
     fun repeatedFooterRightPageNumbers() = assertTemplateFixture("repeated-footer-right-page-numbers")
+
+    @Test
+    fun footerWithLeftPageNumbers() = assertTemplateFixture("footer-with-left-page-numbers")
+
+    @Test
+    fun footerWithCenterPageNumbers() = assertTemplateFixture("footer-with-center-page-numbers")
+
+    @Test
+    fun footerWithRightPageNumbers() = assertTemplateFixture("footer-with-right-page-numbers")
 }

@@ -1,0 +1,65 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "size": { "format": "A4" },
+        "locale": "en_US",
+        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 20 },
+        "pageNumbers": { "enabled": true, "position": "right" },
+        "footer": {
+          "repeat": true,
+          "rows": [
+            {
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Acme Industries GmbH · Hauptstraße 42 · 10115 Berlin · Germany",
+                  "config": { "width": "70%", "typography": { "size": 8, "color": "#6b7280" } }
+                },
+                {
+                  "type": "key-value",
+                  "values": { "registration": "HRB 654321 B", "taxId": "DE987654321" },
+                  "config": {
+                    "width": "30%",
+                    "align": "right",
+                    "labelWidth": "20mm",
+                    "fields": [
+                      { "key": "registration", "label": "Registry" },
+                      { "key": "taxId", "label": "Tax no." }
+                    ],
+                    "typography": { "size": 8, "color": "#6b7280" }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "typography": { "family": "Inter", "size": 10 }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Right page numbers + repeated footer", "config": { "level": 1 } }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Page 1 content. This fixture exists to verify whether the @bottom-right page-number margin box collides with the right-most content of the running footer that lives in @bottom-center."
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div style=\"page-break-before: always;\"><h2>Page 2</h2><p>The repeated footer appears below on every page; the page number should sit in the bottom-right margin box.</p></div>"
+          }
+        ]
+      }
+    ]
+  }
+}
