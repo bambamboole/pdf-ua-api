@@ -23,6 +23,8 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
 
+data class PdfResult(val bytes: ByteArray, val documentId: String)
+
 object PdfRenderer {
     private val logger = LoggerFactory.getLogger(PdfRenderer::class.java)
     private val w3cDom = W3CDom()
