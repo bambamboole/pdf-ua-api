@@ -101,4 +101,10 @@ class TemplatePdfFixtureTest {
         application { module() }
         assertTemplatePdfFixture("repeated-footer", embeddedFont = "LiberationSans")
     }
+
+    @Test
+    fun repeatedFooterRightPageNumbers() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture("repeated-footer-right-page-numbers", embeddedFont = "LiberationSans")
+    }
 }

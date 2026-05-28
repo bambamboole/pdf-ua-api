@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+<style>
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } @page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }
+body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
+img, svg { max-width: 100%; height: auto; }
+p { margin: 0 0 2mm; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+.key-value { width: 100%; border-collapse: collapse; margin: 0 0 2mm; }
+.key-value td { vertical-align: top; padding: 0 0 2mm; }
+.key-value td:first-child { font-weight: 600; color: #374151; padding-right: 4mm; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
+.row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+</style>
+</head>
+<body>
+<footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td><div class="block-1"><p>Runtime footer plus right page numbers</p></div></td></tr></table></footer><table class="row" role="presentation"><tr><td><div class="block-2"><h1>Repeated footer with right page numbers</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-3"><p>The repeated footer remains centered in the bottom margin box while page numbers are rendered in the right page margin box.</p></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-4"><div style="page-break-before: always;"><h2>Second page</h2><p>This fixture covers the non-centered page number path with a repeated footer.</p></div></div></td></tr></table>
+</body>
+</html>

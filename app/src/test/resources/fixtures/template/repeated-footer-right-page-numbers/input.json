@@ -1,0 +1,52 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "size": { "format": "A4" },
+        "locale": "en_US",
+        "pageNumbers": { "enabled": true, "position": "right" },
+        "footer": {
+          "repeat": true,
+          "rows": [
+            {
+              "blocks": [
+                {
+                  "type": "text",
+                  "id": "footerText",
+                  "text": "Original right-number footer"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Repeated footer with right page numbers", "config": { "level": 1 } }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "text": "The repeated footer remains centered in the bottom margin box while page numbers are rendered in the right page margin box."
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div style=\"page-break-before: always;\"><h2>Second page</h2><p>This fixture covers the non-centered page number path with a repeated footer.</p></div>"
+          }
+        ]
+      }
+    ]
+  },
+  "data": {
+    "footerText": { "text": "Runtime footer plus right page numbers" }
+  }
+}
