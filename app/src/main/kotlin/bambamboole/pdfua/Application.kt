@@ -13,8 +13,8 @@ import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.ImageRenderService
-import bambamboole.pdfua.services.PdfService
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.pdf.PdfValidationService
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -48,7 +48,7 @@ fun Application.module() {
     LoggerFactory.getLogger("bambamboole.pdfua.Application")
         .info("PDF API version {} started", version)
 
-    PdfService.warmup()
+    PdfRenderer.warmup()
     PdfValidationService.warmup()
     ImageRenderService.warmup()
 

@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.services.PdfService
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.pdf.PdfValidationService
 import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -16,7 +16,7 @@ class LargeDocumentTest {
         println("Generated HTML: $lineCount lines, ${html.length / 1024} KB")
 
         val startTime = System.currentTimeMillis()
-        val pdfBytes = PdfService.convertHtmlToPdf(html).bytes
+        val pdfBytes = PdfRenderer.convertHtmlToPdf(html).bytes
         val conversionTime = System.currentTimeMillis() - startTime
 
         println("Conversion time: ${conversionTime}ms, PDF size: ${pdfBytes.size / 1024} KB")

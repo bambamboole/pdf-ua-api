@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.pdf
 
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -54,7 +54,7 @@ class BackgroundObjectDrawerTest {
 
     @Test
     fun imageBackgroundIsStampedAndCompliant() {
-        val pdf = PdfService.convertHtmlToPdf(htmlWith(imageDataUrl(), "image")).bytes
+        val pdf = PdfRenderer.convertHtmlToPdf(htmlWith(imageDataUrl(), "image")).bytes
         Loader.loadPDF(pdf).use { doc ->
             val res = doc.getPage(0).resources
             val hasImage = res.xObjectNames.any { res.getXObject(it) is PDImageXObject }
@@ -68,7 +68,7 @@ class BackgroundObjectDrawerTest {
 
     @Test
     fun pdfBackgroundProducesCompliantPdf() {
-        val pdf = PdfService.convertHtmlToPdf(htmlWith(pdfDataUrl(), "pdf")).bytes
+        val pdf = PdfRenderer.convertHtmlToPdf(htmlWith(pdfDataUrl(), "pdf")).bytes
         assertTrue(pdf.decodeToString(0, 5).startsWith("%PDF-"))
         org.apache.pdfbox.Loader.loadPDF(pdf).use { doc ->
             val res = doc.getPage(0).resources

@@ -25,7 +25,7 @@ import bambamboole.pdfua.css.cssQuotedString
 import bambamboole.pdfua.css.cssUrlValue
 import bambamboole.pdfua.css.safeCssColor
 import bambamboole.pdfua.css.safeCssWidth
-import bambamboole.pdfua.services.BackgroundObjectDrawer
+import bambamboole.pdfua.pdf.BackgroundObjectDrawer
 import bambamboole.pdfua.services.RenderOptions
 import kotlinx.serialization.json.JsonElement
 import java.net.URI

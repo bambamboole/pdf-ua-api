@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ValidationResponse
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidationService
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds

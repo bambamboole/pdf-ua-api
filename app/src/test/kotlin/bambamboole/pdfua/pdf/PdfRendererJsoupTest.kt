@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.pdf
 
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
  * Demonstration tests showing jsoup HTML manipulation capabilities
  * before PDF conversion.
  */
-class PdfServiceJsoupTest {
+class PdfRendererJsoupTest {
 
     @Test
     fun demonstrateJsoupManipulation() {

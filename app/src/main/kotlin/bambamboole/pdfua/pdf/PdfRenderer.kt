@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.pdf
 
 import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.template.FileAttachment
@@ -23,8 +23,8 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
 
-object PdfService {
-    private val logger = LoggerFactory.getLogger(PdfService::class.java)
+object PdfRenderer {
+    private val logger = LoggerFactory.getLogger(PdfRenderer::class.java)
     private val w3cDom = W3CDom()
     private val validRelationships = setOf("Source", "Data", "Alternative", "Supplement", "Unspecified")
 
@@ -35,13 +35,13 @@ object PdfService {
     }
 
     private fun loadResource(path: String): ByteArray? =
-        PdfService::class.java.getResourceAsStream(path)?.use { it.readBytes() }
+        PdfRenderer::class.java.getResourceAsStream(path)?.use { it.readBytes() }
 
     fun warmup() {
-        logger.info("Warming up PdfService...")
+        logger.info("Warming up PdfRenderer...")
         colorProfileBytes
         BundledFonts.fontBytes
-        logger.info("PdfService warmup complete")
+        logger.info("PdfRenderer warmup complete")
     }
 
     fun convertHtmlToPdf(

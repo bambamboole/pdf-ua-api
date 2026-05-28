@@ -1,7 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ValidationErrorResponse
-import bambamboole.pdfua.services.PdfService
+import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.template.Template
@@ -76,7 +76,7 @@ fun Route.renderRoutes(
             request.options.baseUrl.takeIf { it.isNotEmpty() }?.let { validateBaseUrl(it) }
             val html = TemplateRenderer.render(request.template, request.data, request.options)
 
-            val result = PdfService.convertHtmlToPdf(
+            val result = PdfRenderer.convertHtmlToPdf(
                 html = html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,

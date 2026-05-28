@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.pdf
 
 import com.openhtmltopdf.extend.FSObjectDrawer
 import com.openhtmltopdf.extend.OutputDevice

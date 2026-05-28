@@ -3,7 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.module
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.pdf.PdfValidationService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*

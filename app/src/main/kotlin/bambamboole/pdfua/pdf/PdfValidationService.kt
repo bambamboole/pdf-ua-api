@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.pdf
 
 import bambamboole.pdfua.http.*
 import org.apache.pdfbox.Loader

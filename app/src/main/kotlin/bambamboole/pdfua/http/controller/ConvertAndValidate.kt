@@ -2,8 +2,8 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.http.ValidationResponse
-import bambamboole.pdfua.services.PdfService
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.pdf.PdfValidationService
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -52,7 +52,7 @@ fun Route.convertAndValidateRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val result = PdfService.convertHtmlToPdf(
+            val result = PdfRenderer.convertHtmlToPdf(
                 html = request.html,
                 producer = pdfProducer,
                 assetResolver = assetResolver,
