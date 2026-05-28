@@ -1,6 +1,7 @@
 package bambamboole.pdfua.models.template
 
 import bambamboole.pdfua.util.Html
+import bambamboole.pdfua.util.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -29,7 +30,7 @@ sealed interface Block {
     fun applyData(values: JsonElement): Block
 
     /** Renders the block's inner HTML (without the positioning wrapper). */
-    fun render(): String
+    fun render(): Html
 
     /** Emits block-specific CSS for the renderer-generated wrapper class. */
     fun renderCss(cssId: String): List<CssDeclaration> = emptyList()
@@ -137,10 +138,14 @@ data class TextBlock(
 ) : Block {
     override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
-    override fun render(): String {
-        val paragraphs = text.split(Regex("\\R{2,}"))
-        return paragraphs.joinToString("") { paragraph ->
-            "<p>" + Html.escape(paragraph).replace(Regex("\\R"), "<br>") + "</p>"
+    override fun render(): Html = html {
+        text.split(Regex("\\R{2,}")).forEach { paragraph ->
+            tag("p") {
+                paragraph.split(Regex("\\R")).forEachIndexed { index, line ->
+                    if (index > 0) voidTag("br")
+                    text(line)
+                }
+            }
         }
     }
 
@@ -160,7 +165,7 @@ data class HtmlBlock(
 ) : Block {
     override fun applyData(values: JsonElement): Block = copy(html = values.string("html") ?: html)
 
-    override fun render(): String = html
+    override fun render(): Html = Html.raw(html)
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
@@ -187,9 +192,11 @@ data class HeadingBlock(
 ) : Block {
     override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
-    override fun render(): String {
+    override fun render(): Html {
         check(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
-        return "<h${config.level}>${Html.escape(text)}</h${config.level}>"
+        return html {
+            tag("h${config.level}") { text(text) }
+        }
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
@@ -232,9 +239,9 @@ data class ImageBlock(
             alt = values.string("alt") ?: alt,
         )
 
-    override fun render(): String =
-        inlineSanitizedSvg(src, alt)
-            ?: "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
+    override fun render(): Html =
+        inlineSanitizedSvg(src, alt)?.let(Html::raw)
+            ?: html { voidTag("img", "src" to src, "alt" to alt) }
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
         listOf(
@@ -278,14 +285,20 @@ data class KeyValueBlock(
     override fun applyData(values: JsonElement): Block =
         if (values is JsonObject) copy(values = values.stringValues()) else this
 
-    override fun render(): String {
+    override fun render(): Html {
         validateFields()
-        val rows = config.fields.joinToString("") { field ->
-            val label = Html.escape(field.label)
-            val value = Html.escape(values[field.key].orEmpty())
-            "<tr><td>$label</td><td>$value</td></tr>"
+        return html {
+            tag("table", "class" to "key-value") {
+                tag("tbody") {
+                    config.fields.forEach { field ->
+                        tag("tr") {
+                            tag("td") { text(field.label) }
+                            tag("td") { text(values[field.key].orEmpty()) }
+                        }
+                    }
+                }
+            }
         }
-        return "<table class=\"key-value\"><tbody>$rows</tbody></table>"
     }
 
     override fun renderCss(cssId: String): List<CssDeclaration> {
@@ -440,7 +453,7 @@ data class SpacerBlock(
 ) : Block {
     override fun applyData(values: JsonElement): Block = this
 
-    override fun render(): String = ""
+    override fun render(): Html = Html.EMPTY
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
         listOf(
@@ -472,7 +485,7 @@ data class DividerBlock(
 ) : Block {
     override fun applyData(values: JsonElement): Block = this
 
-    override fun render(): String = "<hr>"
+    override fun render(): Html = html { voidTag("hr") }
 
     override fun renderCss(cssId: String): List<CssDeclaration> {
         return listOf(
@@ -528,26 +541,32 @@ data class TableBlock(
     override fun applyData(values: JsonElement): Block =
         copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
 
-    override fun render(): String {
+    override fun render(): Html {
         val headers = buildList {
             if (config.numberRows) add("#")
             config.columns.forEach { add(it.label) }
         }
-        val thead = buildString {
-            append("<thead><tr>")
-            headers.forEachIndexed { index, header -> append("<th${alignStyle(index)}>${Html.escape(header)}</th>") }
-            append("</tr></thead>")
-        }
-        val tbody = buildString {
-            append("<tbody>")
-            rows.forEachIndexed { rowIndex, row ->
-                append("<tr>")
-                cellsFor(row, rowIndex).forEachIndexed { index, cell -> append("<td${alignStyle(index)}>${Html.escape(cell)}</td>") }
-                append("</tr>")
+        return html {
+            tag("table", "class" to "data-table") {
+                html(colgroup())
+                tag("thead") {
+                    tag("tr") {
+                        headers.forEachIndexed { index, header ->
+                            tag("th", "style" to alignStyle(index)) { text(header) }
+                        }
+                    }
+                }
+                tag("tbody") {
+                    rows.forEachIndexed { rowIndex, row ->
+                        tag("tr") {
+                            cellsFor(row, rowIndex).forEachIndexed { index, cell ->
+                                tag("td", "style" to alignStyle(index)) { text(cell) }
+                            }
+                        }
+                    }
+                }
             }
-            append("</tbody>")
         }
-        return "<table class=\"data-table\">${colgroup()}$thead$tbody</table>"
     }
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
@@ -581,25 +600,29 @@ data class TableBlock(
             config.columns.forEach { column -> add(cellText(row[column.key])) }
         }
 
-    private fun colgroup(): String {
+    private fun colgroup(): Html {
         val widths = buildList<String?> {
             if (config.numberRows) add(null)
             config.columns.forEach { add(safeCssWidth(it.width)) }
         }
-        if (widths.none { !it.isNullOrEmpty() }) return ""
-        return widths.joinToString("", prefix = "<colgroup>", postfix = "</colgroup>") { width ->
-            if (width.isNullOrEmpty()) "<col>" else "<col style=\"width: ${Html.escape(width)};\">"
+        if (widths.none { !it.isNullOrEmpty() }) return Html.EMPTY
+        return html {
+            tag("colgroup") {
+                widths.forEach { width ->
+                    voidTag("col", "style" to width?.takeIf { it.isNotEmpty() }?.let { "width: $it;" })
+                }
+            }
         }
     }
 
-    private fun alignStyle(index: Int): String {
+    private fun alignStyle(index: Int): String? {
         var columnIndex = index
         if (config.numberRows) {
-            if (columnIndex == 0) return " style=\"text-align: right;\""
+            if (columnIndex == 0) return "text-align: right;"
             columnIndex--
         }
-        val align = config.columns.getOrNull(columnIndex)?.align ?: return ""
-        return " style=\"text-align: ${align.name.lowercase()};\""
+        val align = config.columns.getOrNull(columnIndex)?.align ?: return null
+        return "text-align: ${align.name.lowercase()};"
     }
 
     private fun cellText(value: JsonElement?): String =
