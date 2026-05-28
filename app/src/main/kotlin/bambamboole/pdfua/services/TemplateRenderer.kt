@@ -4,6 +4,7 @@ import bambamboole.pdfua.models.RenderOptions
 import bambamboole.pdfua.models.template.Align
 import bambamboole.pdfua.models.template.Block
 import bambamboole.pdfua.models.template.BlockConfig
+import bambamboole.pdfua.models.template.CssBuilder
 import bambamboole.pdfua.models.template.CustomPageSize
 import bambamboole.pdfua.models.template.FontFace
 import bambamboole.pdfua.models.template.Orientation
@@ -17,24 +18,16 @@ import bambamboole.pdfua.models.template.Row
 import bambamboole.pdfua.models.template.SpacingConfig
 import bambamboole.pdfua.models.template.Template
 import bambamboole.pdfua.models.template.TypographyConfig
+import bambamboole.pdfua.models.template.cssIdentifierLikeValue
+import bambamboole.pdfua.models.template.cssMm
+import bambamboole.pdfua.models.template.cssPt
+import bambamboole.pdfua.models.template.cssQuotedString
+import bambamboole.pdfua.models.template.cssUrlValue
+import bambamboole.pdfua.models.template.safeCssColor
 import bambamboole.pdfua.models.template.safeCssWidth
 import bambamboole.pdfua.util.Html
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
-
-private val UNSAFE_CSS = Regex("[;{}\"\\r\\n]")
-
-private fun safeColor(color: String?): String? = color?.takeIf { it.isNotBlank() && !UNSAFE_CSS.containsMatchIn(it) }
-
-private fun cssString(value: String): String = value.replace("\\", "\\\\").replace("'", "\\'")
-
-private fun cssUrl(value: String): String = value
-    .replace("\\", "%5C").replace("\"", "%22").replace("(", "%28").replace(")", "%29").replace("\r", "").replace("\n", "")
-
-private fun mm(value: Double): String {
-    val number = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()
-    return "${number}mm"
-}
 
 private fun pageSizeCss(size: PageSize): String = when (size) {
     is PresetPageSize -> {
@@ -43,11 +36,11 @@ private fun pageSizeCss(size: PageSize): String = when (size) {
         } else {
             size.format.widthMm to size.format.heightMm
         }
-        "${mm(w)} ${mm(h)}"
+        "${cssMm(w)} ${cssMm(h)}"
     }
     is CustomPageSize -> {
         check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
-        "${size.width}mm ${size.height}mm"
+        "${cssMm(size.width)} ${cssMm(size.height)}"
     }
 }
 
@@ -88,44 +81,52 @@ object TemplateRenderer {
     }
 
     private fun emitPositioningCss(ctx: RenderContext, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
-        val declarations = buildList {
-            val width = safeCssWidth(config.width)
-            if (!widthOnCell && width != null) add("width: $width")
+        val css = CssBuilder().rule(".$cssId") {
+            val width = if (widthOnCell) null else safeCssWidth(config.width)
+            declaration("width", width)
             when (config.align) {
-                Align.CENTER -> { add("margin-left: auto"); add("margin-right: auto") }
-                Align.RIGHT -> { add("margin-left: auto"); add("text-align: right") }
+                Align.CENTER -> {
+                    declaration("margin-left", "auto")
+                    declaration("margin-right", "auto")
+                }
+                Align.RIGHT -> {
+                    declaration("margin-left", "auto")
+                    declaration("text-align", "right")
+                }
                 else -> {}
             }
-        }
-        if (declarations.isNotEmpty()) {
-            ctx.addCss(".$cssId { ${declarations.joinToString("; ")}; }")
-        }
+        }.build()
+        ctx.addCss(css)
     }
 
     private fun emitTypographyCss(ctx: RenderContext, cssId: String, typography: TypographyConfig?) {
         val declarations = typographyDeclarations(typography)
-        if (declarations.isNotEmpty()) {
-            ctx.addCss(".$cssId { ${declarations.joinToString("; ")}; }")
-        }
+        val css = CssBuilder().rule(".$cssId") {
+            declarations.forEach { declaration(it.property, it.value) }
+        }.build()
+        ctx.addCss(css)
     }
 
-    private fun typographyDeclarations(typography: TypographyConfig?): List<String> {
+    private fun typographyDeclarations(typography: TypographyConfig?): List<CssDeclaration> {
         if (typography == null) return emptyList()
         return buildList {
-            typography.family?.let { add("font-family: '${cssString(it)}'") }
-            typography.size?.let { add("font-size: ${it}pt") }
-            typography.weight?.let { add("font-weight: ${it.numericValue}") }
-            safeColor(typography.color)?.let { add("color: $it") }
-            typography.align?.let { add("text-align: ${it.name.lowercase()}") }
+            typography.family?.let { add(CssDeclaration("font-family", cssQuotedString(it))) }
+            typography.size?.let { add(CssDeclaration("font-size", cssPt(it))) }
+            typography.weight?.let { add(CssDeclaration("font-weight", it.numericValue.toString())) }
+            safeCssColor(typography.color)?.let { add(CssDeclaration("color", it)) }
+            typography.align?.let { add(CssDeclaration("text-align", it.name.lowercase())) }
         }
     }
 
     private fun fontFaceCss(fonts: Map<String, FontFace>): String =
         fonts.entries.flatMap { (family, face) ->
             face.weight.trim().split(Regex("\\s+")).map { weight ->
-                "@font-face { font-family: '${cssString(family)}'; " +
-                    "src: url(\"${cssUrl(face.src)}\") format(\"truetype\"); " +
-                    "font-weight: $weight; font-style: ${cssString(face.style)}; }"
+                CssBuilder().rule("@font-face") {
+                    declaration("font-family", cssQuotedString(family))
+                    declaration("src", cssUrlValue(face.src) + """ format("truetype")""")
+                    declaration("font-weight", weight)
+                    declaration("font-style", cssIdentifierLikeValue(face.style))
+                }.build()
             }
         }.joinToString("\n")
 
@@ -137,7 +138,9 @@ object TemplateRenderer {
         val bodyPrefix = page.background?.let { "${backgroundObjectHtml(it)}\n" }.orEmpty()
 
         val bodyTypography = typographyDeclarations(template.config.typography)
-        val bodyTypographyCss = if (bodyTypography.isNotEmpty()) "body { ${bodyTypography.joinToString("; ")}; }" else ""
+        val bodyTypographyCss = CssBuilder().rule("body") {
+            bodyTypography.forEach { declaration(it.property, it.value) }
+        }.build()
 
         val style = listOf(pageCss(page), fontFaceCss(template.fonts), baseCss(), bodyTypographyCss, ctx.collectedCss())
             .filter { it.isNotBlank() }
@@ -178,32 +181,55 @@ $bodyPrefix$bodyHtml
     private fun pageCss(page: PageConfig): String {
         val hasRepeatedFooter = page.footer.hasRepeatedRows()
         val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
-        val css = StringBuilder(
-            "@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins, bottomMarginReserve)}; }",
-        )
+        val css = CssBuilder()
+            .rule("@page") {
+                declaration("size", pageSizeCss(page.size))
+                declaration("margin", marginShorthand(page.margins, bottomMarginReserve))
+            }
         page.background?.let {
-            css.append(" .pagebg { position: running(pagebg); }")
-            css.append(" @page { @top-left { content: element(pagebg); } }")
+            css.rule(".pagebg") {
+                declaration("position", "running(pagebg)")
+            }
+            css.nestedRule("@page", "@top-left") {
+                declaration("content", "element(pagebg)")
+            }
         }
         if (hasRepeatedFooter) {
-            css.append(" .page-footer { font-size: 8pt; color: #6b7280; }")
-            css.append(" .page-footer .row { margin: 0; }")
-            css.append(" .page-footer-repeated { position: running(pageFooter); width: 100%; }")
-            css.append(" @page { @bottom-center { content: element(pageFooter); } }")
+            css.rule(".page-footer") {
+                declaration("font-size", "8pt")
+                declaration("color", "#6b7280")
+            }
+            css.rule(".page-footer .row") {
+                declaration("margin", "0")
+            }
+            css.rule(".page-footer-repeated") {
+                declaration("position", "running(pageFooter)")
+                declaration("width", "100%")
+            }
+            css.nestedRule("@page", "@bottom-center") {
+                declaration("content", "element(pageFooter)")
+            }
         }
         if (page.pageNumbers.enabled) {
             if (hasRepeatedFooter && page.pageNumbers.position == Align.CENTER) {
-                css.append(" .page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; }")
-                css.append(" .page-footer-page-numbers::after { content: counter(page) \" / \" counter(pages); }")
+                css.rule(".page-footer-page-numbers") {
+                    declaration("font-size", "8pt")
+                    declaration("color", "#9ca3af")
+                    declaration("text-align", "center")
+                }
+                css.rule(".page-footer-page-numbers::after") {
+                    declaration("content", """counter(page) " / " counter(pages)""")
+                }
             } else {
                 val position = page.pageNumbers.position.name.lowercase()
-                css.append(
-                    " @page { @bottom-$position { content: counter(page) \" / \" counter(pages); " +
-                        "font-size: 8pt; color: #9ca3af; } }",
-                )
+                css.nestedRule("@page", "@bottom-$position") {
+                    declaration("content", """counter(page) " / " counter(pages)""")
+                    declaration("font-size", "8pt")
+                    declaration("color", "#9ca3af")
+                }
             }
         }
-        return css.toString()
+        return css.build()
     }
 
     private fun marginShorthand(margins: SpacingConfig, bottomReserve: Int = 0): String {
@@ -254,4 +280,6 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 .key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
 h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
 """.trim()
+
+    private data class CssDeclaration(val property: String, val value: String)
 }

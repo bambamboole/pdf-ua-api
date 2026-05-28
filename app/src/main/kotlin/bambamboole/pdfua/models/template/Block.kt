@@ -44,7 +44,6 @@ sealed interface Block {
 private fun JsonElement.string(key: String): String? =
     (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
-private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
 private val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
@@ -122,8 +121,6 @@ private sealed class SvgSource {
 }
 
 private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
-
-private fun safeCssColor(value: String): String? = value.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
 
 private fun JsonObject.stringValues(): Map<String, String?> =
     mapValues { (_, value) ->
@@ -244,7 +241,13 @@ data class ImageBlock(
     override fun renderCss(cssId: String): List<String> =
         nonNegative(config.maxHeight)
             ?.takeIf { it > 0 }
-            ?.let { listOf(".$cssId img, .$cssId svg { max-height: ${it}px; }") }
+            ?.let {
+                CssBuilder()
+                    .rule(".$cssId img, .$cssId svg") {
+                        declaration("max-height", cssPx(it))
+                    }
+                    .buildRules()
+            }
             ?: emptyList()
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
@@ -295,7 +298,11 @@ data class KeyValueBlock(
     override fun renderCss(cssId: String): List<String> {
         validateFields()
         val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
-        return listOf(".$cssId .key-value td:first-child { width: $labelWidth; }")
+        return CssBuilder()
+            .rule(".$cssId .key-value td:first-child") {
+                declaration("width", labelWidth)
+            }
+            .buildRules()
     }
 
     private fun validateFields() {
@@ -444,7 +451,13 @@ data class SpacerBlock(
 
     override fun renderCss(cssId: String): List<String> =
         nonNegative(config.height)
-            ?.let { listOf(".$cssId { height: ${it}mm; }") }
+            ?.let {
+                CssBuilder()
+                    .rule(".$cssId") {
+                        declaration("height", cssMm(it))
+                    }
+                    .buildRules()
+            }
             ?: emptyList()
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
@@ -473,18 +486,15 @@ data class DividerBlock(
     override fun render(): String = "<hr>"
 
     override fun renderCss(cssId: String): List<String> {
-        val declarations = buildList {
-            add("border: none")
-            add("margin: 2.5mm 0")
-            nonNegative(config.thickness)?.let { add("border-top-width: ${it}pt") }
-            safeCssColor(config.lineColor)?.let { add("border-top-color: $it") }
-            add("border-top-style: ${config.style.cssValue()}")
-        }
-        return if (declarations.isEmpty()) {
-            emptyList()
-        } else {
-            listOf(".$cssId hr { ${declarations.joinToString("; ")}; }")
-        }
+        return CssBuilder()
+            .rule(".$cssId hr") {
+                declaration("border", "none")
+                declaration("margin", "2.5mm 0")
+                declaration("border-top-width", nonNegative(config.thickness)?.let { cssPt(it) })
+                declaration("border-top-color", safeCssColor(config.lineColor))
+                declaration("border-top-style", config.style.cssValue())
+            }
+            .buildRules()
     }
 
     private fun DividerStyle.cssValue(): String =
@@ -553,15 +563,27 @@ data class TableBlock(
 
     override fun renderCss(cssId: String): List<String> =
         when (config.style) {
-            TableStyle.STRIPED -> listOf(".$cssId tbody tr:nth-child(even) { background-color: #f9fafb; }")
-            TableStyle.BORDERED -> listOf(
-                ".$cssId { border-collapse: collapse; }",
-                ".$cssId th, .$cssId td { border: 1px solid #d1d5db; }",
-            )
-            TableStyle.MINIMAL -> listOf(
-                ".$cssId thead tr { border-bottom: 2px solid #1a1a2e; }",
-                ".$cssId tbody tr { border-bottom: 1px solid #e5e7eb; }",
-            )
+            TableStyle.STRIPED -> CssBuilder()
+                .rule(".$cssId tbody tr:nth-child(even)") {
+                    declaration("background-color", "#f9fafb")
+                }
+                .buildRules()
+            TableStyle.BORDERED -> CssBuilder()
+                .rule(".$cssId") {
+                    declaration("border-collapse", "collapse")
+                }
+                .rule(".$cssId th, .$cssId td") {
+                    declaration("border", "1px solid #d1d5db")
+                }
+                .buildRules()
+            TableStyle.MINIMAL -> CssBuilder()
+                .rule(".$cssId thead tr") {
+                    declaration("border-bottom", "2px solid #1a1a2e")
+                }
+                .rule(".$cssId tbody tr") {
+                    declaration("border-bottom", "1px solid #e5e7eb")
+                }
+                .buildRules()
         }
 
     private fun cellsFor(row: JsonObject, rowIndex: Int): List<String> =

@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <title>Document</title>
 <style>
-@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 20mm; } .page-footer { font-size: 8pt; color: #6b7280; } .page-footer .row { margin: 0; } .page-footer-repeated { position: running(pageFooter); width: 100%; } @page { @bottom-center { content: element(pageFooter); } } .page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; } .page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
+@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 20mm; }
+.page-footer { font-size: 8pt; color: #6b7280; }
+.page-footer .row { margin: 0; }
+.page-footer-repeated { position: running(pageFooter); width: 100%; }
+@page { @bottom-center { content: element(pageFooter); } }
+.page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; }
+.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
 body { font-family: 'Liberation Sans'; color: #111827; line-height: 1.35; }
 img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
