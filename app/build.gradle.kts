@@ -33,6 +33,8 @@ dependencies {
     implementation(libs.ktorServerMustache)
     implementation(libs.ktorSerializationJson)
     implementation(libs.ktorServerSwagger)
+    implementation(libs.ktorServerForwardedHeader)
+    implementation(libs.ktorServerRateLimit)
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)

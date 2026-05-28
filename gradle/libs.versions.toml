@@ -28,6 +28,8 @@ ktorServerAuth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor"
 ktorServerMustache = { module = "io.ktor:ktor-server-mustache-jvm", version.ref = "ktor" }
 ktorSerializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
 ktorServerSwagger = { module = "io.ktor:ktor-server-swagger-jvm", version.ref = "ktor" }
+ktorServerForwardedHeader = { module = "io.ktor:ktor-server-forwarded-header-jvm", version.ref = "ktor" }
+ktorServerRateLimit = { module = "io.ktor:ktor-server-rate-limit-jvm", version.ref = "ktor" }
 
 # OpenHTMLToPDF
 openhtmltopdfCore = { module = "io.github.openhtmltopdf:openhtmltopdf-core", version.ref = "openhtmltopdf" }

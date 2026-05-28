@@ -30,7 +30,7 @@ Guidance for Claude Code when working in this repository.
 ## Runtime Configuration
 
 - Config lives in `app/src/main/resources/application.conf` and is environment-variable driven.
-- Important variables: `PORT`, `API_KEY`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`.
+- Important variables: `PORT`, `API_KEY`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`.
 - Docker builds a Gradle install distribution, runs on Eclipse Temurin 24 Alpine, and optionally attaches the OpenTelemetry Java agent from `entrypoint.sh`.
 
 ## Coding Conventions
