@@ -128,6 +128,7 @@ fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> = b
         )
     }
     addAll(validatePageConfig(config.page, root.child("config").child("page")))
+    addAll(validateFonts(fonts, root.child("fonts")))
 
     val seenIds = mutableSetOf<String>()
     val blocksById = mutableMapOf<String, Pair<Block, ValidationPath>>()
@@ -173,6 +174,36 @@ fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> = b
             )
         } else {
             addAll(match.first.validateData(value, dataPath))
+        }
+    }
+}
+
+private val KNOWN_FONT_WEIGHTS: Set<String> = FontWeight.entries.map { it.numericValue.toString() }.toSet()
+
+private fun validateFonts(fonts: Map<String, FontFace>, path: ValidationPath): List<ValidationIssue> = buildList {
+    fonts.forEach { (family, face) ->
+        val weightPath = path.child(family).child("weight")
+        val tokens = face.weight.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        if (tokens.isEmpty()) {
+            add(
+                issue(
+                    weightPath,
+                    ValidationCodes.INVALID_VALUE,
+                    "Font weight must contain at least one value",
+                ),
+            )
+            return@forEach
+        }
+        tokens.forEach { token ->
+            if (token !in KNOWN_FONT_WEIGHTS) {
+                add(
+                    issue(
+                        weightPath,
+                        ValidationCodes.INVALID_VALUE,
+                        "Unknown font weight: '$token' (allowed: ${KNOWN_FONT_WEIGHTS.sorted().joinToString(", ")})",
+                    ),
+                )
+            }
         }
     }
 }

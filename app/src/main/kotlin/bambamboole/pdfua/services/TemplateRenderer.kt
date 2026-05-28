@@ -114,18 +114,20 @@ object TemplateRenderer {
         return buildList {
             typography.family?.let { add("font-family: '${cssString(it)}'") }
             typography.size?.let { add("font-size: ${it}pt") }
-            typography.weight?.let { add("font-weight: $it") }
+            typography.weight?.let { add("font-weight: ${it.numericValue}") }
             safeColor(typography.color)?.let { add("color: $it") }
             typography.align?.let { add("text-align: ${it.name.lowercase()}") }
         }
     }
 
     private fun fontFaceCss(fonts: Map<String, FontFace>): String =
-        fonts.entries.joinToString("\n") { (family, face) ->
-            "@font-face { font-family: '${cssString(family)}'; " +
-                "src: url(\"${cssUrl(face.src)}\") format(\"truetype\"); " +
-                "font-weight: ${face.weight}; font-style: ${cssString(face.style)}; }"
-        }
+        fonts.entries.flatMap { (family, face) ->
+            face.weight.trim().split(Regex("\\s+")).map { weight ->
+                "@font-face { font-family: '${cssString(family)}'; " +
+                    "src: url(\"${cssUrl(face.src)}\") format(\"truetype\"); " +
+                    "font-weight: $weight; font-style: ${cssString(face.style)}; }"
+            }
+        }.joinToString("\n")
 
     private fun wrapDocument(bodyHtml: String, template: Template, ctx: RenderContext, options: RenderOptions): String {
         val page = template.config.page

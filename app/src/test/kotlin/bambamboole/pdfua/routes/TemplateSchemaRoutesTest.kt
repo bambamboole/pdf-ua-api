@@ -162,6 +162,26 @@ class TemplateSchemaRoutesTest {
             },
         )
 
+        assertEquals(
+            listOf("300", "400", "500", "600", "700"),
+            definitions["fontWeight"]!!.jsonObject["enum"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        val typographyConfig = definitions["typographyConfig"]!!.jsonObject
+        val typographyWeight = typographyConfig["properties"]!!.jsonObject["weight"]!!.jsonObject
+        assertEquals(
+            listOf("string", "null"),
+            typographyWeight["type"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("300", "400", "500", "600", "700", "null"),
+            typographyWeight["enum"]!!.jsonArray.map {
+                if (it.toString() == "null") "null" else it.jsonPrimitive.content
+            },
+        )
+        val fontFaceWeight = definitions["fontFace"]!!.jsonObject["properties"]!!.jsonObject["weight"]!!.jsonObject
+        assertEquals("string", fontFaceWeight["type"]!!.jsonPrimitive.content)
+        assertEquals("400", fontFaceWeight["default"]!!.jsonPrimitive.content)
+
         val textBlock = definitions["textBlock"]!!.jsonObject
         assertEquals(listOf("type", "text"), textBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals("text", textBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)
