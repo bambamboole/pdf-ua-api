@@ -58,13 +58,13 @@ dependencies {
 
 application {
     // Define the Fully Qualified Name for the application main class
-    mainClass = "bambamboole.pdf.api.ApplicationKt"
+    mainClass = "bambamboole.pdfua.ApplicationKt"
 }
 
 // Create fat JAR with all dependencies for Docker
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "bambamboole.pdf.api.ApplicationKt"
+        attributes["Main-Class"] = "bambamboole.pdfua.ApplicationKt"
     }
 
     // Include all dependencies in the JAR

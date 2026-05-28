@@ -11,10 +11,10 @@ Guidance for Claude Code when working in this repository.
 
 ## Important Paths
 
-- `app/src/main/kotlin/bambamboole/pdf/api/Application.kt` wires Ktor plugins, auth, services, and routes.
-- `app/src/main/kotlin/bambamboole/pdf/api/routes/` contains one route extension per endpoint.
-- `app/src/main/kotlin/bambamboole/pdf/api/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
-- `app/src/main/kotlin/bambamboole/pdf/api/models/` contains kotlinx-serializable request/response DTOs.
+- `app/src/main/kotlin/bambamboole/pdfua/Application.kt` wires Ktor plugins, auth, services, and routes.
+- `app/src/main/kotlin/bambamboole/pdfua/routes/` contains one route extension per endpoint.
+- `app/src/main/kotlin/bambamboole/pdfua/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
+- `app/src/main/kotlin/bambamboole/pdfua/models/` contains kotlinx-serializable request/response DTOs.
 - `app/src/main/resources/` contains Ktor config, logback config, bundled open-source fonts, ICC color profile, templates, and examples.
 - `app/src/test/resources/fixtures/` and `app/src/test/resources/image-fixtures/` are regression baselines. Treat expected PDFs/images as test artifacts, not disposable output.
 
@@ -53,7 +53,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Testing Expectations
 
-- For route or model changes, add or update focused route tests under `app/src/test/kotlin/bambamboole/pdf/api/routes/`.
+- For route or model changes, add or update focused route tests under `app/src/test/kotlin/bambamboole/pdfua/routes/`.
 - For PDF service behavior, add service tests or fixture coverage under `app/src/test/resources/fixtures/`.
 - For image rendering, use `image-fixtures` and `RenderImageRoutesTest`.
 - For security-sensitive URL fetching, update `AssetResolverTest`.

@@ -11,11 +11,11 @@ Instructions for coding agents working in this repository.
 
 ## Repository Map
 
-- `app/src/main/kotlin/bambamboole/pdf/api/Application.kt`: Ktor app setup, dependency wiring, auth, route registration.
-- `app/src/main/kotlin/bambamboole/pdf/api/routes/`: endpoint definitions for `/`, `/health`, `/convert`, `/validate`, `/convert-and-validate`, `/render`, `/identify`.
-- `app/src/main/kotlin/bambamboole/pdf/api/services/`: conversion, validation, image rendering, asset resolution, and image optimization logic.
-- `app/src/main/kotlin/bambamboole/pdf/api/config/`: environment-backed app configuration and log-level mapping.
-- `app/src/main/kotlin/bambamboole/pdf/api/models/`: kotlinx serialization DTOs.
+- `app/src/main/kotlin/bambamboole/pdfua/Application.kt`: Ktor app setup, dependency wiring, auth, route registration.
+- `app/src/main/kotlin/bambamboole/pdfua/routes/`: endpoint definitions for `/`, `/health`, `/convert`, `/validate`, `/convert-and-validate`, `/render`, `/identify`.
+- `app/src/main/kotlin/bambamboole/pdfua/services/`: conversion, validation, image rendering, asset resolution, and image optimization logic.
+- `app/src/main/kotlin/bambamboole/pdfua/config/`: environment-backed app configuration and log-level mapping.
+- `app/src/main/kotlin/bambamboole/pdfua/models/`: kotlinx serialization DTOs.
 - `app/src/main/resources/`: Ktor config, logback, Mustache UI template, examples, fonts, and `sRGB.icc`.
 - `app/src/test/`: Ktor route tests, service tests, PDF fixtures, and image fixtures.
 - `buildSrc/`: shared Gradle Kotlin/JVM convention plugin.
@@ -47,7 +47,7 @@ Instructions for coding agents working in this repository.
 
 ## Testing Guidance
 
-- Route changes: update tests under `app/src/test/kotlin/bambamboole/pdf/api/routes/`.
+- Route changes: update tests under `app/src/test/kotlin/bambamboole/pdfua/routes/`.
 - Conversion output changes: update fixture tests and expected PDFs only after inspecting visual differences.
 - Validation changes: update expected validation JSON or validation-focused assertions.
 - Image rendering changes: update `image-fixtures` and `RenderImageRoutesTest`.
