@@ -56,4 +56,22 @@ class TemplateDeserializationTest {
         assertEquals("https://cdn.example.com/stationary", background?.src)
         assertEquals(PageBackgroundType.PDF, background?.type)
     }
+
+    @Test
+    fun decodesPageFooter() {
+        val input = """
+            {"template":{"version":1,"config":{"page":{
+            "footer":{"repeat":true,"rows":[{"blocks":[{"type":"text","id":"footerText","text":"Footer"}]}]}
+            }},"rows":[]}}
+        """.trimIndent()
+
+        val request = json.decodeFromString(RenderRequest.serializer(), input)
+        val footer = request.template.config.page.footer
+
+        assertEquals(true, footer.repeat)
+        assertEquals(1, footer.rows.size)
+        val block = footer.rows.single().blocks.single()
+        assertIs<TextBlock>(block)
+        assertEquals("footerText", block.id)
+    }
 }

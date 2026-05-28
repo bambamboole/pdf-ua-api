@@ -9,6 +9,8 @@ import bambamboole.pdf.api.models.template.FontFace
 import bambamboole.pdf.api.models.template.Orientation
 import bambamboole.pdf.api.models.template.PageBackgroundConfig
 import bambamboole.pdf.api.models.template.PageConfig
+import bambamboole.pdf.api.models.template.PageFooterConfig
+import bambamboole.pdf.api.models.template.PageNumbersConfig
 import bambamboole.pdf.api.models.template.PageSize
 import bambamboole.pdf.api.models.template.PresetPageSize
 import bambamboole.pdf.api.models.template.Row
@@ -80,8 +82,9 @@ object TemplateRenderer {
             return "<table class=\"row\" role=\"presentation\"><tr>$cells</tr></table>"
         }
 
+        val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
         val rowsHtml = template.rows.joinToString("") { renderRow(it) }
-        return wrapDocument(rowsHtml, template, ctx, options)
+        return wrapDocument(footerHtml + rowsHtml, template, ctx, options)
     }
 
     private fun emitPositioningCss(ctx: RenderContext, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
@@ -155,29 +158,61 @@ $bodyPrefix$bodyHtml
 """.trim()
     }
 
+    private fun repeatedFooterHtml(
+        footer: PageFooterConfig,
+        pageNumbers: PageNumbersConfig,
+        renderRow: (Row) -> String,
+    ): String {
+        if (!footer.hasRepeatedRows()) return ""
+        val rows = footer.rows.joinToString("") { renderRow(it) }
+        val pageNumbersHtml = if (pageNumbers.enabled && pageNumbers.position == Align.CENTER) {
+            """<div class="page-footer-page-numbers" aria-hidden="true"></div>"""
+        } else {
+            ""
+        }
+        return """<footer class="page-footer page-footer-repeated" role="contentinfo">$rows$pageNumbersHtml</footer>"""
+    }
+
     private fun pageCss(page: PageConfig): String {
-        val css = StringBuilder("@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins)}; }")
+        val hasRepeatedFooter = page.footer.hasRepeatedRows()
+        val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
+        val css = StringBuilder(
+            "@page { size: ${pageSizeCss(page.size)}; margin: ${marginShorthand(page.margins, bottomMarginReserve)}; }",
+        )
         page.background?.let {
             css.append(" .pagebg { position: running(pagebg); }")
             css.append(" @page { @top-left { content: element(pagebg); } }")
         }
+        if (hasRepeatedFooter) {
+            css.append(" .page-footer { font-size: 8pt; color: #6b7280; }")
+            css.append(" .page-footer .row { margin: 0; }")
+            css.append(" .page-footer-repeated { position: running(pageFooter); width: 100%; }")
+            css.append(" @page { @bottom-center { content: element(pageFooter); } }")
+        }
         if (page.pageNumbers.enabled) {
-            val position = page.pageNumbers.position.name.lowercase()
-            css.append(
-                " @page { @bottom-$position { content: counter(page) \" / \" counter(pages); " +
-                    "font-size: 8pt; color: #9ca3af; } }",
-            )
+            if (hasRepeatedFooter && page.pageNumbers.position == Align.CENTER) {
+                css.append(" .page-footer-page-numbers { font-size: 8pt; color: #9ca3af; text-align: center; }")
+                css.append(" .page-footer-page-numbers::after { content: counter(page) \" / \" counter(pages); }")
+            } else {
+                val position = page.pageNumbers.position.name.lowercase()
+                css.append(
+                    " @page { @bottom-$position { content: counter(page) \" / \" counter(pages); " +
+                        "font-size: 8pt; color: #9ca3af; } }",
+                )
+            }
         }
         return css.toString()
     }
 
-    private fun marginShorthand(margins: SpacingConfig): String {
+    private fun marginShorthand(margins: SpacingConfig, bottomReserve: Int = 0): String {
         val top = margins.top ?: 0
         val right = margins.right ?: 0
-        val bottom = margins.bottom ?: 0
+        val bottom = (margins.bottom ?: 0) + bottomReserve
         val left = margins.left ?: 0
         return "${top}mm ${right}mm ${bottom}mm ${left}mm"
     }
+
+    private fun PageFooterConfig.hasRepeatedRows(): Boolean = repeat && rows.isNotEmpty()
 
     private fun validateBackground(background: PageBackgroundConfig) {
         require(background.src.isNotBlank()) { "Page background src cannot be blank" }

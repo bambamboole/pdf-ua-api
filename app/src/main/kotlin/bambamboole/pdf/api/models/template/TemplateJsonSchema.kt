@@ -41,8 +41,9 @@ object TemplateJsonSchema {
         "spacerConfig" to "BlockConfig & { height?: number }",
         "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
         "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
+        "pageFooterConfig" to "{ repeat?: boolean; rows?: Row[] }",
         "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
-            "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }",
+            "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
         "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
     )
 
@@ -169,6 +170,7 @@ object TemplateJsonSchema {
             "pageSize" to oneOf(listOf(ref("presetPageSize"), ref("customPageSize")), title = "PageSize"),
             "pageNumbersConfig" to pageNumbersConfig(),
             "pageBackgroundConfig" to pageBackgroundConfig(),
+            "pageFooterConfig" to pageFooterConfig(),
             "pageConfig" to pageConfig(),
             "templateConfig" to templateConfig(),
             "fontFace" to fontFace(),
@@ -286,6 +288,12 @@ object TemplateJsonSchema {
             "type" to ref("pageBackgroundType")
         }
 
+    private fun pageFooterConfig(): PropertyDefinition =
+        schemaObject("PageFooterConfig") {
+            "repeat" to boolean(default = true)
+            "rows" to arrayOf(ref("row"))
+        }
+
     private fun pageConfig(): PropertyDefinition =
         schemaObject("PageConfig") {
             "size" to ref("pageSize")
@@ -293,6 +301,7 @@ object TemplateJsonSchema {
             "margins" to ref("spacingConfig")
             "pageNumbers" to ref("pageNumbersConfig")
             "background" to nullableRef("pageBackgroundConfig")
+            "footer" to ref("pageFooterConfig")
         }
 
     private fun templateConfig(): PropertyDefinition =

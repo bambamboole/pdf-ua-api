@@ -60,4 +60,7 @@ class TemplateFixtureTest {
 
     @Test
     fun keyValueRuntime() = assertTemplateFixture("key-value-runtime")
+
+    @Test
+    fun repeatedFooter() = assertTemplateFixture("repeated-footer")
 }

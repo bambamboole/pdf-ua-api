@@ -121,8 +121,12 @@ class TemplateSchemaRoutesTest {
         val pageConfig = definitions["pageConfig"]!!.jsonObject
         assertEquals(
             "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; " +
-                "background?: PageBackgroundConfig | null }",
+                "background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
             pageConfig["tsType"]!!.jsonPrimitive.content,
+        )
+        assertEquals(
+            "#/\$defs/pageFooterConfig",
+            pageConfig["properties"]!!.jsonObject["footer"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
         )
         assertEquals(
             listOf("#/\$defs/pageBackgroundConfig", "null"),
@@ -138,6 +142,16 @@ class TemplateSchemaRoutesTest {
         assertEquals(
             "#/\$defs/pageBackgroundType",
             pageBackgroundConfig["properties"]!!.jsonObject["type"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+        )
+
+        val pageFooterConfig = definitions["pageFooterConfig"]!!.jsonObject
+        val footerProps = pageFooterConfig["properties"]!!.jsonObject
+        assertEquals("boolean", footerProps["repeat"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("true", footerProps["repeat"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("array", footerProps["rows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals(
+            "#/\$defs/row",
+            footerProps["rows"]!!.jsonObject["items"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
         )
 
         val blockConfig = definitions["blockConfig"]!!.jsonObject

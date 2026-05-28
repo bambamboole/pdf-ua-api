@@ -20,6 +20,7 @@ import bambamboole.pdf.api.models.template.KeyValueField
 import bambamboole.pdf.api.models.template.PageConfig
 import bambamboole.pdf.api.models.template.CustomPageSize
 import bambamboole.pdf.api.models.template.Orientation
+import bambamboole.pdf.api.models.template.PageFooterConfig
 import bambamboole.pdf.api.models.template.PageFormat
 import bambamboole.pdf.api.models.template.PageNumbersConfig
 import bambamboole.pdf.api.models.template.PresetPageSize
@@ -227,6 +228,82 @@ class TemplateRendererTest {
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         assertTrue(html.contains("@bottom-right"))
         assertTrue(html.contains("counter(page)"))
+    }
+
+    @Test
+    fun rendersRepeatedFooterBeforeBodyAndReservesBottomMargin() {
+        val cfg = TemplateConfig(
+            page = PageConfig(
+                footer = PageFooterConfig(
+                    rows = listOf(Row(listOf(TextBlock(text = "Repeated footer")))),
+                ),
+            ),
+        )
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
+
+        assertTrue(html.contains("@page { size: 210mm 297mm; margin: 20mm 20mm 28mm 25mm; }"))
+        assertTrue(html.contains(".page-footer-repeated { position: running(pageFooter); width: 100%; }"))
+        assertTrue(html.contains("@bottom-center { content: element(pageFooter); }"))
+        assertTrue(
+            html.indexOf("""<footer class="page-footer page-footer-repeated" role="contentinfo">""") <
+                html.indexOf("<p>Body</p>"),
+            "repeated footer must be a first body child so OpenHTMLToPDF can apply it to all pages",
+        )
+        assertTrue(html.contains("""<footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td><div class="block-1"><p>Repeated footer</p></div></td></tr></table></footer>"""))
+        assertTrue(html.contains("""<div class="block-2"><p>Body</p></div>"""))
+    }
+
+    @Test
+    fun appliesRuntimeDataInsideRepeatedFooter() {
+        val cfg = TemplateConfig(
+            page = PageConfig(
+                footer = PageFooterConfig(
+                    rows = listOf(Row(listOf(TextBlock(id = "footer", text = "Original footer")))),
+                ),
+            ),
+        )
+        val data = mapOf("footer" to JsonObject(mapOf("text" to JsonPrimitive("Runtime footer"))))
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg), data)
+
+        assertTrue(html.contains("<p>Runtime footer</p>"))
+        assertTrue(!html.contains("Original footer"))
+    }
+
+    @Test
+    fun rendersCenteredPageNumbersInsideRepeatedFooter() {
+        val cfg = TemplateConfig(
+            page = PageConfig(
+                pageNumbers = PageNumbersConfig(enabled = true, position = Align.CENTER),
+                footer = PageFooterConfig(
+                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                ),
+            ),
+        )
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
+
+        assertTrue(html.contains("""<div class="page-footer-page-numbers" aria-hidden="true"></div>"""))
+        assertTrue(html.contains(".page-footer-page-numbers::after { content: counter(page) \" / \" counter(pages); }"))
+        assertTrue(!html.contains("@bottom-center { content: counter(page)"), "centered page numbers must move into repeated footer")
+    }
+
+    @Test
+    fun keepsNonCenteredPageNumbersOutsideRepeatedFooter() {
+        val cfg = TemplateConfig(
+            page = PageConfig(
+                pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT),
+                footer = PageFooterConfig(
+                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                ),
+            ),
+        )
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
+
+        assertTrue(!html.contains("page-footer-page-numbers"))
+        assertTrue(html.contains("@bottom-right { content: counter(page) \" / \" counter(pages);"))
     }
 
     @Test

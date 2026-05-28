@@ -95,4 +95,10 @@ class TemplatePdfFixtureTest {
         application { module() }
         assertTemplatePdfFixture("key-value-runtime", embeddedFont = "Inter")
     }
+
+    @Test
+    fun repeatedFooter() = testApplication {
+        application { module() }
+        assertTemplatePdfFixture("repeated-footer", embeddedFont = "LiberationSans")
+    }
 }

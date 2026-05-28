@@ -27,12 +27,19 @@ data class PageBackgroundConfig(
 )
 
 @Serializable
+data class PageFooterConfig(
+    val repeat: Boolean = true,
+    val rows: List<Row> = emptyList(),
+)
+
+@Serializable
 data class PageConfig(
     val size: PageSize = PresetPageSize(),
     val locale: String = "de_DE",
     val margins: SpacingConfig = SpacingConfig(20, 20, 20, 25),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),
     val background: PageBackgroundConfig? = null,
+    val footer: PageFooterConfig = PageFooterConfig(),
 )
 
 @Serializable

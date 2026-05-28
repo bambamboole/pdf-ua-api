@@ -1,0 +1,44 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "size": { "format": "A4" },
+        "locale": "en_US",
+        "pageNumbers": { "enabled": true, "position": "center" },
+        "footer": {
+          "repeat": true,
+          "rows": [
+            {
+              "blocks": [
+                {
+                  "type": "text",
+                  "id": "footerText",
+                  "text": "Draft footer"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Repeated footer fixture", "config": { "level": 1 } }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>This page verifies the first occurrence of the repeated footer.</p><div style=\"page-break-before: always;\"><h2>Second page</h2><p>The footer should be visible here as a running page footer as well.</p></div>"
+          }
+        ]
+      }
+    ]
+  },
+  "data": {
+    "footerText": { "text": "Runtime footer for every page" }
+  }
+}

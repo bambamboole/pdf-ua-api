@@ -143,6 +143,35 @@ class RenderRoutesTest {
     }
 
     @Test
+    fun rendersTemplateWithRepeatedFooter() = testApplication {
+        application { module() }
+
+        val body = """
+            {"template":{"version":1,
+              "config":{"page":{
+                "footer":{"repeat":true,"rows":[
+                  {"blocks":[{"type":"text","id":"footer","text":"Original footer"}]}
+                ]}
+              }},
+              "rows":[
+                {"blocks":[{"type":"text","text":"First page"}]},
+                {"blocks":[{"type":"html","html":"<div style=\"page-break-before: always;\">Second page</div>"}]}
+              ]},
+              "data":{"footer":{"text":"Runtime footer"}}
+            }
+        """.trimIndent()
+
+        val response = client.post("/render/template") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Pdf, response.contentType())
+        assertTrue(response.readRawBytes().take(5).toByteArray().decodeToString().startsWith("%PDF-"))
+    }
+
+    @Test
     fun appliesDataOverride() = testApplication {
         application { module() }
 
