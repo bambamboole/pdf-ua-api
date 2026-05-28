@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Orientation {
-    @SerialName("portrait") PORTRAIT,
-    @SerialName("landscape") LANDSCAPE,
+    @SerialName("portrait")
+    PORTRAIT,
+
+    @SerialName("landscape")
+    LANDSCAPE,
 }

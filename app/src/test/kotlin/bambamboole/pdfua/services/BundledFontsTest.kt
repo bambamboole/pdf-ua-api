@@ -6,31 +6,31 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class BundledFontsTest {
-
     @Test
     fun loadsApprovedFontFamiliesFromManifest() {
-        val expectedFamilies = setOf(
-            "Liberation Sans",
-            "Liberation Serif",
-            "Liberation Mono",
-            "Roboto",
-            "Open Sans",
-            "Poppins",
-            "Montserrat",
-            "Lato",
-            "Inter",
-            "Noto Sans",
-            "Noto Serif",
-            "Noto Sans Mono",
-            "Oswald",
-            "Nunito",
-            "Raleway",
-            "Rubik",
-            "Merriweather",
-            "Playfair Display",
-            "Fira Code",
-            "JetBrains Mono"
-        )
+        val expectedFamilies =
+            setOf(
+                "Liberation Sans",
+                "Liberation Serif",
+                "Liberation Mono",
+                "Roboto",
+                "Open Sans",
+                "Poppins",
+                "Montserrat",
+                "Lato",
+                "Inter",
+                "Noto Sans",
+                "Noto Serif",
+                "Noto Sans Mono",
+                "Oswald",
+                "Nunito",
+                "Raleway",
+                "Rubik",
+                "Merriweather",
+                "Playfair Display",
+                "Fira Code",
+                "JetBrains Mono",
+            )
 
         assertEquals(expectedFamilies, BundledFonts.families)
         assertTrue(BundledFonts.fonts.all { it.path.startsWith("/fonts/") })
@@ -39,10 +39,11 @@ class BundledFontsTest {
 
     @Test
     fun includesRegularWeightForEveryFamily() {
-        val regularFamilies = BundledFonts.fonts
-            .filter { it.weight == 400 && it.style == BundledFonts.FontStyle.Normal }
-            .map { it.family }
-            .toSet()
+        val regularFamilies =
+            BundledFonts.fonts
+                .filter { it.weight == 400 && it.style == BundledFonts.FontStyle.Normal }
+                .map { it.family }
+                .toSet()
 
         assertEquals(BundledFonts.families, regularFamilies)
     }
@@ -70,10 +71,12 @@ class BundledFontsTest {
 
     @Test
     fun htmlWithExplicitBundledFontIncludesThatFamily() {
-        val families = BundledFonts.fontBytesForHtml("<p style=\"font-family: Roboto, sans-serif\">Hello</p>")
-            .keys
-            .map { it.family }
-            .toSet()
+        val families =
+            BundledFonts
+                .fontBytesForHtml("<p style=\"font-family: Roboto, sans-serif\">Hello</p>")
+                .keys
+                .map { it.family }
+                .toSet()
 
         assertTrue("Roboto" in families)
         assertTrue("Liberation Sans" in families)
@@ -81,9 +84,10 @@ class BundledFontsTest {
 
     @Test
     fun eachFontFamilyIncludesLicenseAndSourceMetadata() {
-        val familyFolders = BundledFonts.fonts
-            .map { it.path.removePrefix("/fonts/").substringBefore("/") }
-            .toSet()
+        val familyFolders =
+            BundledFonts.fonts
+                .map { it.path.removePrefix("/fonts/").substringBefore("/") }
+                .toSet()
 
         for (folder in familyFolders) {
             val license = BundledFonts::class.java.getResourceAsStream("/fonts/$folder/LICENSE.txt")

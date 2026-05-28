@@ -15,9 +15,11 @@ plugins {
 }
 
 val appVersion = project.findProperty("app.version")?.toString() ?: "dev"
-val skipTemplateBuilderWebUiBuild = providers.gradleProperty("skipTemplateBuilderWebUiBuild")
-    .map(String::toBoolean)
-    .orElse(false)
+val skipTemplateBuilderWebUiBuild =
+    providers
+        .gradleProperty("skipTemplateBuilderWebUiBuild")
+        .map(String::toBoolean)
+        .orElse(false)
 val templateBuilderWebUiDir = layout.projectDirectory.dir("src/webui/template-builder")
 val templateBuilderWebUiOutput = layout.buildDirectory.dir("generated-resources/webui/template-builder")
 val openApiOutputDir = layout.buildDirectory.dir("resources/main/openapi")
@@ -151,10 +153,11 @@ swagger {
         servers = listOf("http://localhost:8080")
         security {
             schemes {
-                "bearerAuth" to SecurityScheme(
-                    type = "http",
-                    scheme = "bearer"
-                )
+                "bearerAuth" to
+                    SecurityScheme(
+                        type = "http",
+                        scheme = "bearer",
+                    )
             }
         }
     }

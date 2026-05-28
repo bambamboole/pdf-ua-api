@@ -1,3 +1,6 @@
 package bambamboole.pdfua.services
 
-data class PdfResult(val bytes: ByteArray, val documentId: String)
+data class PdfResult(
+    val bytes: ByteArray,
+    val documentId: String,
+)

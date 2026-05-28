@@ -5,9 +5,18 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class DividerStyle {
-    @SerialName("solid") SOLID,
-    @SerialName("dashed") DASHED,
-    @SerialName("dotted") DOTTED,
-    @SerialName("double") DOUBLE,
-    @SerialName("none") NONE,
+    @SerialName("solid")
+    SOLID,
+
+    @SerialName("dashed")
+    DASHED,
+
+    @SerialName("dotted")
+    DOTTED,
+
+    @SerialName("double")
+    DOUBLE,
+
+    @SerialName("none")
+    NONE,
 }

@@ -11,9 +11,10 @@ class TemplateDeserializationTest {
 
     @Test
     fun decodesFullRenderRequestWithDefaults() {
-        val input = """
+        val input =
+            """
             {"template":{"version":1,"rows":[{"blocks":[{"type":"text","text":"Hi"}]}]}}
-        """.trimIndent()
+            """.trimIndent()
 
         val request = json.decodeFromString(RenderRequest.serializer(), input)
 
@@ -27,11 +28,12 @@ class TemplateDeserializationTest {
 
     @Test
     fun decodesPageNumbersAndMargins() {
-        val input = """
+        val input =
+            """
             {"template":{"version":1,"config":{"page":{"size":{"format":"Letter"},
             "pageNumbers":{"enabled":true,"position":"right"},
             "margins":{"top":10,"right":10,"bottom":10,"left":10}}},"rows":[]}}
-        """.trimIndent()
+            """.trimIndent()
 
         val request = json.decodeFromString(RenderRequest.serializer(), input)
         val page = request.template.config.page
@@ -44,11 +46,12 @@ class TemplateDeserializationTest {
 
     @Test
     fun decodesPageBackground() {
-        val input = """
+        val input =
+            """
             {"template":{"version":1,"config":{"page":{
             "background":{"src":"https://cdn.example.com/stationary","type":"pdf"}
             }},"rows":[]}}
-        """.trimIndent()
+            """.trimIndent()
 
         val request = json.decodeFromString(RenderRequest.serializer(), input)
         val background = request.template.config.page.background
@@ -59,18 +62,23 @@ class TemplateDeserializationTest {
 
     @Test
     fun decodesPageFooter() {
-        val input = """
+        val input =
+            """
             {"template":{"version":1,"config":{"page":{
             "footer":{"repeat":true,"rows":[{"blocks":[{"type":"text","id":"footerText","text":"Footer"}]}]}
             }},"rows":[]}}
-        """.trimIndent()
+            """.trimIndent()
 
         val request = json.decodeFromString(RenderRequest.serializer(), input)
         val footer = request.template.config.page.footer
 
         assertEquals(true, footer.repeat)
         assertEquals(1, footer.rows.size)
-        val block = footer.rows.single().blocks.single()
+        val block =
+            footer.rows
+                .single()
+                .blocks
+                .single()
         assertIs<TextBlock>(block)
         assertEquals("footerText", block.id)
     }

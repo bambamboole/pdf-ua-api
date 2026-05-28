@@ -34,7 +34,11 @@ class PageSizeTest {
 
     @Test
     fun roundTripsPresetWithoutTypeField() {
-        val encoded = json.encodeToString(PageSize.serializer(), PresetPageSize(PageFormat.LETTER, Orientation.LANDSCAPE))
+        val encoded =
+            json.encodeToString(
+                PageSize.serializer(),
+                PresetPageSize(PageFormat.LETTER, Orientation.LANDSCAPE),
+            )
         assertEquals(false, encoded.contains("type"), "no discriminator field: $encoded")
         assertEquals(
             PresetPageSize(PageFormat.LETTER, Orientation.LANDSCAPE),

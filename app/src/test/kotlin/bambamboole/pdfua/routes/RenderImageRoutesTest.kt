@@ -3,10 +3,16 @@ package bambamboole.pdfua.routes
 import bambamboole.pdfua.models.RenderImageRequest
 import bambamboole.pdfua.module
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.testing.*
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -19,12 +25,11 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class RenderImageRoutesTest {
-
     companion object {
-
         private fun getSourceFixturesDir(): File {
-            val fixturesUrl = RenderImageRoutesTest::class.java.classLoader.getResource("fixtures/image")
-                ?: fail("fixtures/image directory not found in classpath")
+            val fixturesUrl =
+                RenderImageRoutesTest::class.java.classLoader.getResource("fixtures/image")
+                    ?: fail("fixtures/image directory not found in classpath")
             val buildFixturesDir = File(fixturesUrl.toURI())
             val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
             return File(projectRoot, "app/src/test/resources/fixtures/image")
@@ -34,7 +39,10 @@ class RenderImageRoutesTest {
         private const val MAX_DIFF_RATIO = 0.10
         private const val MAX_DIMENSION_DELTA = 0.05
 
-        private fun imagesMatch(expected: BufferedImage, actual: BufferedImage): Boolean {
+        private fun imagesMatch(
+            expected: BufferedImage,
+            actual: BufferedImage,
+        ): Boolean {
             val widthDelta = abs(expected.width - actual.width).toDouble() / maxOf(expected.width, actual.width)
             val heightDelta = abs(expected.height - actual.height).toDouble() / maxOf(expected.height, actual.height)
             if (widthDelta > MAX_DIMENSION_DELTA || heightDelta > MAX_DIMENSION_DELTA) return false
@@ -60,28 +68,29 @@ class RenderImageRoutesTest {
         private suspend fun ApplicationTestBuilder.testImageFixture(
             fixtureName: String,
             format: String = "png",
-            width: Int = 800
+            width: Int = 800,
         ) {
             println("\n=== Testing image fixture: $fixtureName ===")
 
             val fixtureDir = File(getSourceFixturesDir(), fixtureName)
             assertTrue(
                 fixtureDir.exists() && fixtureDir.isDirectory,
-                "Fixture directory not found: ${fixtureDir.absolutePath}"
+                "Fixture directory not found: ${fixtureDir.absolutePath}",
             )
 
             val inputHtml = File(fixtureDir, "input.html").readText()
             val expectedFile = File(fixtureDir, "expected.$format")
 
-            val response = client.post("/render") {
-                contentType(ContentType.Application.Json)
-                setBody(
-                    Json.encodeToString(
-                        RenderImageRequest.serializer(),
-                        RenderImageRequest(html = inputHtml, format = format, width = width)
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        Json.encodeToString(
+                            RenderImageRequest.serializer(),
+                            RenderImageRequest(html = inputHtml, format = format, width = width),
+                        ),
                     )
-                )
-            }
+                }
 
             assertEquals(HttpStatusCode.OK, response.status, "Fixture '$fixtureName': should return 200 OK")
 
@@ -104,7 +113,7 @@ class RenderImageRoutesTest {
                     println("  Diff image saved: ${diffFile.name}")
                     fail(
                         "Fixture '$fixtureName': Visual regression detected. " +
-                            "See diff at ${diffFile.absolutePath}"
+                            "See diff at ${diffFile.absolutePath}",
                     )
                 }
                 println("Fixture '$fixtureName': Visual regression test passed - images are identical")
@@ -121,115 +130,130 @@ class RenderImageRoutesTest {
     // ========================================
 
     @Test
-    fun testRenderPng() = testApplication {
-        application { module() }
+    fun testRenderPng() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"<html><body><h1>Hello</h1></body></html>"}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":"<html><body><h1>Hello</h1></body></html>"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Image.PNG, response.contentType())
+            assertTrue(response.headers.contains(HttpHeaders.ContentDisposition))
+
+            val bytes = response.readRawBytes()
+            assertTrue(bytes.size > 100)
+            assertEquals(0x89.toByte(), bytes[0])
+            assertEquals(0x50.toByte(), bytes[1]) // P
+            assertEquals(0x4E.toByte(), bytes[2]) // N
+            assertEquals(0x47.toByte(), bytes[3]) // G
         }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Image.PNG, response.contentType())
-        assertTrue(response.headers.contains(HttpHeaders.ContentDisposition))
-
-        val bytes = response.readRawBytes()
-        assertTrue(bytes.size > 100)
-        assertEquals(0x89.toByte(), bytes[0])
-        assertEquals(0x50.toByte(), bytes[1]) // P
-        assertEquals(0x4E.toByte(), bytes[2]) // N
-        assertEquals(0x47.toByte(), bytes[3]) // G
-    }
 
     @Test
-    fun testRenderJpg() = testApplication {
-        application { module() }
+    fun testRenderJpg() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","format":"jpg"}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","format":"jpg"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Image.JPEG, response.contentType())
+
+            val bytes = response.readRawBytes()
+            assertTrue(bytes.size > 100)
+            assertEquals(0xFF.toByte(), bytes[0])
+            assertEquals(0xD8.toByte(), bytes[1])
         }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Image.JPEG, response.contentType())
-
-        val bytes = response.readRawBytes()
-        assertTrue(bytes.size > 100)
-        assertEquals(0xFF.toByte(), bytes[0])
-        assertEquals(0xD8.toByte(), bytes[1])
-    }
 
     @Test
-    fun testRenderWithCustomWidth() = testApplication {
-        application { module() }
+    fun testRenderWithCustomWidth() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","width":1200}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","width":1200}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Image.PNG, response.contentType())
         }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Image.PNG, response.contentType())
-    }
 
     @Test
-    fun testRenderEmptyHtml() = testApplication {
-        application { module() }
+    fun testRenderEmptyHtml() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":""}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":""}""")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(response.bodyAsText().contains("error"))
         }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(response.bodyAsText().contains("error"))
-    }
 
     @Test
-    fun testRenderInvalidFormat() = testApplication {
-        application { module() }
+    fun testRenderInvalidFormat() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","format":"webp"}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","format":"webp"}""")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(response.bodyAsText().contains("Unsupported format"))
         }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(response.bodyAsText().contains("Unsupported format"))
-    }
 
     @Test
-    fun testRenderInvalidWidth() = testApplication {
-        application { module() }
+    fun testRenderInvalidWidth() =
+        testApplication {
+            application { module() }
 
-        val response = client.post("/render") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","width":5000}""")
+            val response =
+                client.post("/render") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"html":"<html><body><h1>Hello</h1></body></html>","width":5000}""")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(response.bodyAsText().contains("Width must be between"))
         }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertTrue(response.bodyAsText().contains("Width must be between"))
-    }
 
     // ========================================
     // Fixture-Based Visual Regression Tests
     // ========================================
 
     @Test
-    fun testFixtureSimpleHeading() = testApplication {
-        application { module() }
-        testImageFixture("simple-heading")
-    }
+    fun testFixtureSimpleHeading() =
+        testApplication {
+            application { module() }
+            testImageFixture("simple-heading")
+        }
 
     @Test
-    fun testFixtureStyledContent() = testApplication {
-        application { module() }
-        testImageFixture("styled-content")
-    }
+    fun testFixtureStyledContent() =
+        testApplication {
+            application { module() }
+            testImageFixture("styled-content")
+        }
 
     @Test
-    fun testFixtureColoredBoxes() = testApplication {
-        application { module() }
-        testImageFixture("colored-boxes")
-    }
+    fun testFixtureColoredBoxes() =
+        testApplication {
+            application { module() }
+            testImageFixture("colored-boxes")
+        }
 }

@@ -8,6 +8,7 @@
     <ID>LongMethod:ConvertRoutesTest.kt:ConvertRoutesTest.Companion$private suspend fun ApplicationTestBuilder.testFixtureConversion</ID>
     <ID>LongMethod:PdfValidationService.kt:PdfValidationService$fun validatePdf: ValidationResponse</ID>
     <ID>LongMethod:RenderImageRoutes.kt:@GenerateOpenApi @Tag(["Rendering"]) fun Route.renderImageRoutes</ID>
+    <ID>LongMethod:RenderRoutes.kt:@GenerateOpenApi @Tag(["Rendering"]) fun Route.renderRoutes</ID>
     <ID>LongMethod:TemplateJsonSchema.kt:TemplateJsonSchema$private fun definitions: Map&lt;String, PropertyDefinition&gt;</ID>
     <ID>LongMethod:TemplateRenderer.kt:TemplateRenderer$private fun emitBaseCss</ID>
     <ID>LongMethod:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$@Test fun returnsTemplateSchema</ID>
@@ -52,59 +53,6 @@
     <ID>MagicNumber:RenderRoutes.kt:4</ID>
     <ID>MagicNumber:Template.kt:PageConfig$20</ID>
     <ID>MagicNumber:Template.kt:PageConfig$25</ID>
-    <ID>MaxLineLength:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$// Per-document XObject memo. Guarded for concurrent renders of different documents; a single document is rendered on one thread, so check-then-put need not be atomic.</ID>
-    <ID>MaxLineLength:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$val</ID>
-    <ID>MaxLineLength:Block.kt:TableBlock$cellsFor(row, rowIndex).forEachIndexed { index, cell -&gt; append("&lt;td${alignStyle(index)}&gt;${Html.escape(cell)}&lt;/td&gt;") }</ID>
-    <ID>MaxLineLength:BlockDeserializationTest.kt:BlockDeserializationTest$assertEquals("&lt;h1&gt;&amp;lt;script&amp;gt;x&amp;lt;/script&amp;gt;&lt;/h1&gt;", HeadingBlock(text = "&lt;script&gt;x&lt;/script&gt;", config = HeadingConfig(level = 1)).render())</ID>
-    <ID>MaxLineLength:ConvertAndValidateRoutes.kt:ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF")</ID>
-    <ID>MaxLineLength:ConvertAndValidateRoutes.kt:description = "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF."</ID>
-    <ID>MaxLineLength:ConvertRoutes.kt:description = "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary."</ID>
-    <ID>MaxLineLength:ConvertRoutesTest.kt:ConvertRoutesTest$setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent, "https://example.com")))</ID>
-    <ID>MaxLineLength:ConvertRoutesTest.kt:ConvertRoutesTest.Companion$fail("Fixture '$fixtureName': Visual regression test failed. See diff images in ${fixtureDir.absolutePath}")</ID>
-    <ID>MaxLineLength:CssRegistryTest.kt:CssRegistryTest$"""@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }"""</ID>
-    <ID>MaxLineLength:CssRegistryTest.kt:CssRegistryTest$assertEquals("""url("https://cdn.example.com/font%28v1%29%22.ttf")""", cssUrlValue("https://cdn.example.com/font(v1)\".ttf"))</ID>
-    <ID>MaxLineLength:ImageOptimizer.kt:ImageOptimizer$bytes[0] == 0x89.toByte() &amp;&amp; bytes[1] == 0x50.toByte() &amp;&amp; bytes[2] == 0x4E.toByte() &amp;&amp; bytes[3] == 0x47.toByte() -&gt; "png"</ID>
-    <ID>MaxLineLength:PageSizeTest.kt:PageSizeTest$val encoded = json.encodeToString(PageSize.serializer(), PresetPageSize(PageFormat.LETTER, Orientation.LANDSCAPE))</ID>
-    <ID>MaxLineLength:PdfValidationService.kt:PdfValidationService$private</ID>
-    <ID>MaxLineLength:RenderRoutesTest.kt:RenderRoutesTest$val svg = """&lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"&gt;&lt;rect width="24" height="24" fill="#2563eb"/&gt;&lt;/svg&gt;"""</ID>
-    <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$"align" to nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope.")</ID>
-    <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$"alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility.")</ID>
-    <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$"blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"</ID>
-    <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$"pageBackgroundType" to stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() })</ID>
-    <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$private</ID>
-    <ID>MaxLineLength:TemplatePdfFixtureTest.kt:TemplatePdfFixtureTest.Companion$"Fixture '$name': snippet '$snippet' not found on any page; group $group cannot be evaluated"</ID>
-    <ID>MaxLineLength:TemplatePdfFixtureTest.kt:TemplatePdfFixtureTest.Companion$ImageIO.write(diff.testImages.createDiff(), "PNG", File(dir, "page-${diff.pageNumber}-diff.png"))</ID>
-    <ID>MaxLineLength:TemplatePdfFixtureTest.kt:TemplatePdfFixtureTest.Companion$if</ID>
-    <ID>MaxLineLength:TemplateRenderer.kt:check(size.width &gt; 0 &amp;&amp; size.height &gt; 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$assertTrue(!html.contains("@bottom-center { content: counter(page)"), "centered page numbers must move into repeated footer")</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$assertTrue(html.contains("""&lt;footer class="page-footer page-footer-repeated" role="contentinfo"&gt;&lt;table class="row" role="presentation"&gt;&lt;tr&gt;&lt;td&gt;&lt;div class="block-1"&gt;&lt;p&gt;Repeated footer&lt;/p&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/footer&gt;"""))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$assertTrue(html.contains("""&lt;object type="x-page-background" data-src="https://cdn.example.com/bg.png" data-kind="image" style="width:1px;height:1px"&gt;"""))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }")</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 700; font-style: normal; }")</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$private</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster"))))))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val auto = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf")))))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val block = DividerBlock(config = DividerConfig(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val block = DividerBlock(config = DividerConfig(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png", type = PageBackgroundType.IMAGE)))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val cfg = TemplateConfig(page = PageConfig(pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT)))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val html = TemplateRenderer.render(template(HeadingBlock(id = "title", text = "Original", config = HeadingConfig(level = 1))), data)</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val html = TemplateRenderer.render(template(TableBlock(config = TableConfig(columns = listOf(TableColumn("a", "A"))))))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val malicious = TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(color = "red; } body{display:none")))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val ok = TextBlock(text = "y", config = BaseBlockConfig(typography = TypographyConfig(color = "#ff0000", size = 12)))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val pdf = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf", type = PageBackgroundType.PDF)))))</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutes.kt:description = "Returns the canonical JSON Schema for template rendering, including builder metadata under x-pdfUa."</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals("1", pageBackgroundConfig["properties"]!!.jsonObject["src"]!!.jsonObject["minLength"]!!.jsonPrimitive.content)</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals("30mm", keyValueConfig["properties"]!!.jsonObject["labelWidth"]!!.jsonObject["default"]!!.jsonPrimitive.content)</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals("key-value", keyValueBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals("string", pageBackgroundConfig["properties"]!!.jsonObject["src"]!!.jsonObject["type"]!!.jsonPrimitive.content)</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals("table", tableBlock["properties"]!!.jsonObject["type"]!!.jsonObject["const"]!!.jsonPrimitive.content)</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$assertEquals(listOf("src", "weight", "style"), metadata["externalFontFields"]!!.jsonArray.map { it.jsonPrimitive.content })</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$definitions["block"]!!.jsonObject["oneOf"]!!.jsonArray.map { it.jsonObject["\$ref"]!!.jsonPrimitive.content }</ID>
-    <ID>MaxLineLength:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$keyValueConfig["properties"]!!.jsonObject["fields"]!!.jsonObject["items"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content</ID>
-    <ID>MaxLineLength:ValidationRoutes.kt:description = "Validates a PDF against PDF/A-3a and PDF/UA-1 standards using veraPDF. Send PDF binary as request body."</ID>
-    <ID>MaxLineLength:ValidationRoutesTest.kt:ValidationRoutesTest$println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, profiles=${validationResult.profiles.map { it.profile }}")</ID>
     <ID>NestedBlockDepth:ConvertRoutesTest.kt:ConvertRoutesTest.Companion$private suspend fun ApplicationTestBuilder.testFixtureConversion</ID>
     <ID>NestedBlockDepth:PdfValidationService.kt:PdfValidationService$fun validatePdf: ValidationResponse</ID>
     <ID>NestedBlockDepth:PdfValidationService.kt:PdfValidationService$private fun extractDocumentDetails: Pair&lt;PdfMetadata?, DocumentInfo?&gt;</ID>
@@ -136,103 +84,7 @@
     <ID>TooManyFunctions:PdfValidationService.kt:PdfValidationService</ID>
     <ID>TooManyFunctions:TemplateJsonSchema.kt:TemplateJsonSchema</ID>
     <ID>TooManyFunctions:TemplateRenderer.kt:TemplateRenderer</ID>
-    <ID>TopLevelPropertyNaming:TemplateBuilderWebRoutes.kt:private const val TemplateBuilderResourceRoot = "webui/template-builder"</ID>
     <ID>UnusedParameter:PdfValidationService.kt:PdfValidationService$results: List&lt;ValidationResult&gt;</ID>
     <ID>UnusedParameter:PdfValidationService.kt:PdfValidationService$totalPassed: Int</ID>
-    <ID>WildcardImport:AppConfig.kt:import io.ktor.server.application.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.serialization.kotlinx.json.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.application.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.auth.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.mustache.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.plugins.calllogging.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.plugins.contentnegotiation.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.plugins.statuspages.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.plugins.swagger.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:Application.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:ApplicationConfigTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:ApplicationConfigTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:ApplicationConfigTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ApplicationConfigTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:ApplicationConfigTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:AutoFont.kt:import java.nio.file.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutesTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:ConvertAndValidateRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:ConvertRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ConvertRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:ConvertRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:ConvertRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:ConvertRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:ConvertRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:ConvertRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ConvertRoutesTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:ConvertRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:HealthRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:HealthRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:HealthRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:HealthRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:HealthRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:HealthRoutesTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:HealthRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:IdentifyRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:IdentifyRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:IdentifyRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:IdentifyRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:IdentifyRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:IdentifyRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:IdentifyRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:IdentifyRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:IndexRoutes.kt:import io.ktor.server.mustache.*</ID>
-    <ID>WildcardImport:IndexRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:IndexRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:PdfValidationService.kt:import bambamboole.pdfua.models.*</ID>
-    <ID>WildcardImport:RenderImageRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:RenderImageRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:RenderImageRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:RenderImageRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:RenderImageRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:RenderImageRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:RenderImageRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:RenderImageRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:RenderRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:RenderRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:RenderRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:RenderRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:RenderRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:RenderRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:RenderRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:RenderRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:TemplateBuilderWebRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:TemplateBuilderWebRoutes.kt:import io.ktor.server.http.content.*</ID>
-    <ID>WildcardImport:TemplateBuilderWebRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:TemplateBuilderWebRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:TemplatePdfFixtureTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:TemplatePdfFixtureTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:TemplatePdfFixtureTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:TemplatePdfFixtureTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutesTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:TemplateSchemaRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:ValidationRoutes.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ValidationRoutes.kt:import io.ktor.server.request.*</ID>
-    <ID>WildcardImport:ValidationRoutes.kt:import io.ktor.server.response.*</ID>
-    <ID>WildcardImport:ValidationRoutes.kt:import io.ktor.server.routing.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import io.ktor.client.request.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import io.ktor.client.statement.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import io.ktor.http.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import io.ktor.server.config.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import io.ktor.server.testing.*</ID>
-    <ID>WildcardImport:ValidationRoutesTest.kt:import kotlin.test.*</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -7,8 +7,6 @@ plugins {
 }
 
 spotless {
-    ratchetFrom("origin/main")
-
     kotlin {
         target(
             "app/src/**/*.kt",
@@ -49,6 +47,7 @@ subprojects {
         extensions.configure<DetektExtension>("detekt") {
             buildUponDefaultConfig.set(true)
             allRules.set(false)
+            config.setFrom(rootProject.layout.projectDirectory.file("config/detekt/detekt.yml"))
             baseline.set(rootProject.layout.projectDirectory.file("config/detekt/baseline.xml"))
         }
 

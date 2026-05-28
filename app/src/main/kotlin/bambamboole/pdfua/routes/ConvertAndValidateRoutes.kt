@@ -10,27 +10,39 @@ import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
-import io.ktor.http.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.request.receive
+import io.ktor.server.response.header
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
 import java.util.Base64
 
 @GenerateOpenApi
 @Tag(["Conversion"])
 fun Route.convertAndValidateRoutes(
     pdfProducer: String = "pdf-ua-api.com",
-    assetResolver: FSStreamFactory? = null
+    assetResolver: FSStreamFactory? = null,
 ) {
     @KtorDescription(
         summary = "Convert and validate HTML to PDF",
-        description = "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF."
+        description =
+            "Converts HTML to PDF/A-3a and validates the result. " +
+                "Returns validation results and the base64-encoded PDF.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF"),
-        ResponseEntry("400", Nothing::class, description = "Invalid request"),
-        ResponseEntry("500", Nothing::class, description = "Conversion or validation failed")
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry(
+                "200",
+                ConvertAndValidateResponse::class,
+                description = "Conversion and validation result with base64-encoded PDF",
+            ),
+            ResponseEntry("400", Nothing::class, description = "Invalid request"),
+            ResponseEntry("500", Nothing::class, description = "Conversion or validation failed"),
+        ],
+    )
     post("/convert-and-validate") {
         try {
             val request = call.receive<ConvertRequest>()
@@ -38,20 +50,21 @@ fun Route.convertAndValidateRoutes(
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty")
+                    mapOf("error" to "HTML content cannot be empty"),
                 )
                 return@post
             }
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val result = PdfService.convertHtmlToPdf(
-                html = request.html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-                attachments = request.attachments
-            )
+            val result =
+                PdfService.convertHtmlToPdf(
+                    html = request.html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = baseUrl,
+                    attachments = request.attachments,
+                )
             val validation = PdfValidationService.validatePdf(result.bytes)
             val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
 
@@ -60,18 +73,18 @@ fun Route.convertAndValidateRoutes(
                 HttpStatusCode.OK,
                 ConvertAndValidateResponse(
                     validation = validation,
-                    pdf = pdfBase64
-                )
+                    pdf = pdfBase64,
+                ),
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request"))
+                mapOf("error" to (e.message ?: "Invalid request")),
             )
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert and validate PDF: ${e.message}")
+                mapOf("error" to "Failed to convert and validate PDF: ${e.message}"),
             )
         }
     }

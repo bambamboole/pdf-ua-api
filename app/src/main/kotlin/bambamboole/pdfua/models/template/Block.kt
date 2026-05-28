@@ -38,85 +38,92 @@ sealed interface Block {
     fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
 
     /** Runtime data-shape contract; called only when [data] for this block id is present. */
-    fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> = emptyList()
+    fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = emptyList()
 }
 
-private fun JsonElement.string(key: String): String? =
-    (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
+private fun JsonElement.string(key: String): String? = (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
 private val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
 
-private val SAFE_SVG_ELEMENTS = setOf(
-    "svg",
-    "g",
-    "defs",
-    "title",
-    "desc",
-    "path",
-    "rect",
-    "circle",
-    "ellipse",
-    "line",
-    "polyline",
-    "polygon",
-    "text",
-    "tspan",
-    "lineargradient",
-    "radialgradient",
-    "stop",
-    "clippath",
-)
+private val SAFE_SVG_ELEMENTS =
+    setOf(
+        "svg",
+        "g",
+        "defs",
+        "title",
+        "desc",
+        "path",
+        "rect",
+        "circle",
+        "ellipse",
+        "line",
+        "polyline",
+        "polygon",
+        "text",
+        "tspan",
+        "lineargradient",
+        "radialgradient",
+        "stop",
+        "clippath",
+    )
 
-private val SAFE_SVG_ATTRIBUTES = setOf(
-    "xmlns",
-    "xmlns:xlink",
-    "id",
-    "viewbox",
-    "width",
-    "height",
-    "x",
-    "y",
-    "x1",
-    "y1",
-    "x2",
-    "y2",
-    "cx",
-    "cy",
-    "r",
-    "rx",
-    "ry",
-    "d",
-    "points",
-    "transform",
-    "fill",
-    "stroke",
-    "stroke-width",
-    "stroke-linecap",
-    "stroke-linejoin",
-    "stroke-miterlimit",
-    "stroke-dasharray",
-    "stroke-dashoffset",
-    "opacity",
-    "fill-opacity",
-    "stroke-opacity",
-    "font-family",
-    "font-size",
-    "font-weight",
-    "text-anchor",
-    "dx",
-    "dy",
-    "offset",
-    "stop-color",
-    "stop-opacity",
-    "clip-path",
-    "role",
-    "aria-label",
-)
+private val SAFE_SVG_ATTRIBUTES =
+    setOf(
+        "xmlns",
+        "xmlns:xlink",
+        "id",
+        "viewbox",
+        "width",
+        "height",
+        "x",
+        "y",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "cx",
+        "cy",
+        "r",
+        "rx",
+        "ry",
+        "d",
+        "points",
+        "transform",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "stroke-linecap",
+        "stroke-linejoin",
+        "stroke-miterlimit",
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "opacity",
+        "fill-opacity",
+        "stroke-opacity",
+        "font-family",
+        "font-size",
+        "font-weight",
+        "text-anchor",
+        "dx",
+        "dy",
+        "offset",
+        "stop-color",
+        "stop-opacity",
+        "clip-path",
+        "role",
+        "aria-label",
+    )
 
 private sealed class SvgSource {
-    data class Content(val value: String) : SvgSource()
+    data class Content(
+        val value: String,
+    ) : SvgSource()
+
     object Invalid : SvgSource()
 }
 
@@ -144,7 +151,10 @@ data class TextBlock(
         }
     }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("text"), path) + optionalStringField(obj, "text", path)
@@ -162,7 +172,10 @@ data class HtmlBlock(
 
     override fun render(): String = html
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("html"), path) + optionalStringField(obj, "html", path)
@@ -193,16 +206,22 @@ data class HeadingBlock(
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        if (config.level in 1..6) emptyList()
-        else listOf(
-            issue(
-                path.child("config").child("level"),
-                ValidationCodes.OUT_OF_RANGE,
-                "Heading level must be between 1 and 6: ${config.level}",
-            ),
-        )
+        if (config.level in 1..6) {
+            emptyList()
+        } else {
+            listOf(
+                issue(
+                    path.child("config").child("level"),
+                    ValidationCodes.OUT_OF_RANGE,
+                    "Heading level must be between 1 and 6: ${config.level}",
+                ),
+            )
+        }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("text"), path) + optionalStringField(obj, "text", path)
@@ -243,7 +262,10 @@ data class ImageBlock(
             },
         )
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("src", "alt"), path) +
@@ -275,16 +297,16 @@ data class KeyValueBlock(
     val values: Map<String, String?> = emptyMap(),
     override val config: KeyValueConfig = KeyValueConfig(),
 ) : Block {
-    override fun applyData(values: JsonElement): Block =
-        if (values is JsonObject) copy(values = values.stringValues()) else this
+    override fun applyData(values: JsonElement): Block = if (values is JsonObject) copy(values = values.stringValues()) else this
 
     override fun render(): String {
         validateFields()
-        val rows = config.fields.joinToString("") { field ->
-            val label = Html.escape(field.label)
-            val value = Html.escape(values[field.key].orEmpty())
-            "<tr><td>$label</td><td>$value</td></tr>"
-        }
+        val rows =
+            config.fields.joinToString("") { field ->
+                val label = Html.escape(field.label)
+                val value = Html.escape(values[field.key].orEmpty())
+                "<tr><td>$label</td><td>$value</td></tr>"
+            }
         return "<table class=\"key-value\"><tbody>$rows</tbody></table>"
     }
 
@@ -306,17 +328,27 @@ data class KeyValueBlock(
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         config.fields.flatMapIndexed { index, field ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) emptyList()
-            else listOf(
-                issue(
-                    path.child("config").child("fields").index(index).child("key"),
-                    ValidationCodes.INVALID_KEY,
-                    "Key-value field key is invalid: ${field.key}",
-                ),
-            )
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
+                emptyList()
+            } else {
+                listOf(
+                    issue(
+                        path
+                            .child("config")
+                            .child("fields")
+                            .index(index)
+                            .child("key"),
+                        ValidationCodes.INVALID_KEY,
+                        "Key-value field key is invalid: ${field.key}",
+                    ),
+                )
+            }
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         val allowed = config.fields.map { it.key }.toSet()
@@ -338,23 +370,29 @@ private fun svgSource(source: String): SvgSource? {
     }.getOrDefault(SvgSource.Invalid)
 }
 
-private fun inlineSanitizedSvg(source: String, alt: String): String? {
-    val svg = when (val result = svgSource(source) ?: return null) {
-        is SvgSource.Content -> result.value
-        SvgSource.Invalid -> return ""
-    }
-    val document = runCatching {
-        val factory = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = true
-            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-            setFeature("http://xml.org/sax/features/external-general-entities", false)
-            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-            isXIncludeAware = false
-            isExpandEntityReferences = false
+private fun inlineSanitizedSvg(
+    source: String,
+    alt: String,
+): String? {
+    val svg =
+        when (val result = svgSource(source) ?: return null) {
+            is SvgSource.Content -> result.value
+            SvgSource.Invalid -> return ""
         }
-        factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
-    }.getOrNull() ?: return ""
+    val document =
+        runCatching {
+            val factory =
+                DocumentBuilderFactory.newInstance().apply {
+                    isNamespaceAware = true
+                    setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                    setFeature("http://xml.org/sax/features/external-general-entities", false)
+                    setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+                    setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+                    isXIncludeAware = false
+                    isExpandEntityReferences = false
+                }
+            factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
+        }.getOrNull() ?: return ""
 
     val root = document.documentElement ?: return ""
     if (!root.hasElementName("svg")) {
@@ -370,23 +408,24 @@ private fun inlineSanitizedSvg(source: String, alt: String): String? {
 }
 
 private fun sanitizeSvgElement(element: Element) {
-    val attributesToRemove = buildList {
-        val attributes = element.attributes
-        for (index in 0 until attributes.length) {
-            val attribute = attributes.item(index)
-            val name = attribute.nodeName.lowercase()
-            val value = attribute.nodeValue.trim().lowercase()
-            if (
-                name !in SAFE_SVG_ATTRIBUTES ||
-                name == "href" ||
-                name == "xlink:href" ||
-                value.contains("url(") ||
-                value.contains("javascript:")
-            ) {
-                add(attribute.nodeName)
+    val attributesToRemove =
+        buildList {
+            val attributes = element.attributes
+            for (index in 0 until attributes.length) {
+                val attribute = attributes.item(index)
+                val name = attribute.nodeName.lowercase()
+                val value = attribute.nodeValue.trim().lowercase()
+                if (
+                    name !in SAFE_SVG_ATTRIBUTES ||
+                    name == "href" ||
+                    name == "xlink:href" ||
+                    value.contains("url(") ||
+                    value.contains("javascript:")
+                ) {
+                    add(attribute.nodeName)
+                }
             }
         }
-    }
     attributesToRemove.forEach(element::removeAttribute)
 
     val childElementsToRemove = mutableListOf<Element>()
@@ -416,7 +455,8 @@ private fun Element.hasAllowedSvgElementName(): Boolean {
 
 private fun serializeElement(element: Element): String {
     val writer = StringWriter()
-    TransformerFactory.newInstance()
+    TransformerFactory
+        .newInstance()
         .newTransformer()
         .apply { setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes") }
         .transform(DOMSource(element), StreamResult(writer))
@@ -449,8 +489,10 @@ data class SpacerBlock(
             },
         )
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
-        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
 }
 
 @Serializable
@@ -474,8 +516,8 @@ data class DividerBlock(
 
     override fun render(): String = "<hr>"
 
-    override fun renderCss(cssId: String): List<CssDeclaration> {
-        return listOf(
+    override fun renderCss(cssId: String): List<CssDeclaration> =
+        listOf(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
@@ -484,7 +526,6 @@ data class DividerBlock(
                 rule("border-top-style", config.style.cssValue())
             },
         )
-    }
 
     private fun DividerStyle.cssValue(): String =
         when (this) {
@@ -495,8 +536,10 @@ data class DividerBlock(
             DividerStyle.NONE -> "none"
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
-        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Divider block does not accept data"))
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = listOf(issue(path, ValidationCodes.INVALID_VALUE, "Divider block does not accept data"))
 }
 
 @Serializable
@@ -529,63 +572,82 @@ data class TableBlock(
         copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
 
     override fun render(): String {
-        val headers = buildList {
-            if (config.numberRows) add("#")
-            config.columns.forEach { add(it.label) }
-        }
-        val thead = buildString {
-            append("<thead><tr>")
-            headers.forEachIndexed { index, header -> append("<th${alignStyle(index)}>${Html.escape(header)}</th>") }
-            append("</tr></thead>")
-        }
-        val tbody = buildString {
-            append("<tbody>")
-            rows.forEachIndexed { rowIndex, row ->
-                append("<tr>")
-                cellsFor(row, rowIndex).forEachIndexed { index, cell -> append("<td${alignStyle(index)}>${Html.escape(cell)}</td>") }
-                append("</tr>")
+        val headers =
+            buildList {
+                if (config.numberRows) add("#")
+                config.columns.forEach { add(it.label) }
             }
-            append("</tbody>")
-        }
+        val thead =
+            buildString {
+                append("<thead><tr>")
+                headers.forEachIndexed { index, header ->
+                    append("<th${alignStyle(index)}>${Html.escape(header)}</th>")
+                }
+                append("</tr></thead>")
+            }
+        val tbody =
+            buildString {
+                append("<tbody>")
+                rows.forEachIndexed { rowIndex, row ->
+                    append("<tr>")
+                    cellsFor(row, rowIndex).forEachIndexed { index, cell ->
+                        append("<td${alignStyle(index)}>${Html.escape(cell)}</td>")
+                    }
+                    append("</tr>")
+                }
+                append("</tbody>")
+            }
         return "<table class=\"data-table\">${colgroup()}$thead$tbody</table>"
     }
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
         when (config.style) {
-            TableStyle.STRIPED -> listOf(
-                css(".$cssId tbody tr:nth-child(even)") {
-                    rule("background-color", "#f9fafb")
-                },
-            )
-            TableStyle.BORDERED -> listOf(
-                css(".$cssId") {
-                    rule("border-collapse", "collapse")
-                },
-                css(".$cssId th, .$cssId td") {
-                    rule("border", "1px solid #d1d5db")
-                },
-            )
-            TableStyle.MINIMAL -> listOf(
-                css(".$cssId thead tr") {
-                    rule("border-bottom", "2px solid #1a1a2e")
-                },
-                css(".$cssId tbody tr") {
-                    rule("border-bottom", "1px solid #e5e7eb")
-                },
-            )
+            TableStyle.STRIPED -> {
+                listOf(
+                    css(".$cssId tbody tr:nth-child(even)") {
+                        rule("background-color", "#f9fafb")
+                    },
+                )
+            }
+
+            TableStyle.BORDERED -> {
+                listOf(
+                    css(".$cssId") {
+                        rule("border-collapse", "collapse")
+                    },
+                    css(".$cssId th, .$cssId td") {
+                        rule("border", "1px solid #d1d5db")
+                    },
+                )
+            }
+
+            TableStyle.MINIMAL -> {
+                listOf(
+                    css(".$cssId thead tr") {
+                        rule("border-bottom", "2px solid #1a1a2e")
+                    },
+                    css(".$cssId tbody tr") {
+                        rule("border-bottom", "1px solid #e5e7eb")
+                    },
+                )
+            }
         }
 
-    private fun cellsFor(row: JsonObject, rowIndex: Int): List<String> =
+    private fun cellsFor(
+        row: JsonObject,
+        rowIndex: Int,
+    ): List<String> =
         buildList {
             if (config.numberRows) add((rowIndex + 1).toString())
             config.columns.forEach { column -> add(cellText(row[column.key])) }
         }
 
     private fun colgroup(): String {
-        val widths = buildList<String?> {
-            if (config.numberRows) add(null)
-            config.columns.forEach { add(safeCssWidth(it.width)) }
-        }
+        val widths =
+            buildList<String?> {
+                if (config.numberRows) add(null)
+                config.columns.forEach { add(safeCssWidth(it.width)) }
+            }
         if (widths.none { !it.isNullOrEmpty() }) return ""
         return widths.joinToString("", prefix = "<colgroup>", postfix = "</colgroup>") { width ->
             if (width.isNullOrEmpty()) "<col>" else "<col style=\"width: ${Html.escape(width)};\">"
@@ -611,17 +673,27 @@ data class TableBlock(
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         config.columns.flatMapIndexed { index, column ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) emptyList()
-            else listOf(
-                issue(
-                    path.child("config").child("columns").index(index).child("key"),
-                    ValidationCodes.INVALID_KEY,
-                    "Table column key is invalid: ${column.key}",
-                ),
-            )
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
+                emptyList()
+            } else {
+                listOf(
+                    issue(
+                        path
+                            .child("config")
+                            .child("columns")
+                            .index(index)
+                            .child("key"),
+                        ValidationCodes.INVALID_KEY,
+                        "Table column key is invalid: ${column.key}",
+                    ),
+                )
+            }
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (arr, errs) = requireArray(value, path)
         if (arr == null) return errs
         val allowed = config.columns.map { it.key }.toSet()

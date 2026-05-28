@@ -3,23 +3,24 @@ package bambamboole.pdfua.services
 import bambamboole.pdfua.models.RenderOptions
 import bambamboole.pdfua.models.template.Align
 import bambamboole.pdfua.models.template.BaseBlockConfig
+import bambamboole.pdfua.models.template.Block
+import bambamboole.pdfua.models.template.CustomPageSize
 import bambamboole.pdfua.models.template.DividerBlock
 import bambamboole.pdfua.models.template.DividerConfig
 import bambamboole.pdfua.models.template.DividerStyle
 import bambamboole.pdfua.models.template.FontFace
 import bambamboole.pdfua.models.template.HeadingBlock
 import bambamboole.pdfua.models.template.HeadingConfig
-import bambamboole.pdfua.models.template.PageBackgroundConfig
-import bambamboole.pdfua.models.template.PageBackgroundType
 import bambamboole.pdfua.models.template.HtmlBlock
 import bambamboole.pdfua.models.template.ImageBlock
 import bambamboole.pdfua.models.template.ImageConfig
 import bambamboole.pdfua.models.template.KeyValueBlock
 import bambamboole.pdfua.models.template.KeyValueConfig
 import bambamboole.pdfua.models.template.KeyValueField
-import bambamboole.pdfua.models.template.PageConfig
-import bambamboole.pdfua.models.template.CustomPageSize
 import bambamboole.pdfua.models.template.Orientation
+import bambamboole.pdfua.models.template.PageBackgroundConfig
+import bambamboole.pdfua.models.template.PageBackgroundType
+import bambamboole.pdfua.models.template.PageConfig
 import bambamboole.pdfua.models.template.PageFooterConfig
 import bambamboole.pdfua.models.template.PageFormat
 import bambamboole.pdfua.models.template.PageNumbersConfig
@@ -27,12 +28,12 @@ import bambamboole.pdfua.models.template.PresetPageSize
 import bambamboole.pdfua.models.template.Row
 import bambamboole.pdfua.models.template.SpacerBlock
 import bambamboole.pdfua.models.template.SpacerConfig
-import bambamboole.pdfua.models.template.Template
-import bambamboole.pdfua.models.template.TemplateConfig
 import bambamboole.pdfua.models.template.TableBlock
 import bambamboole.pdfua.models.template.TableColumn
 import bambamboole.pdfua.models.template.TableConfig
 import bambamboole.pdfua.models.template.TableStyle
+import bambamboole.pdfua.models.template.Template
+import bambamboole.pdfua.models.template.TemplateConfig
 import bambamboole.pdfua.models.template.TextBlock
 import bambamboole.pdfua.models.template.TypographyConfig
 import kotlinx.serialization.json.JsonNull
@@ -46,9 +47,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TemplateRendererTest {
-
-    private fun template(vararg blocks: bambamboole.pdfua.models.template.Block, config: TemplateConfig = TemplateConfig()) =
-        Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
+    private fun template(
+        vararg blocks: Block,
+        config: TemplateConfig = TemplateConfig(),
+    ) = Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
 
     @Test
     fun rendersTextBlockInsideRowAndDocument() {
@@ -75,7 +77,10 @@ class TemplateRendererTest {
 
     @Test
     fun rendersDividerWithScopedLineCss() {
-        val block = DividerBlock(config = DividerConfig(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED))
+        val block =
+            DividerBlock(
+                config = DividerConfig(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED),
+            )
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(html.contains("<div class=\"block-1\"><hr></div>"))
@@ -89,7 +94,11 @@ class TemplateRendererTest {
     @Test
     fun rendersHeadingWithRuntimeDataOverride() {
         val data = mapOf("title" to JsonObject(mapOf("text" to JsonPrimitive("Runtime title"))))
-        val html = TemplateRenderer.render(template(HeadingBlock(id = "title", text = "Original", config = HeadingConfig(level = 1))), data)
+        val html =
+            TemplateRenderer.render(
+                template(HeadingBlock(id = "title", text = "Original", config = HeadingConfig(level = 1))),
+                data,
+            )
 
         assertTrue(html.contains("<div class=\"block-1\"><h1>Runtime title</h1></div>"))
         assertTrue(!html.contains("Original"))
@@ -104,15 +113,21 @@ class TemplateRendererTest {
 
     @Test
     fun rendersImageWithRuntimeDataAndScopedMaxHeight() {
-        val data = mapOf(
-            "logo" to JsonObject(
-                mapOf(
-                    "src" to JsonPrimitive("runtime.png"),
-                    "alt" to JsonPrimitive("Runtime logo"),
-                ),
-            ),
-        )
-        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)
+        val data =
+            mapOf(
+                "logo" to
+                    JsonObject(
+                        mapOf(
+                            "src" to JsonPrimitive("runtime.png"),
+                            "alt" to JsonPrimitive("Runtime logo"),
+                        ),
+                    ),
+            )
+        val html =
+            TemplateRenderer.render(
+                template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))),
+                data,
+            )
 
         assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
         assertTrue(html.contains(".block-1 img, .block-1 svg { max-height: 72px; }"))
@@ -121,28 +136,33 @@ class TemplateRendererTest {
 
     @Test
     fun rendersKeyValueWithRuntimeDataAndScopedLabelWidth() {
-        val block = KeyValueBlock(
-            id = "meta",
-            values = mapOf("invoice" to "Original", "customer" to "Original customer"),
-            config = KeyValueConfig(
-                labelWidth = "28mm",
-                fields = listOf(
-                    KeyValueField("customer", "Customer"),
-                    KeyValueField("invoice", "Invoice <no>"),
-                    KeyValueField("missing", "Missing"),
-                    KeyValueField("empty", "Empty"),
-                ),
-            ),
-        )
-        val data = mapOf(
-            "meta" to JsonObject(
-                mapOf(
-                    "invoice" to JsonPrimitive("INV-1"),
-                    "customer" to JsonPrimitive("<ACME>"),
-                    "empty" to JsonNull,
-                ),
-            ),
-        )
+        val block =
+            KeyValueBlock(
+                id = "meta",
+                values = mapOf("invoice" to "Original", "customer" to "Original customer"),
+                config =
+                    KeyValueConfig(
+                        labelWidth = "28mm",
+                        fields =
+                            listOf(
+                                KeyValueField("customer", "Customer"),
+                                KeyValueField("invoice", "Invoice <no>"),
+                                KeyValueField("missing", "Missing"),
+                                KeyValueField("empty", "Empty"),
+                            ),
+                    ),
+            )
+        val data =
+            mapOf(
+                "meta" to
+                    JsonObject(
+                        mapOf(
+                            "invoice" to JsonPrimitive("INV-1"),
+                            "customer" to JsonPrimitive("<ACME>"),
+                            "empty" to JsonNull,
+                        ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(block), data)
 
@@ -163,12 +183,14 @@ class TemplateRendererTest {
 
     @Test
     fun keyValueDropsUnsafeLabelWidth() {
-        val block = KeyValueBlock(
-            config = KeyValueConfig(
-                labelWidth = "1mm} body{display:none",
-                fields = listOf(KeyValueField("invoice", "Invoice")),
-            ),
-        )
+        val block =
+            KeyValueBlock(
+                config =
+                    KeyValueConfig(
+                        labelWidth = "1mm} body{display:none",
+                        fields = listOf(KeyValueField("invoice", "Invoice")),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(block))
 
@@ -185,7 +207,15 @@ class TemplateRendererTest {
 
     @Test
     fun dividerDropsUnsafeLineCssValuesButKeepsEnumStyle() {
-        val block = DividerBlock(config = DividerConfig(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED))
+        val block =
+            DividerBlock(
+                config =
+                    DividerConfig(
+                        thickness = -1,
+                        lineColor = "red; } body{display:none",
+                        style = DividerStyle.DOTTED,
+                    ),
+            )
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(!html.contains("display:none"), "unsafe color must not be emitted")
@@ -224,7 +254,10 @@ class TemplateRendererTest {
 
     @Test
     fun emitsPageNumbersWhenEnabled() {
-        val cfg = TemplateConfig(page = PageConfig(pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT)))
+        val cfg =
+            TemplateConfig(
+                page = PageConfig(pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT)),
+            )
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
         assertTrue(html.contains("@bottom-right"))
         assertTrue(html.contains("counter(page)"))
@@ -232,13 +265,16 @@ class TemplateRendererTest {
 
     @Test
     fun rendersRepeatedFooterBeforeBodyAndReservesBottomMargin() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Repeated footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Repeated footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
@@ -250,19 +286,28 @@ class TemplateRendererTest {
                 html.indexOf("<p>Body</p>"),
             "repeated footer must be a first body child so OpenHTMLToPDF can apply it to all pages",
         )
-        assertTrue(html.contains("""<footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td><div class="block-1"><p>Repeated footer</p></div></td></tr></table></footer>"""))
+        assertTrue(
+            html.contains(
+                """<footer class="page-footer page-footer-repeated" role="contentinfo">""" +
+                    """<table class="row" role="presentation"><tr><td>""" +
+                    """<div class="block-1"><p>Repeated footer</p></div></td></tr></table></footer>""",
+            ),
+        )
         assertTrue(html.contains("""<div class="block-2"><p>Body</p></div>"""))
     }
 
     @Test
     fun appliesRuntimeDataInsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(id = "footer", text = "Original footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(id = "footer", text = "Original footer")))),
+                            ),
+                    ),
+            )
         val data = mapOf("footer" to JsonObject(mapOf("text" to JsonPrimitive("Runtime footer"))))
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg), data)
@@ -273,32 +318,41 @@ class TemplateRendererTest {
 
     @Test
     fun rendersCenteredPageNumbersInsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                pageNumbers = PageNumbersConfig(enabled = true, position = Align.CENTER),
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        pageNumbers = PageNumbersConfig(enabled = true, position = Align.CENTER),
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
         assertTrue(html.contains("""<div class="page-footer-page-numbers" aria-hidden="true"></div>"""))
         assertTrue(html.contains(".page-footer-page-numbers::after { content: counter(page) \" / \" counter(pages); }"))
-        assertTrue(!html.contains("@bottom-center { content: counter(page)"), "centered page numbers must move into repeated footer")
+        assertTrue(
+            !html.contains("@bottom-center { content: counter(page)"),
+            "centered page numbers must move into repeated footer",
+        )
     }
 
     @Test
     fun keepsNonCenteredPageNumbersOutsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT),
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT),
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
@@ -308,10 +362,25 @@ class TemplateRendererTest {
 
     @Test
     fun emitsBackgroundObjectAndRunningPlacementForImage() {
-        val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png", type = PageBackgroundType.IMAGE)))
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        background =
+                            PageBackgroundConfig(
+                                src = "https://cdn.example.com/bg.png",
+                                type = PageBackgroundType.IMAGE,
+                            ),
+                    ),
+            )
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
 
-        assertTrue(html.contains("""<object type="x-page-background" data-src="https://cdn.example.com/bg.png" data-kind="image" style="width:1px;height:1px">"""))
+        assertTrue(
+            html.contains(
+                """<object type="x-page-background" data-src="https://cdn.example.com/bg.png" """ +
+                    """data-kind="image" style="width:1px;height:1px">""",
+            ),
+        )
         assertTrue(html.contains(".pagebg { position: running(pagebg); }"))
         assertTrue(html.contains("@top-left { content: element(pagebg); }"))
         assertTrue(!html.contains("background-image"), "the broken @page background-image path must be gone")
@@ -319,10 +388,38 @@ class TemplateRendererTest {
 
     @Test
     fun emitsBackgroundKindForPdfAndAuto() {
-        val pdf = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf", type = PageBackgroundType.PDF)))))
+        val pdf =
+            TemplateRenderer.render(
+                template(
+                    TextBlock(text = "x"),
+                    config =
+                        TemplateConfig(
+                            page =
+                                PageConfig(
+                                    background =
+                                        PageBackgroundConfig(
+                                            src = "https://cdn.example.com/s.pdf",
+                                            type = PageBackgroundType.PDF,
+                                        ),
+                                ),
+                        ),
+                ),
+            )
         assertTrue(pdf.contains("""data-src="https://cdn.example.com/s.pdf" data-kind="pdf""""))
 
-        val auto = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf")))))
+        val auto =
+            TemplateRenderer.render(
+                template(
+                    TextBlock(text = "x"),
+                    config =
+                        TemplateConfig(
+                            page =
+                                PageConfig(
+                                    background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf"),
+                                ),
+                        ),
+                ),
+            )
         assertTrue(auto.contains("""data-kind="auto""""))
     }
 
@@ -392,34 +489,58 @@ class TemplateRendererTest {
 
     @Test
     fun externalFontEmitsFontFaceAndUsesFamily() {
-        val tpl = Template(
-            version = 1,
-            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
-            rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
-        )
+        val tpl =
+            Template(
+                version = 1,
+                fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
+                rows =
+                    listOf(
+                        Row(
+                            listOf(
+                                TextBlock(
+                                    text = "x",
+                                    config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")),
+                                ),
+                            ),
+                        ),
+                    ),
+            )
         val html = TemplateRenderer.render(tpl)
         assertTrue(
-            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
+            html.contains(
+                "@font-face { font-family: 'Lobster'; " +
+                    "src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); " +
+                    "font-weight: 400; font-style: normal; }",
+            ),
         )
         assertTrue(html.contains(".block-1 { font-family: 'Lobster'; }"))
     }
 
     @Test
     fun externalFontMultiWeightEmitsOneFontFaceRulePerWeight() {
-        val tpl = Template(
-            version = 1,
-            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
-            rows = listOf(Row(listOf(TextBlock(text = "x")))),
-        )
+        val tpl =
+            Template(
+                version = 1,
+                fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
+                rows = listOf(Row(listOf(TextBlock(text = "x")))),
+            )
 
         val html = TemplateRenderer.render(tpl)
 
         assertTrue(
-            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
+            html.contains(
+                "@font-face { font-family: 'Lobster'; " +
+                    "src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); " +
+                    "font-weight: 400; font-style: normal; }",
+            ),
             "should emit a regular @font-face rule",
         )
         assertTrue(
-            html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 700; font-style: normal; }"),
+            html.contains(
+                "@font-face { font-family: 'Lobster'; " +
+                    "src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); " +
+                    "font-weight: 700; font-style: normal; }",
+            ),
             "should emit a bold @font-face rule from the same src",
         )
     }
@@ -428,28 +549,45 @@ class TemplateRendererTest {
     fun bundledFamilyIsUsedAsIsWithoutFontFace() {
         val cfg = TemplateConfig(typography = TypographyConfig(family = "Inter"))
         val html = TemplateRenderer.render(template(TextBlock(text = "x"), config = cfg))
-        assertTrue(html.contains("body { font-family: 'Inter'; color: #111827; line-height: 1.35; }"))
+        assertTrue(
+            html.contains("body { font-family: 'Inter'; color: #111827; line-height: 1.35; }"),
+        )
         assertTrue(!html.contains("@font-face"), "bundled family must not emit @font-face")
     }
 
     @Test
     fun rendersTableWithRuntimeRowDataAsBareArray() {
-        val table = TableBlock(
-            id = "items",
-            config = TableConfig(
-                style = TableStyle.STRIPED,
-                columns = listOf(
-                    TableColumn(key = "sku", label = "SKU"),
-                    TableColumn(key = "description", label = "Description"),
-                ),
-            ),
-        )
-        val data = mapOf(
-            "items" to buildJsonArray {
-                add(buildJsonObject { put("sku", "A-100"); put("description", "Accessible PDF setup") })
-                add(buildJsonObject { put("sku", "B-200"); put("description", "Structure review") })
-            },
-        )
+        val table =
+            TableBlock(
+                id = "items",
+                config =
+                    TableConfig(
+                        style = TableStyle.STRIPED,
+                        columns =
+                            listOf(
+                                TableColumn(key = "sku", label = "SKU"),
+                                TableColumn(key = "description", label = "Description"),
+                            ),
+                    ),
+            )
+        val data =
+            mapOf(
+                "items" to
+                    buildJsonArray {
+                        add(
+                            buildJsonObject {
+                                put("sku", "A-100")
+                                put("description", "Accessible PDF setup")
+                            },
+                        )
+                        add(
+                            buildJsonObject {
+                                put("sku", "B-200")
+                                put("description", "Structure review")
+                            },
+                        )
+                    },
+            )
 
         val html = TemplateRenderer.render(template(table), data)
 
@@ -461,7 +599,10 @@ class TemplateRendererTest {
 
     @Test
     fun emitsDataTableBaseCssOnce() {
-        val html = TemplateRenderer.render(template(TableBlock(config = TableConfig(columns = listOf(TableColumn("a", "A"))))))
+        val html =
+            TemplateRenderer.render(
+                template(TableBlock(config = TableConfig(columns = listOf(TableColumn("a", "A"))))),
+            )
 
         assertTrue(html.contains(".data-table { width: 100%; border-collapse: collapse; text-align: left; }"))
         assertTrue(html.contains(".data-table th { padding: 2mm 2.4mm;"))
@@ -470,8 +611,16 @@ class TemplateRendererTest {
 
     @Test
     fun dropsUnsafeColorButKeepsValidOne() {
-        val malicious = TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(color = "red; } body{display:none")))
-        val ok = TextBlock(text = "y", config = BaseBlockConfig(typography = TypographyConfig(color = "#ff0000", size = 12)))
+        val malicious =
+            TextBlock(
+                text = "x",
+                config = BaseBlockConfig(typography = TypographyConfig(color = "red; } body{display:none")),
+            )
+        val ok =
+            TextBlock(
+                text = "y",
+                config = BaseBlockConfig(typography = TypographyConfig(color = "#ff0000", size = 12)),
+            )
         val html = TemplateRenderer.render(Template(version = 1, rows = listOf(Row(listOf(malicious, ok)))))
         assertTrue(!html.contains("display:none"), "unsafe color must be dropped")
         assertTrue(html.contains(".block-2 { font-size: 12pt; color: #ff0000; }"))

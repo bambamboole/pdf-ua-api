@@ -33,26 +33,29 @@ import java.net.URI
 private fun pageDimensionCss(value: Double): String =
     requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
 
-private fun pageDimensionCss(value: Int): String =
-    requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
+private fun pageDimensionCss(value: Int): String = requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
 
-private fun pageSizeCss(size: PageSize): String = when (size) {
-    is PresetPageSize -> {
-        val (w, h) = if (size.orientation == Orientation.LANDSCAPE) {
-            size.format.heightMm to size.format.widthMm
-        } else {
-            size.format.widthMm to size.format.heightMm
+private fun pageSizeCss(size: PageSize): String =
+    when (size) {
+        is PresetPageSize -> {
+            val (w, h) =
+                if (size.orientation == Orientation.LANDSCAPE) {
+                    size.format.heightMm to size.format.widthMm
+                } else {
+                    size.format.widthMm to size.format.heightMm
+                }
+            "${pageDimensionCss(w)} ${pageDimensionCss(h)}"
         }
-        "${pageDimensionCss(w)} ${pageDimensionCss(h)}"
+
+        is CustomPageSize -> {
+            check(size.width > 0 && size.height > 0) {
+                "Page dimensions must be positive millimetres: ${size.width}x${size.height}"
+            }
+            "${pageDimensionCss(size.width)} ${pageDimensionCss(size.height)}"
+        }
     }
-    is CustomPageSize -> {
-        check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
-        "${pageDimensionCss(size.width)} ${pageDimensionCss(size.height)}"
-    }
-}
 
 object TemplateRenderer {
-
     fun render(
         template: Template,
         data: Map<String, JsonElement> = emptyMap(),
@@ -66,7 +69,10 @@ object TemplateRenderer {
         emitDocumentCss(css, page, template.fonts, template.config.typography)
         var counter = 0
 
-        fun renderBlock(block: Block, widthOnCell: Boolean): String {
+        fun renderBlock(
+            block: Block,
+            widthOnCell: Boolean,
+        ): String {
             val resolved = block.id?.let { id -> data[id]?.let(block::applyData) } ?: block
             counter++
             val cssId = "block-$counter"
@@ -77,11 +83,12 @@ object TemplateRenderer {
         }
 
         fun renderRow(row: Row): String {
-            val cells = row.blocks.joinToString("") { block ->
-                val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
-                val widthAttr = if (cellWidth != null) " style=\"width: $cellWidth;\"" else ""
-                "<td$widthAttr>${renderBlock(block, widthOnCell = cellWidth != null)}</td>"
-            }
+            val cells =
+                row.blocks.joinToString("") { block ->
+                    val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
+                    val widthAttr = if (cellWidth != null) " style=\"width: $cellWidth;\"" else ""
+                    "<td$widthAttr>${renderBlock(block, widthOnCell = cellWidth != null)}</td>"
+                }
             return "<table class=\"row\" role=\"presentation\"><tr>$cells</tr></table>"
         }
 
@@ -90,7 +97,12 @@ object TemplateRenderer {
         return wrapDocument(footerHtml + rowsHtml, template, css, options)
     }
 
-    private fun emitPositioningCss(css: CssRegistry, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
+    private fun emitPositioningCss(
+        css: CssRegistry,
+        cssId: String,
+        config: BlockConfig,
+        widthOnCell: Boolean,
+    ) {
         css.css(".$cssId") {
             val width = if (widthOnCell) null else safeCssWidth(config.width)
             rule("width", width)
@@ -99,16 +111,22 @@ object TemplateRenderer {
                     rule("margin-left", "auto")
                     rule("margin-right", "auto")
                 }
+
                 Align.RIGHT -> {
                     rule("margin-left", "auto")
                     rule("text-align", "right")
                 }
+
                 else -> {}
             }
         }
     }
 
-    private fun emitTypographyCss(css: CssRegistry, cssId: String, typography: TypographyConfig?) {
+    private fun emitTypographyCss(
+        css: CssRegistry,
+        cssId: String,
+        typography: TypographyConfig?,
+    ) {
         val rules = typographyRules(typography)
         css.css(".$cssId") {
             rules.forEach { rule(it.property, it.value) }
@@ -126,7 +144,10 @@ object TemplateRenderer {
         }
     }
 
-    private fun emitFontFaceCss(css: CssRegistry, fonts: Map<String, FontFace>) {
+    private fun emitFontFaceCss(
+        css: CssRegistry,
+        fonts: Map<String, FontFace>,
+    ) {
         fonts.entries.forEach { (family, face) ->
             face.weight.trim().split(Regex("\\s+")).forEach { weight ->
                 css.fontFace {
@@ -139,7 +160,12 @@ object TemplateRenderer {
         }
     }
 
-    private fun wrapDocument(bodyHtml: String, template: Template, css: CssRegistry, options: RenderOptions): String {
+    private fun wrapDocument(
+        bodyHtml: String,
+        template: Template,
+        css: CssRegistry,
+        options: RenderOptions,
+    ): String {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
         val title = Html.escape(options.title)
@@ -171,11 +197,12 @@ $bodyPrefix$bodyHtml
     ): String {
         if (!footer.hasRepeatedRows()) return ""
         val rows = footer.rows.joinToString("") { renderRow(it) }
-        val pageNumbersHtml = if (pageNumbers.enabled && pageNumbers.position == Align.CENTER) {
-            """<div class="page-footer-page-numbers" aria-hidden="true"></div>"""
-        } else {
-            ""
-        }
+        val pageNumbersHtml =
+            if (pageNumbers.enabled && pageNumbers.position == Align.CENTER) {
+                """<div class="page-footer-page-numbers" aria-hidden="true"></div>"""
+            } else {
+                ""
+            }
         return """<footer class="page-footer page-footer-repeated" role="contentinfo">$rows$pageNumbersHtml</footer>"""
     }
 
@@ -194,7 +221,10 @@ $bodyPrefix$bodyHtml
         }
     }
 
-    private fun emitPageCss(css: CssRegistry, page: PageConfig) {
+    private fun emitPageCss(
+        css: CssRegistry,
+        page: PageConfig,
+    ) {
         val hasRepeatedFooter = page.footer.hasRepeatedRows()
         val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
         css.css("@page") {
@@ -236,7 +266,9 @@ $bodyPrefix$bodyHtml
                     rule("content", """counter(page) " / " counter(pages)""")
                 }
             } else {
-                val position = page.pageNumbers.position.name.lowercase()
+                val position =
+                    page.pageNumbers.position.name
+                        .lowercase()
                 css.nestedCss("@page", "@bottom-$position") {
                     rule("content", """counter(page) " / " counter(pages)""")
                     rule("font-size", "8pt")
@@ -246,7 +278,10 @@ $bodyPrefix$bodyHtml
         }
     }
 
-    private fun marginShorthand(margins: SpacingConfig, bottomReserve: Int = 0): String {
+    private fun marginShorthand(
+        margins: SpacingConfig,
+        bottomReserve: Int = 0,
+    ): String {
         val top = margins.top ?: 0
         val right = margins.right ?: 0
         val bottom = (margins.bottom ?: 0) + bottomReserve

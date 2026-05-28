@@ -6,23 +6,21 @@ private val UNSAFE_CSS_IDENTIFIER = Regex("[;{}\"'\\r\\n]")
 
 internal fun safeCssWidth(width: String?): String? = width?.takeIf { SAFE_CSS_WIDTH.matches(it) }
 
-internal fun safeCssColor(value: String?): String? =
-    value?.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
+internal fun safeCssColor(value: String?): String? = value?.takeIf { it.isNotBlank() && SAFE_CSS_COLOR.matches(it) }
 
-internal fun cssIdentifierLikeValue(value: String): String? =
-    value.takeIf { it.isNotBlank() && !UNSAFE_CSS_IDENTIFIER.containsMatchIn(it) }
+internal fun cssIdentifierLikeValue(value: String): String? = value.takeIf { it.isNotBlank() && !UNSAFE_CSS_IDENTIFIER.containsMatchIn(it) }
 
-internal fun cssQuotedString(value: String): String =
-    "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+internal fun cssQuotedString(value: String): String = "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 internal fun cssUrlValue(value: String): String =
-    "url(\"" + value
-        .replace("\\", "%5C")
-        .replace("\"", "%22")
-        .replace("(", "%28")
-        .replace(")", "%29")
-        .replace("\r", "")
-        .replace("\n", "") + "\")"
+    "url(\"" +
+        value
+            .replace("\\", "%5C")
+            .replace("\"", "%22")
+            .replace("(", "%28")
+            .replace(")", "%29")
+            .replace("\r", "")
+            .replace("\n", "") + "\")"
 
 internal fun cssMm(value: Double): String? {
     if (value < 0) return null
@@ -30,20 +28,14 @@ internal fun cssMm(value: Double): String? {
     return "${number}mm"
 }
 
-internal fun cssMm(value: Int): String? =
-    value.takeIf { it >= 0 }?.let { "${it}mm" }
+internal fun cssMm(value: Int): String? = value.takeIf { it >= 0 }?.let { "${it}mm" }
 
-internal fun cssMm(value: Int?): String? =
-    value?.let { cssMm(it) }
+internal fun cssMm(value: Int?): String? = value?.let { cssMm(it) }
 
-internal fun cssPt(value: Int): String? =
-    value.takeIf { it >= 0 }?.let { "${it}pt" }
+internal fun cssPt(value: Int): String? = value.takeIf { it >= 0 }?.let { "${it}pt" }
 
-internal fun cssPt(value: Int?): String? =
-    value?.let { cssPt(it) }
+internal fun cssPt(value: Int?): String? = value?.let { cssPt(it) }
 
-internal fun cssPx(value: Int): String? =
-    value.takeIf { it >= 0 }?.let { "${it}px" }
+internal fun cssPx(value: Int): String? = value.takeIf { it >= 0 }?.let { "${it}px" }
 
-internal fun cssPx(value: Int?): String? =
-    value?.let { cssPx(it) }
+internal fun cssPx(value: Int?): String? = value?.let { cssPx(it) }

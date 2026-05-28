@@ -5,7 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Row(val blocks: List<Block>)
+data class Row(
+    val blocks: List<Block>,
+)
 
 @Serializable
 data class PageNumbersConfig(
@@ -15,9 +17,14 @@ data class PageNumbersConfig(
 
 @Serializable
 enum class PageBackgroundType {
-    @SerialName("auto") AUTO,
-    @SerialName("image") IMAGE,
-    @SerialName("pdf") PDF,
+    @SerialName("auto")
+    AUTO,
+
+    @SerialName("image")
+    IMAGE,
+
+    @SerialName("pdf")
+    PDF,
 }
 
 @Serializable

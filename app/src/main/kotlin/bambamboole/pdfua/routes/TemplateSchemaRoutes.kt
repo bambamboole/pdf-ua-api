@@ -6,8 +6,9 @@ import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import kotlinx.serialization.json.JsonObject
 
 @GenerateOpenApi
@@ -15,11 +16,15 @@ import kotlinx.serialization.json.JsonObject
 fun Route.templateSchemaRoutes() {
     @KtorDescription(
         summary = "Get the template schema",
-        description = "Returns the canonical JSON Schema for template rendering, including builder metadata under x-pdfUa.",
+        description =
+            "Returns the canonical JSON Schema for template rendering, " +
+                "including builder metadata under x-pdfUa.",
     )
-    @KtorResponds([
-        ResponseEntry("200", JsonObject::class, description = "Template JSON Schema"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", JsonObject::class, description = "Template JSON Schema"),
+        ],
+    )
     get("/schema") {
         call.respond(TemplateJsonSchema.current())
     }

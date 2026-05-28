@@ -7,5 +7,5 @@ data class RenderImageRequest(
     val html: String,
     val baseUrl: String? = null,
     val format: String = "png",
-    val width: Int = 800
+    val width: Int = 800,
 )

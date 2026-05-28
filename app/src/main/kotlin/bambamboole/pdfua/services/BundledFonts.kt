@@ -8,23 +8,25 @@ object BundledFonts {
 
     enum class FontStyle {
         Normal,
-        Italic
+        Italic,
     }
 
     data class Font(
         val path: String,
         val family: String,
         val weight: Int,
-        val style: FontStyle
+        val style: FontStyle,
     )
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+        }
 
     private val manifest: FontManifest by lazy {
-        val stream = BundledFonts::class.java.getResourceAsStream("/fonts/fonts.json")
-            ?: throw IllegalStateException("Bundled font manifest not found: /fonts/fonts.json")
+        val stream =
+            BundledFonts::class.java.getResourceAsStream("/fonts/fonts.json")
+                ?: throw IllegalStateException("Bundled font manifest not found: /fonts/fonts.json")
         stream.use {
             json.decodeFromString(FontManifest.serializer(), it.bufferedReader().readText())
         }
@@ -36,11 +38,12 @@ object BundledFonts {
                 path = font.path,
                 family = font.family,
                 weight = font.weight,
-                style = when (font.style) {
-                    "normal" -> FontStyle.Normal
-                    "italic" -> FontStyle.Italic
-                    else -> throw IllegalStateException("Unsupported font style '${font.style}' for ${font.path}")
-                }
+                style =
+                    when (font.style) {
+                        "normal" -> FontStyle.Normal
+                        "italic" -> FontStyle.Italic
+                        else -> throw IllegalStateException("Unsupported font style '${font.style}' for ${font.path}")
+                    },
             )
         }
     }
@@ -56,8 +59,7 @@ object BundledFonts {
         }
     }
 
-    fun loadBytes(font: Font): ByteArray =
-        fontBytes[font] ?: throw IllegalStateException("Bundled font not registered: ${font.path}")
+    fun loadBytes(font: Font): ByteArray = fontBytes[font] ?: throw IllegalStateException("Bundled font not registered: ${font.path}")
 
     fun fontBytesForHtml(html: String): Map<Font, ByteArray> {
         val referencedFamilies = referencedFamilies(html)
@@ -75,7 +77,7 @@ object BundledFonts {
 
     @Serializable
     private data class FontManifest(
-        val fonts: List<ManifestFont>
+        val fonts: List<ManifestFont>,
     )
 
     @Serializable
@@ -83,6 +85,6 @@ object BundledFonts {
         val path: String,
         val family: String,
         val weight: Int,
-        val style: String
+        val style: String,
     )
 }

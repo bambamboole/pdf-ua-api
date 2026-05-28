@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class BlockValidationTest {
-
     private val path = ValidationPath().child("block")
 
     // ----- Static invariants (validate) -----
@@ -34,9 +33,10 @@ class BlockValidationTest {
 
     @Test
     fun keyValueValidateRejectsInvalidFieldKeys() {
-        val block = KeyValueBlock(
-            config = KeyValueConfig(fields = listOf(KeyValueField("good", "G"), KeyValueField("1bad", "B"))),
-        )
+        val block =
+            KeyValueBlock(
+                config = KeyValueConfig(fields = listOf(KeyValueField("good", "G"), KeyValueField("1bad", "B"))),
+            )
         val errs = block.validate(path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.INVALID_KEY, errs[0].code)
@@ -45,9 +45,10 @@ class BlockValidationTest {
 
     @Test
     fun tableValidateRejectsInvalidColumnKeys() {
-        val block = TableBlock(
-            config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("1bad", "X"))),
-        )
+        val block =
+            TableBlock(
+                config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("1bad", "X"))),
+            )
         val errs = block.validate(path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.INVALID_KEY, errs[0].code)
@@ -90,7 +91,11 @@ class BlockValidationTest {
 
     @Test
     fun textValidateDataRejectsUnknownFields() {
-        val obj = buildJsonObject { put("text", "hi"); put("extra", "x") }
+        val obj =
+            buildJsonObject {
+                put("text", "hi")
+                put("extra", "x")
+            }
         val errs = TextBlock(text = "").validateData(obj, path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.UNKNOWN_FIELD, errs[0].code)
@@ -111,7 +116,11 @@ class BlockValidationTest {
 
     @Test
     fun imageValidateDataAcceptsSrcAndAlt() {
-        val obj = buildJsonObject { put("src", "u.png"); put("alt", "alt") }
+        val obj =
+            buildJsonObject {
+                put("src", "u.png")
+                put("alt", "alt")
+            }
         assertTrue(ImageBlock(src = "x.png").validateData(obj, path).isEmpty())
     }
 
@@ -127,10 +136,15 @@ class BlockValidationTest {
 
     @Test
     fun keyValueValidateDataAcceptsConfiguredKeysAsStringOrNull() {
-        val block = KeyValueBlock(
-            config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"), KeyValueField("b", "B"))),
-        )
-        val obj = buildJsonObject { put("a", "1"); put("b", JsonNull) }
+        val block =
+            KeyValueBlock(
+                config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"), KeyValueField("b", "B"))),
+            )
+        val obj =
+            buildJsonObject {
+                put("a", "1")
+                put("b", JsonNull)
+            }
         assertTrue(block.validateData(obj, path).isEmpty())
     }
 
@@ -145,7 +159,11 @@ class BlockValidationTest {
     @Test
     fun keyValueValidateDataRejectsKeysNotInFields() {
         val block = KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"))))
-        val obj = buildJsonObject { put("a", "1"); put("nope", "x") }
+        val obj =
+            buildJsonObject {
+                put("a", "1")
+                put("nope", "x")
+            }
         val errs = block.validateData(obj, path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.UNKNOWN_FIELD, errs[0].code)
@@ -166,13 +184,25 @@ class BlockValidationTest {
 
     @Test
     fun tableValidateDataAcceptsArrayOfRowObjects() {
-        val block = TableBlock(
-            config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("qty", "Qty"))),
-        )
-        val data = buildJsonArray {
-            add(buildJsonObject { put("sku", "A-100"); put("qty", "2") })
-            add(buildJsonObject { put("sku", "B-200"); put("qty", "1") })
-        }
+        val block =
+            TableBlock(
+                config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("qty", "Qty"))),
+            )
+        val data =
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("sku", "A-100")
+                        put("qty", "2")
+                    },
+                )
+                add(
+                    buildJsonObject {
+                        put("sku", "B-200")
+                        put("qty", "1")
+                    },
+                )
+            }
         assertTrue(block.validateData(data, path).isEmpty())
     }
 
@@ -197,9 +227,15 @@ class BlockValidationTest {
     @Test
     fun tableValidateDataRejectsUnknownRowKeys() {
         val block = TableBlock(config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))))
-        val data = buildJsonArray {
-            add(buildJsonObject { put("sku", "A"); put("extra", "x") })
-        }
+        val data =
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("sku", "A")
+                        put("extra", "x")
+                    },
+                )
+            }
         val errs = block.validateData(data, path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.UNKNOWN_FIELD, errs[0].code)

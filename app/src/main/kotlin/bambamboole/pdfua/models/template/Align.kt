@@ -5,7 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Align {
-    @SerialName("left") LEFT,
-    @SerialName("center") CENTER,
-    @SerialName("right") RIGHT,
+    @SerialName("left")
+    LEFT,
+
+    @SerialName("center")
+    CENTER,
+
+    @SerialName("right")
+    RIGHT,
 }

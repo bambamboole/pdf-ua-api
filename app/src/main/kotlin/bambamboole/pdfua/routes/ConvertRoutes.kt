@@ -8,27 +8,37 @@ import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
-import io.ktor.http.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentDisposition
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.request.receive
+import io.ktor.server.response.header
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
 import java.net.URI
 
 @GenerateOpenApi
 @Tag(["Conversion"])
 fun Route.convertRoutes(
     pdfProducer: String = "pdf-ua-api.com",
-    assetResolver: FSStreamFactory? = null
+    assetResolver: FSStreamFactory? = null,
 ) {
     @KtorDescription(
         summary = "Convert HTML to PDF",
-        description = "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary."
+        description =
+            "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. " +
+                "Returns the PDF binary.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ByteArray::class, description = "PDF document"),
-        ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
-        ResponseEntry("500", Nothing::class, description = "Conversion failed")
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
+            ResponseEntry("500", Nothing::class, description = "Conversion failed"),
+        ],
+    )
     post("/convert") {
         try {
             val request = call.receive<ConvertRequest>()
@@ -36,44 +46,46 @@ fun Route.convertRoutes(
             if (request.html.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty")
+                    mapOf("error" to "HTML content cannot be empty"),
                 )
                 return@post
             }
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val result = PdfService.convertHtmlToPdf(
-                html = request.html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-                attachments = request.attachments
-            )
+            val result =
+                PdfService.convertHtmlToPdf(
+                    html = request.html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = baseUrl,
+                    attachments = request.attachments,
+                )
 
             call.response.header("X-Document-UUID", result.documentId)
             call.response.header(
                 HttpHeaders.ContentDisposition,
-                ContentDisposition.Attachment.withParameter(
-                    ContentDisposition.Parameters.FileName,
-                    "output.pdf"
-                ).toString()
+                ContentDisposition.Attachment
+                    .withParameter(
+                        ContentDisposition.Parameters.FileName,
+                        "output.pdf",
+                    ).toString(),
             )
 
             call.respondBytes(
                 bytes = result.bytes,
                 contentType = ContentType.Application.Pdf,
-                status = HttpStatusCode.OK
+                status = HttpStatusCode.OK,
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request"))
+                mapOf("error" to (e.message ?: "Invalid request")),
             )
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert HTML to PDF: ${e.message}")
+                mapOf("error" to "Failed to convert HTML to PDF: ${e.message}"),
             )
         }
     }

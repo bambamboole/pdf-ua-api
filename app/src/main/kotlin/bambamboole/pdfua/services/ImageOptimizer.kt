@@ -10,7 +10,6 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 
 object ImageOptimizer {
-
     private val logger = LoggerFactory.getLogger(ImageOptimizer::class.java)
 
     private const val MAX_WIDTH_PX = 1240
@@ -28,8 +27,13 @@ object ImageOptimizer {
 
             logger.debug(
                 "Optimized {} image: {}x{} -> {}x{}, {} -> {} bytes",
-                format, image.width, image.height, resized.width, resized.height,
-                bytes.size, encoded.size
+                format,
+                image.width,
+                image.height,
+                resized.width,
+                resized.height,
+                bytes.size,
+                encoded.size,
             )
             encoded
         } catch (e: Exception) {
@@ -42,12 +46,20 @@ object ImageOptimizer {
         if (bytes.size < 4) return null
         return when {
             bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte() -> "jpg"
-            bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte() -> "png"
+
+            bytes[0] == 0x89.toByte() &&
+                bytes[1] == 0x50.toByte() &&
+                bytes[2] == 0x4E.toByte() &&
+                bytes[3] == 0x47.toByte() -> "png"
+
             else -> null
         }
     }
 
-    private fun resize(image: BufferedImage, maxWidth: Int): BufferedImage {
+    private fun resize(
+        image: BufferedImage,
+        maxWidth: Int,
+    ): BufferedImage {
         val ratio = maxWidth.toDouble() / image.width
         val newHeight = (image.height * ratio).toInt()
 
@@ -61,15 +73,19 @@ object ImageOptimizer {
         return result
     }
 
-    private fun encode(image: BufferedImage, format: String): ByteArray {
+    private fun encode(
+        image: BufferedImage,
+        format: String,
+    ): ByteArray {
         val output = ByteArrayOutputStream(64 * 1024)
 
         if (format == "jpg") {
             val writer = ImageIO.getImageWritersByFormatName("jpg").next()
-            val param = writer.defaultWriteParam.apply {
-                compressionMode = ImageWriteParam.MODE_EXPLICIT
-                compressionQuality = JPEG_QUALITY
-            }
+            val param =
+                writer.defaultWriteParam.apply {
+                    compressionMode = ImageWriteParam.MODE_EXPLICIT
+                    compressionQuality = JPEG_QUALITY
+                }
             writer.output = ImageIO.createImageOutputStream(output)
             writer.write(null, IIOImage(image, null, null), param)
             writer.dispose()
