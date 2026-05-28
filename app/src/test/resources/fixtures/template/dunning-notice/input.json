@@ -1,0 +1,199 @@
+{
+  "template": {
+    "version": 1,
+    "config": {
+      "page": {
+        "size": { "format": "A4" },
+        "locale": "de_DE",
+        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 25 },
+        "pageNumbers": { "enabled": true, "position": "center" },
+        "footer": {
+          "repeat": true,
+          "rows": [
+            {
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Please quote the notice number with every payment.",
+                  "config": { "width": "70%", "typography": { "size": 8, "color": "#6b7280" } }
+                },
+                {
+                  "type": "key-value",
+                  "values": { "registration": "HRB 123456 B", "taxId": "DE123456789" },
+                  "config": {
+                    "width": "30%",
+                    "align": "right",
+                    "labelWidth": "22mm",
+                    "fields": [
+                      { "key": "registration", "label": "Registry" },
+                      { "key": "taxId", "label": "Tax no." }
+                    ],
+                    "typography": { "size": 8, "color": "#6b7280" }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "typography": { "family": "Inter", "size": 10 }
+    },
+    "rows": [
+      {
+        "blocks": [
+          {
+            "type": "key-value",
+            "values": {
+              "name": "PUA Kit GmbH",
+              "address": "Musterstraße 1, 10115 Berlin, DE",
+              "contact": "Max Mustermann",
+              "email": "billing@pdfua-kit.example",
+              "vatId": "DE123456789"
+            },
+            "config": {
+              "width": "58%",
+              "labelWidth": "22mm",
+              "fields": [
+                { "key": "name", "label": "Creditor" },
+                { "key": "address", "label": "Address" },
+                { "key": "contact", "label": "Contact" },
+                { "key": "email", "label": "Email" },
+                { "key": "vatId", "label": "VAT ID" }
+              ]
+            }
+          },
+          {
+            "type": "key-value",
+            "id": "notice-meta",
+            "config": {
+              "width": "42%",
+              "align": "right",
+              "labelWidth": "34mm",
+              "fields": [
+                { "key": "noticeNumber", "label": "Notice number" },
+                { "key": "noticeDate", "label": "Notice date" },
+                { "key": "customerNumber", "label": "Customer number" },
+                { "key": "paymentDueDate", "label": "Payment due" }
+              ]
+            }
+          }
+        ]
+      },
+      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "key-value",
+            "id": "debtor",
+            "config": {
+              "width": "58%",
+              "labelWidth": "30mm",
+              "fields": [
+                { "key": "name", "label": "Debtor" },
+                { "key": "address", "label": "Address" },
+                { "key": "email", "label": "Email" },
+                { "key": "reference", "label": "Debtor reference" }
+              ]
+            }
+          }
+        ]
+      },
+      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "heading",
+            "text": "Dunning notice / Payment reminder",
+            "config": { "level": 1, "typography": { "weight": "700" } }
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "id": "notice-text",
+            "text": "",
+            "config": { "typography": { "color": "#374151" } }
+          }
+        ]
+      },
+      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "table",
+            "id": "overdue-invoices",
+            "config": {
+              "style": "striped",
+              "columns": [
+                { "key": "invoiceNumber", "label": "Invoice no.", "align": "left", "width": "24%" },
+                { "key": "issueDate", "label": "Issue date", "align": "left", "width": "18%" },
+                { "key": "dueDate", "label": "Due date", "align": "left", "width": "18%" },
+                { "key": "daysOverdue", "label": "Days overdue", "align": "right", "width": "18%" },
+                { "key": "amount", "label": "Amount", "align": "right", "width": "22%" }
+              ]
+            }
+          }
+        ]
+      },
+      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "text": "If payment has already been made, please disregard this reminder and send us the remittance advice. Otherwise, kindly transfer the outstanding amount to the account below before the payment due date.",
+            "config": { "width": "55%", "typography": { "color": "#374151" } }
+          },
+          {
+            "type": "key-value",
+            "id": "payment",
+            "values": {
+              "bank": "Musterbank Berlin",
+              "iban": "DE89 3704 0044 0532 0130 00",
+              "bic": "COBADEFFXXX"
+            },
+            "config": {
+              "width": "45%",
+              "align": "right",
+              "labelWidth": "34mm",
+              "fields": [
+                { "key": "amountDue", "label": "Amount due" },
+                { "key": "bank", "label": "Bank" },
+                { "key": "iban", "label": "IBAN" },
+                { "key": "bic", "label": "BIC" },
+                { "key": "reference", "label": "Payment reference" }
+              ],
+              "typography": { "weight": "500" }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "data": {
+    "notice-meta": {
+      "noticeNumber": "MA-2026-00018",
+      "noticeDate": "2026-04-24",
+      "customerNumber": "K-10482",
+      "paymentDueDate": "2026-05-02"
+    },
+    "debtor": {
+      "name": "Musterkunde AG",
+      "address": "Käuferweg 2, 80331 München, DE",
+      "email": "accounting@musterkunde.example",
+      "reference": "04011000-12345-67"
+    },
+    "notice-text": {
+      "text": "According to our records, the invoices listed below remain unpaid after their agreed due dates. Please arrange payment of the outstanding balance no later than 2026-05-02."
+    },
+    "overdue-invoices": [
+      { "invoiceNumber": "RE-2026-001104", "issueDate": "2026-02-03", "dueDate": "2026-03-04", "daysOverdue": "51", "amount": "2.856,00 €" },
+      { "invoiceNumber": "RE-2026-001137", "issueDate": "2026-02-21", "dueDate": "2026-03-23", "daysOverdue": "32", "amount": "1.975,40 €" }
+    ],
+    "payment": {
+      "amountDue": "4.831,40 €",
+      "reference": "MA-2026-00018"
+    }
+  }
+}
