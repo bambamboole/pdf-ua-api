@@ -7,6 +7,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.text.PDFTextStripper
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.test.Test
@@ -28,7 +30,11 @@ class TemplatePdfFixtureTest {
             return File(projectRoot, "app/src/test/resources/fixtures/template")
         }
 
-        private suspend fun ApplicationTestBuilder.assertTemplatePdfFixture(name: String, embeddedFont: String) {
+        private suspend fun ApplicationTestBuilder.assertTemplatePdfFixture(
+            name: String,
+            embeddedFont: String,
+            pageTextAssertions: Map<Int, List<String>> = emptyMap(),
+        ) {
             val dir = File(templateFixturesDir(), name)
             val body = File(dir, "input.json").readText()
 
@@ -47,6 +53,9 @@ class TemplatePdfFixtureTest {
                 fontNames.any { it.contains(embeddedFont, ignoreCase = true) },
                 "Fixture '$name': '$embeddedFont' must be embedded. Found: $fontNames",
             )
+            if (pageTextAssertions.isNotEmpty()) {
+                assertPdfPageText(name, pdf, pageTextAssertions)
+            }
 
             val generated = File(dir, "generated.pdf")
             if (generated.exists()) generated.delete()
@@ -68,6 +77,24 @@ class TemplatePdfFixtureTest {
                     }
                 }
                 fail("Fixture '$name': PDF visual regression detected. See diffs in ${dir.absolutePath}")
+            }
+        }
+
+        private fun assertPdfPageText(name: String, pdf: ByteArray, pageTextAssertions: Map<Int, List<String>>) {
+            Loader.loadPDF(pdf).use { document ->
+                assertEquals(2, document.numberOfPages, "Fixture '$name': should render exactly two pages")
+                val stripper = PDFTextStripper()
+                pageTextAssertions.forEach { (page, expectedTexts) ->
+                    stripper.startPage = page
+                    stripper.endPage = page
+                    val pageText = stripper.getText(document)
+                    expectedTexts.forEach { expectedText ->
+                        assertTrue(
+                            pageText.contains(expectedText),
+                            "Fixture '$name': page $page should contain '$expectedText'. Page text: $pageText",
+                        )
+                    }
+                }
             }
         }
     }
@@ -99,12 +126,20 @@ class TemplatePdfFixtureTest {
     @Test
     fun repeatedFooter() = testApplication {
         application { module() }
-        assertTemplatePdfFixture("repeated-footer", embeddedFont = "LiberationSans")
+        assertTemplatePdfFixture(
+            "repeated-footer",
+            embeddedFont = "LiberationSans",
+            pageTextAssertions = mapOf(2 to listOf("Runtime footer for every page")),
+        )
     }
 
     @Test
     fun repeatedFooterRightPageNumbers() = testApplication {
         application { module() }
-        assertTemplatePdfFixture("repeated-footer-right-page-numbers", embeddedFont = "LiberationSans")
+        assertTemplatePdfFixture(
+            "repeated-footer-right-page-numbers",
+            embeddedFont = "LiberationSans",
+            pageTextAssertions = mapOf(2 to listOf("Runtime footer plus right page numbers")),
+        )
     }
 }
