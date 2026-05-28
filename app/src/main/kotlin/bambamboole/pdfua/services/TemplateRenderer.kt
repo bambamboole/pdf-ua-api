@@ -4,6 +4,7 @@ import bambamboole.pdfua.models.RenderOptions
 import bambamboole.pdfua.models.template.Align
 import bambamboole.pdfua.models.template.Block
 import bambamboole.pdfua.models.template.BlockConfig
+import bambamboole.pdfua.models.template.CssRegistry
 import bambamboole.pdfua.models.template.CssRule
 import bambamboole.pdfua.models.template.CustomPageSize
 import bambamboole.pdfua.models.template.FontFace
@@ -59,19 +60,19 @@ object TemplateRenderer {
     ): String {
         check(template.version == 1) { "Unsupported template version: ${template.version}" }
 
-        val ctx = RenderContext()
+        val css = CssRegistry()
         val page = template.config.page
         page.background?.let { validateBackground(it) }
-        emitDocumentCss(ctx, page, template.fonts, template.config.typography)
+        emitDocumentCss(css, page, template.fonts, template.config.typography)
         var counter = 0
 
         fun renderBlock(block: Block, widthOnCell: Boolean): String {
             val resolved = block.id?.let { id -> data[id]?.let(block::applyData) } ?: block
             counter++
             val cssId = "block-$counter"
-            emitPositioningCss(ctx, cssId, resolved.config, widthOnCell)
-            emitTypographyCss(ctx, cssId, resolved.config.typography)
-            resolved.renderCss(cssId).forEach(ctx::addCss)
+            emitPositioningCss(css, cssId, resolved.config, widthOnCell)
+            emitTypographyCss(css, cssId, resolved.config.typography)
+            resolved.renderCss(cssId).forEach(css::add)
             return "<div class=\"$cssId\">${resolved.render()}</div>"
         }
 
@@ -86,11 +87,11 @@ object TemplateRenderer {
 
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
         val rowsHtml = template.rows.joinToString("") { renderRow(it) }
-        return wrapDocument(footerHtml + rowsHtml, template, ctx, options)
+        return wrapDocument(footerHtml + rowsHtml, template, css, options)
     }
 
-    private fun emitPositioningCss(ctx: RenderContext, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
-        ctx.css(".$cssId") {
+    private fun emitPositioningCss(css: CssRegistry, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
+        css.css(".$cssId") {
             val width = if (widthOnCell) null else safeCssWidth(config.width)
             rule("width", width)
             when (config.align) {
@@ -107,9 +108,9 @@ object TemplateRenderer {
         }
     }
 
-    private fun emitTypographyCss(ctx: RenderContext, cssId: String, typography: TypographyConfig?) {
+    private fun emitTypographyCss(css: CssRegistry, cssId: String, typography: TypographyConfig?) {
         val rules = typographyRules(typography)
-        ctx.css(".$cssId") {
+        css.css(".$cssId") {
             rules.forEach { rule(it.property, it.value) }
         }
     }
@@ -125,10 +126,10 @@ object TemplateRenderer {
         }
     }
 
-    private fun emitFontFaceCss(ctx: RenderContext, fonts: Map<String, FontFace>) {
+    private fun emitFontFaceCss(css: CssRegistry, fonts: Map<String, FontFace>) {
         fonts.entries.forEach { (family, face) ->
             face.weight.trim().split(Regex("\\s+")).forEach { weight ->
-                ctx.fontFace {
+                css.fontFace {
                     rule("font-family", cssQuotedString(family))
                     rule("src", cssUrlValue(face.src) + """ format("truetype")""")
                     rule("font-weight", weight)
@@ -138,13 +139,13 @@ object TemplateRenderer {
         }
     }
 
-    private fun wrapDocument(bodyHtml: String, template: Template, ctx: RenderContext, options: RenderOptions): String {
+    private fun wrapDocument(bodyHtml: String, template: Template, css: CssRegistry, options: RenderOptions): String {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
         val title = Html.escape(options.title)
         val bodyPrefix = page.background?.let { "${backgroundObjectHtml(it)}\n" }.orEmpty()
 
-        val style = ctx.collectedCss()
+        val style = css.render()
 
         return """
 <!DOCTYPE html>
@@ -179,64 +180,64 @@ $bodyPrefix$bodyHtml
     }
 
     private fun emitDocumentCss(
-        ctx: RenderContext,
+        css: CssRegistry,
         page: PageConfig,
         fonts: Map<String, FontFace>,
         typography: TypographyConfig?,
     ) {
-        emitPageCss(ctx, page)
-        emitFontFaceCss(ctx, fonts)
-        emitBaseCss(ctx)
+        emitPageCss(css, page)
+        emitFontFaceCss(css, fonts)
+        emitBaseCss(css)
         val bodyTypography = typographyRules(typography)
-        ctx.css("body") {
+        css.css("body") {
             bodyTypography.forEach { rule(it.property, it.value) }
         }
     }
 
-    private fun emitPageCss(ctx: RenderContext, page: PageConfig) {
+    private fun emitPageCss(css: CssRegistry, page: PageConfig) {
         val hasRepeatedFooter = page.footer.hasRepeatedRows()
         val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
-        ctx.css("@page") {
+        css.css("@page") {
             rule("size", pageSizeCss(page.size))
             rule("margin", marginShorthand(page.margins, bottomMarginReserve))
         }
         page.background?.let {
-            ctx.css(".pagebg") {
+            css.css(".pagebg") {
                 rule("position", "running(pagebg)")
             }
-            ctx.nestedCss("@page", "@top-left") {
+            css.nestedCss("@page", "@top-left") {
                 rule("content", "element(pagebg)")
             }
         }
         if (hasRepeatedFooter) {
-            ctx.css(".page-footer") {
+            css.css(".page-footer") {
                 rule("font-size", "8pt")
                 rule("color", "#6b7280")
             }
-            ctx.css(".page-footer .row") {
+            css.css(".page-footer .row") {
                 rule("margin", "0")
             }
-            ctx.css(".page-footer-repeated") {
+            css.css(".page-footer-repeated") {
                 rule("position", "running(pageFooter)")
                 rule("width", "100%")
             }
-            ctx.nestedCss("@page", "@bottom-center") {
+            css.nestedCss("@page", "@bottom-center") {
                 rule("content", "element(pageFooter)")
             }
         }
         if (page.pageNumbers.enabled) {
             if (hasRepeatedFooter && page.pageNumbers.position == Align.CENTER) {
-                ctx.css(".page-footer-page-numbers") {
+                css.css(".page-footer-page-numbers") {
                     rule("font-size", "8pt")
                     rule("color", "#9ca3af")
                     rule("text-align", "center")
                 }
-                ctx.css(".page-footer-page-numbers::after") {
+                css.css(".page-footer-page-numbers::after") {
                     rule("content", """counter(page) " / " counter(pages)""")
                 }
             } else {
                 val position = page.pageNumbers.position.name.lowercase()
-                ctx.nestedCss("@page", "@bottom-$position") {
+                css.nestedCss("@page", "@bottom-$position") {
                     rule("content", """counter(page) " / " counter(pages)""")
                     rule("font-size", "8pt")
                     rule("color", "#9ca3af")
@@ -276,72 +277,72 @@ $bodyPrefix$bodyHtml
             """data-src="${Html.escape(background.src)}" data-kind="${background.type.name.lowercase()}" """ +
             """style="width:1px;height:1px"></object></div>"""
 
-    private fun emitBaseCss(ctx: RenderContext) {
-        ctx.css("body") {
+    private fun emitBaseCss(css: CssRegistry) {
+        css.css("body") {
             rule("font-family", cssQuotedString("Liberation Sans"))
             rule("color", "#111827")
             rule("line-height", "1.35")
         }
-        ctx.css("img, svg") {
+        css.css("img, svg") {
             rule("max-width", "100%")
             rule("height", "auto")
         }
-        ctx.css("p") {
+        css.css("p") {
             rule("margin", "0 0 2mm")
         }
-        ctx.css("h1, h2, h3, h4, h5, h6") {
+        css.css("h1, h2, h3, h4, h5, h6") {
             rule("margin", "0 0 3mm")
             rule("line-height", "1.12")
             rule("color", "#111827")
         }
-        ctx.css(".key-value") {
+        css.css(".key-value") {
             rule("width", "100%")
             rule("border-collapse", "collapse")
             rule("margin", "0 0 2mm")
         }
-        ctx.css(".key-value td") {
+        css.css(".key-value td") {
             rule("vertical-align", "top")
             rule("padding", "0 0 2mm")
         }
-        ctx.css(".key-value td:first-child") {
+        css.css(".key-value td:first-child") {
             rule("font-weight", "600")
             rule("color", "#374151")
             rule("padding-right", "4mm")
         }
-        ctx.css(".row") {
+        css.css(".row") {
             rule("width", "100%")
             rule("border-collapse", "collapse")
             rule("margin", "0 0 4mm")
         }
-        ctx.css(".row > tbody > tr > td, .row > tr > td") {
+        css.css(".row > tbody > tr > td, .row > tr > td") {
             rule("vertical-align", "top")
             rule("padding", "0")
         }
-        ctx.css(".data-table") {
+        css.css(".data-table") {
             rule("width", "100%")
             rule("border-collapse", "collapse")
             rule("text-align", "left")
         }
-        ctx.css(".data-table th") {
+        css.css(".data-table th") {
             rule("padding", "2mm 2.4mm")
             rule("background", "#f3f4f6")
             rule("color", "#374151")
             rule("font-weight", "700")
             rule("border-bottom", "1px solid #d1d5db")
         }
-        ctx.css(".data-table td") {
+        css.css(".data-table td") {
             rule("padding", "2mm 2.4mm")
             rule("border-bottom", "1px solid #e5e7eb")
             rule("vertical-align", "top")
         }
-        ctx.css(".data-table tbody tr:last-child td") {
+        css.css(".data-table tbody tr:last-child td") {
             rule("border-bottom", "1px solid #d1d5db")
         }
-        ctx.css(".key-value, .data-table thead, .data-table tr") {
+        css.css(".key-value, .data-table thead, .data-table tr") {
             rule("page-break-inside", "avoid")
             rule("break-inside", "avoid")
         }
-        ctx.css("h1, h2, h3, h4, h5, h6") {
+        css.css("h1, h2, h3, h4, h5, h6") {
             rule("page-break-after", "avoid")
             rule("break-after", "avoid")
         }
