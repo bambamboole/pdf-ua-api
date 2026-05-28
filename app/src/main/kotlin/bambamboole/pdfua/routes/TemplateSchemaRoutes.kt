@@ -1,6 +1,6 @@
 package bambamboole.pdfua.routes
 
-import bambamboole.pdfua.models.template.TemplateJsonSchema
+import bambamboole.pdfua.services.TemplateJsonSchema
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds

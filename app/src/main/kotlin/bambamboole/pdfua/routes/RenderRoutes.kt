@@ -1,11 +1,11 @@
 package bambamboole.pdfua.routes
 
 import bambamboole.pdfua.models.RenderRequest
-import bambamboole.pdfua.models.template.ValidationCodes
-import bambamboole.pdfua.models.template.ValidationErrorResponse
-import bambamboole.pdfua.models.template.ValidationIssue
-import bambamboole.pdfua.models.template.serializationIssue
-import bambamboole.pdfua.models.template.validate
+import bambamboole.pdfua.template.ValidationCodes
+import bambamboole.pdfua.template.ValidationErrorResponse
+import bambamboole.pdfua.template.ValidationIssue
+import bambamboole.pdfua.template.serializationIssue
+import bambamboole.pdfua.template.validate
 import bambamboole.pdfua.services.PdfService
 import bambamboole.pdfua.services.TemplateRenderer
 import com.openhtmltopdf.extend.FSStreamFactory

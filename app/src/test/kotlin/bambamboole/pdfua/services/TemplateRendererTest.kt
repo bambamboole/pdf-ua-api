@@ -1,40 +1,40 @@
 package bambamboole.pdfua.services
 
 import bambamboole.pdfua.models.RenderOptions
-import bambamboole.pdfua.models.template.Align
-import bambamboole.pdfua.models.template.BaseBlockConfig
-import bambamboole.pdfua.models.template.DividerBlock
-import bambamboole.pdfua.models.template.DividerConfig
-import bambamboole.pdfua.models.template.DividerStyle
+import bambamboole.pdfua.template.Align
+import bambamboole.pdfua.template.BaseBlockConfig
+import bambamboole.pdfua.template.DividerBlock
+import bambamboole.pdfua.template.DividerConfig
+import bambamboole.pdfua.template.DividerStyle
 import bambamboole.pdfua.fonts.FontFace
-import bambamboole.pdfua.models.template.HeadingBlock
-import bambamboole.pdfua.models.template.HeadingConfig
-import bambamboole.pdfua.models.template.PageBackgroundConfig
-import bambamboole.pdfua.models.template.PageBackgroundType
-import bambamboole.pdfua.models.template.HtmlBlock
-import bambamboole.pdfua.models.template.ImageBlock
-import bambamboole.pdfua.models.template.ImageConfig
-import bambamboole.pdfua.models.template.KeyValueBlock
-import bambamboole.pdfua.models.template.KeyValueConfig
-import bambamboole.pdfua.models.template.KeyValueField
-import bambamboole.pdfua.models.template.PageConfig
-import bambamboole.pdfua.models.template.CustomPageSize
-import bambamboole.pdfua.models.template.Orientation
-import bambamboole.pdfua.models.template.PageFooterConfig
-import bambamboole.pdfua.models.template.PageFormat
-import bambamboole.pdfua.models.template.PageNumbersConfig
-import bambamboole.pdfua.models.template.PresetPageSize
-import bambamboole.pdfua.models.template.Row
-import bambamboole.pdfua.models.template.SpacerBlock
-import bambamboole.pdfua.models.template.SpacerConfig
-import bambamboole.pdfua.models.template.Template
-import bambamboole.pdfua.models.template.TemplateConfig
-import bambamboole.pdfua.models.template.TableBlock
-import bambamboole.pdfua.models.template.TableColumn
-import bambamboole.pdfua.models.template.TableConfig
-import bambamboole.pdfua.models.template.TableStyle
-import bambamboole.pdfua.models.template.TextBlock
-import bambamboole.pdfua.models.template.TypographyConfig
+import bambamboole.pdfua.template.HeadingBlock
+import bambamboole.pdfua.template.HeadingConfig
+import bambamboole.pdfua.template.PageBackgroundConfig
+import bambamboole.pdfua.template.PageBackgroundType
+import bambamboole.pdfua.template.HtmlBlock
+import bambamboole.pdfua.template.ImageBlock
+import bambamboole.pdfua.template.ImageConfig
+import bambamboole.pdfua.template.KeyValueBlock
+import bambamboole.pdfua.template.KeyValueConfig
+import bambamboole.pdfua.template.KeyValueField
+import bambamboole.pdfua.template.PageConfig
+import bambamboole.pdfua.template.CustomPageSize
+import bambamboole.pdfua.template.Orientation
+import bambamboole.pdfua.template.PageFooterConfig
+import bambamboole.pdfua.template.PageFormat
+import bambamboole.pdfua.template.PageNumbersConfig
+import bambamboole.pdfua.template.PresetPageSize
+import bambamboole.pdfua.template.Row
+import bambamboole.pdfua.template.SpacerBlock
+import bambamboole.pdfua.template.SpacerConfig
+import bambamboole.pdfua.template.Template
+import bambamboole.pdfua.template.TemplateConfig
+import bambamboole.pdfua.template.TableBlock
+import bambamboole.pdfua.template.TableColumn
+import bambamboole.pdfua.template.TableConfig
+import bambamboole.pdfua.template.TableStyle
+import bambamboole.pdfua.template.TextBlock
+import bambamboole.pdfua.template.TypographyConfig
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -47,7 +47,7 @@ import kotlin.test.assertTrue
 
 class TemplateRendererTest {
 
-    private fun template(vararg blocks: bambamboole.pdfua.models.template.Block, config: TemplateConfig = TemplateConfig()) =
+    private fun template(vararg blocks: bambamboole.pdfua.template.Block, config: TemplateConfig = TemplateConfig()) =
         Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
 
     @Test

@@ -1,6 +1,6 @@
 package bambamboole.pdfua.routes
 
-import bambamboole.pdfua.models.template.ValidationCodes
+import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.module
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody

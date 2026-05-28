@@ -1,4 +1,4 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.template
 
 import bambamboole.pdfua.models.RenderRequest
 import kotlinx.serialization.json.Json

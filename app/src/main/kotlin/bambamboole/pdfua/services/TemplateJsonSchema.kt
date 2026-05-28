@@ -1,7 +1,13 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.services
 
 import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.fonts.FontWeight
+import bambamboole.pdfua.template.Align
+import bambamboole.pdfua.template.DividerStyle
+import bambamboole.pdfua.template.Orientation
+import bambamboole.pdfua.template.PageBackgroundType
+import bambamboole.pdfua.template.PageFormat
+import bambamboole.pdfua.template.TableStyle
 import kotlinx.schema.json.AdditionalPropertiesConstraint
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.ArrayPropertyDefinition

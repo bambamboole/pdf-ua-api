@@ -1,4 +1,4 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.template
 
 import bambamboole.pdfua.rendering.CssDeclaration
 import bambamboole.pdfua.rendering.CssRegistry

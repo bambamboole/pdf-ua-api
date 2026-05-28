@@ -1,6 +1,6 @@
 package bambamboole.pdfua.models
 
-import bambamboole.pdfua.models.template.Template
+import bambamboole.pdfua.template.Template
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 

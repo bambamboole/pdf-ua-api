@@ -1,4 +1,4 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.template
 
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
