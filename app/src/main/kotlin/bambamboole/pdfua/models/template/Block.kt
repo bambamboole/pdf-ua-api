@@ -120,8 +120,6 @@ private sealed class SvgSource {
     object Invalid : SvgSource()
 }
 
-private fun nonNegative(value: Int): Int? = value.takeIf { it >= 0 }
-
 private fun JsonObject.stringValues(): Map<String, String?> =
     mapValues { (_, value) ->
         when (value) {
@@ -239,16 +237,11 @@ data class ImageBlock(
             ?: "<img src=\"${Html.escape(src)}\" alt=\"${Html.escape(alt)}\">"
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
-        nonNegative(config.maxHeight)
-            ?.takeIf { it > 0 }
-            ?.let {
-                listOf(
-                    css(".$cssId img, .$cssId svg") {
-                        rule("max-height", cssPx(it))
-                    },
-                )
-            }
-            ?: emptyList()
+        listOf(
+            css(".$cssId img, .$cssId svg") {
+                rule("max-height", cssPx(config.maxHeight))
+            },
+        )
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
@@ -450,15 +443,11 @@ data class SpacerBlock(
     override fun render(): String = ""
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
-        nonNegative(config.height)
-            ?.let {
-                listOf(
-                    css(".$cssId") {
-                        rule("height", cssMm(it))
-                    },
-                )
-            }
-            ?: emptyList()
+        listOf(
+            css(".$cssId") {
+                rule("height", cssMm(config.height))
+            },
+        )
 
     override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
         listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
@@ -490,7 +479,7 @@ data class DividerBlock(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
-                rule("border-top-width", nonNegative(config.thickness)?.let { cssPt(it) })
+                rule("border-top-width", cssPt(config.thickness))
                 rule("border-top-color", safeCssColor(config.lineColor))
                 rule("border-top-style", config.style.cssValue())
             },

@@ -113,4 +113,23 @@ class CssRegistryTest {
         assertNull(safeCssColor("red; } body{display:none"))
         assertNull(cssIdentifierLikeValue("normal; } body{display:none"))
     }
+
+    @Test
+    fun cssUnitHelpersDropNegativeValues() {
+        assertNull(cssMm(-1))
+        assertNull(cssMm(-1.0))
+        assertNull(cssPt(-1))
+        assertNull(cssPx(-1))
+    }
+
+    @Test
+    fun cssUnitHelpersKeepZeroAndPositiveValues() {
+        assertEquals("0mm", cssMm(0))
+        assertEquals("12mm", cssMm(12))
+        assertEquals("12.5mm", cssMm(12.5))
+        assertEquals("0pt", cssPt(0))
+        assertEquals("2pt", cssPt(2))
+        assertEquals("0px", cssPx(0))
+        assertEquals("72px", cssPx(72))
+    }
 }

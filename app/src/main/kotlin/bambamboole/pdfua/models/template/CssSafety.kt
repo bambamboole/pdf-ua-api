@@ -24,13 +24,26 @@ internal fun cssUrlValue(value: String): String =
         .replace("\r", "")
         .replace("\n", "") + "\")"
 
-internal fun cssMm(value: Double): String {
+internal fun cssMm(value: Double): String? {
+    if (value < 0) return null
     val number = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()
     return "${number}mm"
 }
 
-internal fun cssMm(value: Int): String = "${value}mm"
+internal fun cssMm(value: Int): String? =
+    value.takeIf { it >= 0 }?.let { "${it}mm" }
 
-internal fun cssPt(value: Int): String = "${value}pt"
+internal fun cssMm(value: Int?): String? =
+    value?.let { cssMm(it) }
 
-internal fun cssPx(value: Int): String = "${value}px"
+internal fun cssPt(value: Int): String? =
+    value.takeIf { it >= 0 }?.let { "${it}pt" }
+
+internal fun cssPt(value: Int?): String? =
+    value?.let { cssPt(it) }
+
+internal fun cssPx(value: Int): String? =
+    value.takeIf { it >= 0 }?.let { "${it}px" }
+
+internal fun cssPx(value: Int?): String? =
+    value?.let { cssPx(it) }

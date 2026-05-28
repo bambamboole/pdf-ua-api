@@ -29,6 +29,12 @@ import bambamboole.pdfua.util.Html
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
+private fun pageDimensionCss(value: Double): String =
+    requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
+
+private fun pageDimensionCss(value: Int): String =
+    requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
+
 private fun pageSizeCss(size: PageSize): String = when (size) {
     is PresetPageSize -> {
         val (w, h) = if (size.orientation == Orientation.LANDSCAPE) {
@@ -36,11 +42,11 @@ private fun pageSizeCss(size: PageSize): String = when (size) {
         } else {
             size.format.widthMm to size.format.heightMm
         }
-        "${cssMm(w)} ${cssMm(h)}"
+        "${pageDimensionCss(w)} ${pageDimensionCss(h)}"
     }
     is CustomPageSize -> {
         check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
-        "${cssMm(size.width)} ${cssMm(size.height)}"
+        "${pageDimensionCss(size.width)} ${pageDimensionCss(size.height)}"
     }
 }
 
@@ -112,7 +118,7 @@ object TemplateRenderer {
         if (typography == null) return emptyList()
         return buildList {
             typography.family?.let { add(CssRule("font-family", cssQuotedString(it))) }
-            typography.size?.let { add(CssRule("font-size", cssPt(it))) }
+            cssPt(typography.size)?.let { add(CssRule("font-size", it)) }
             typography.weight?.let { add(CssRule("font-weight", it.numericValue.toString())) }
             safeCssColor(typography.color)?.let { add(CssRule("color", it)) }
             typography.align?.let { add(CssRule("text-align", it.name.lowercase())) }
