@@ -83,23 +83,23 @@ class BlockDeserializationTest {
 
     @Test
     fun textRendersParagraphsAndEscapes() {
-        assertEquals("<p>a &lt;b&gt;</p><p>c</p>", TextBlock(text = "a <b>\n\nc").render())
+        assertEquals("<p>a &lt;b&gt;</p><p>c</p>", TextBlock(text = "a <b>\n\nc").render().serialize())
     }
 
     @Test
     fun htmlRendersRaw() {
-        assertEquals("<b>x</b>", HtmlBlock(html = "<b>x</b>").render())
+        assertEquals("<b>x</b>", HtmlBlock(html = "<b>x</b>").render().serialize())
     }
 
     @Test
     fun headingRendersEscapedTextAtConfiguredLevel() {
-        assertEquals("<h2>Hello</h2>", HeadingBlock(text = "Hello").render())
-        assertEquals("<h1>&lt;script&gt;x&lt;/script&gt;</h1>", HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render())
+        assertEquals("<h2>Hello</h2>", HeadingBlock(text = "Hello").render().serialize())
+        assertEquals("<h1>&lt;script&gt;x&lt;/script&gt;</h1>", HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render().serialize())
     }
 
     @Test
     fun imageRendersEscapedImgByDefault() {
-        val html = ImageBlock(src = "x\"onerror=\"alert(1)", alt = "<Logo>").render()
+        val html = ImageBlock(src = "x\"onerror=\"alert(1)", alt = "<Logo>").render().serialize()
 
         assertEquals("<img src=\"x&quot;onerror=&quot;alert(1)\" alt=\"&lt;Logo&gt;\">", html)
     }
@@ -119,7 +119,7 @@ class BlockDeserializationTest {
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
-        val output = ImageBlock(src = src, alt = "Logo").render()
+        val output = ImageBlock(src = src, alt = "Logo").render().serialize()
 
         assertTrue(output.startsWith("<svg "))
         assertTrue(output.contains("role=\"img\""))
@@ -145,7 +145,7 @@ class BlockDeserializationTest {
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
-        val output = ImageBlock(src = src, alt = "Logo").render()
+        val output = ImageBlock(src = src, alt = "Logo").render().serialize()
 
         assertTrue(output.startsWith("<svg "))
         assertTrue(output.contains("<rect"))
@@ -168,13 +168,13 @@ class BlockDeserializationTest {
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
-        assertEquals("", ImageBlock(src = src, alt = "Logo").render())
+        assertEquals("", ImageBlock(src = src, alt = "Logo").render().serialize())
     }
 
     @Test
     fun spacerAndDividerRenderTheirInnerMarkup() {
-        assertEquals("", SpacerBlock().render())
-        assertEquals("<hr>", DividerBlock().render())
+        assertEquals("", SpacerBlock().render().serialize())
+        assertEquals("<hr>", DividerBlock().render().serialize())
     }
 
     @Test
@@ -222,7 +222,7 @@ class BlockDeserializationTest {
             ),
         )
 
-        val html = block.render()
+        val html = block.render().serialize()
 
         assertTrue(html.startsWith("<table class=\"data-table\">"))
         assertTrue(html.contains("<thead><tr><th>Description</th><th>&lt;Qty&gt;</th><th>Total</th></tr></thead>"))
@@ -241,7 +241,7 @@ class BlockDeserializationTest {
             ),
         )
 
-        assertTrue(block.render().contains("<td>Only this</td><td></td>"))
+        assertTrue(block.render().serialize().contains("<td>Only this</td><td></td>"))
     }
 
     @Test
@@ -256,7 +256,7 @@ class BlockDeserializationTest {
             ),
         )
 
-        val html = block.render()
+        val html = block.render().serialize()
 
         assertTrue(html.contains("<th style=\"text-align: left;\">A</th>"))
         assertTrue(html.contains("<th style=\"text-align: right;\">B</th>"))
@@ -275,14 +275,14 @@ class BlockDeserializationTest {
                 ),
             ),
         )
-        val widthHtml = withWidths.render()
+        val widthHtml = withWidths.render().serialize()
         assertTrue(widthHtml.contains("<colgroup><col style=\"width: 7%;\"><col></colgroup>"))
 
         val noWidths = TableBlock(
             rows = listOf(row("sku" to "A-100")),
             config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
         )
-        assertTrue(!noWidths.render().contains("<colgroup"))
+        assertTrue(!noWidths.render().serialize().contains("<colgroup"))
     }
 
     @Test
@@ -298,7 +298,7 @@ class BlockDeserializationTest {
             ),
         )
 
-        val html = block.render()
+        val html = block.render().serialize()
 
         assertTrue(html.contains("<th style=\"text-align: right;\">#</th><th>Description</th>"))
         assertTrue(html.contains("<td style=\"text-align: right;\">1</td><td>Accessible PDF setup</td>"))
@@ -315,7 +315,7 @@ class BlockDeserializationTest {
             ),
         )
 
-        assertTrue(block.render().contains("<colgroup><col><col style=\"width: 10mm;\"></colgroup>"))
+        assertTrue(block.render().serialize().contains("<colgroup><col><col style=\"width: 10mm;\"></colgroup>"))
     }
 
     @Test
@@ -360,7 +360,7 @@ class BlockDeserializationTest {
         val updated = assertIs<TableBlock>(block.applyData(data))
 
         assertEquals(2, updated.rows.size)
-        val html = updated.render()
+        val html = updated.render().serialize()
         assertTrue(html.contains("<td>A-100</td>"))
         assertTrue(html.contains("<td>B-200</td>"))
     }
@@ -396,7 +396,7 @@ class BlockDeserializationTest {
                 "<tr><td>Missing</td><td></td></tr>" +
                 "<tr><td>Customer &lt;name&gt;</td><td>&lt;ACME&gt;</td></tr>" +
                 "</tbody></table>",
-            block.render(),
+            block.render().serialize(),
         )
     }
 

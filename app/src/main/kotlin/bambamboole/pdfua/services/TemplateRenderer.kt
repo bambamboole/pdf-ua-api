@@ -27,6 +27,7 @@ import bambamboole.pdfua.models.template.cssUrlValue
 import bambamboole.pdfua.models.template.safeCssColor
 import bambamboole.pdfua.models.template.safeCssWidth
 import bambamboole.pdfua.util.Html
+import bambamboole.pdfua.util.html
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
@@ -66,28 +67,36 @@ object TemplateRenderer {
         emitDocumentCss(css, page, template.fonts, template.config.typography)
         var counter = 0
 
-        fun renderBlock(block: Block, widthOnCell: Boolean): String {
+        fun renderBlock(block: Block, widthOnCell: Boolean): Html {
             val resolved = block.id?.let { id -> data[id]?.let(block::applyData) } ?: block
             counter++
             val cssId = "block-$counter"
             emitPositioningCss(css, cssId, resolved.config, widthOnCell)
             emitTypographyCss(css, cssId, resolved.config.typography)
             resolved.renderCss(cssId).forEach(css::add)
-            return "<div class=\"$cssId\">${resolved.render()}</div>"
+            return html {
+                tag("div", "class" to cssId) {
+                    html(resolved.render())
+                }
+            }
         }
 
-        fun renderRow(row: Row): String {
-            val cells = row.blocks.joinToString("") { block ->
-                val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
-                val widthAttr = if (cellWidth != null) " style=\"width: $cellWidth;\"" else ""
-                "<td$widthAttr>${renderBlock(block, widthOnCell = cellWidth != null)}</td>"
+        fun renderRow(row: Row): Html = html {
+            tag("table", "class" to "row", "role" to "presentation") {
+                tag("tr") {
+                    row.blocks.forEach { block ->
+                        val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
+                        tag("td", "style" to cellWidth?.let { "width: $it;" }) {
+                            html(renderBlock(block, widthOnCell = cellWidth != null))
+                        }
+                    }
+                }
             }
-            return "<table class=\"row\" role=\"presentation\"><tr>$cells</tr></table>"
         }
 
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
-        val rowsHtml = template.rows.joinToString("") { renderRow(it) }
-        return wrapDocument(footerHtml + rowsHtml, template, css, options)
+        val rowsHtml = template.rows.map { renderRow(it) }
+        return wrapDocument(footerHtml, rowsHtml, template, css, options).serialize()
     }
 
     private fun emitPositioningCss(css: CssRegistry, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
@@ -139,44 +148,66 @@ object TemplateRenderer {
         }
     }
 
-    private fun wrapDocument(bodyHtml: String, template: Template, css: CssRegistry, options: RenderOptions): String {
+    private fun wrapDocument(
+        footerHtml: Html,
+        rowsHtml: List<Html>,
+        template: Template,
+        css: CssRegistry,
+        options: RenderOptions,
+    ): Html {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
-        val title = Html.escape(options.title)
-        val bodyPrefix = page.background?.let { "${backgroundObjectHtml(it)}\n" }.orEmpty()
-
         val style = css.render()
+        val backgroundHtml = page.background?.let(::backgroundObjectHtml)
 
-        return """
-<!DOCTYPE html>
-<html lang="$lang">
-<head>
-<meta charset="UTF-8">
-<title>$title</title>
-<style>
-$style
-</style>
-</head>
-<body>
-$bodyPrefix$bodyHtml
-</body>
-</html>
-""".trim()
+        return html {
+            raw("<!DOCTYPE html>\n")
+            tag("html", "lang" to lang) {
+                raw("\n")
+                tag("head") {
+                    raw("\n")
+                    voidTag("meta", "charset" to "UTF-8")
+                    raw("\n")
+                    tag("title") { text(options.title) }
+                    raw("\n")
+                    tag("style") { raw("\n$style\n") }
+                    raw("\n")
+                }
+                raw("\n")
+                tag("body") {
+                    raw("\n")
+                    if (backgroundHtml != null) {
+                        html(backgroundHtml)
+                        raw("\n")
+                    }
+                    if (footerHtml.serialize().isNotEmpty()) {
+                        html(footerHtml)
+                        raw("\n")
+                    }
+                    rowsHtml.forEach { row ->
+                        html(row)
+                        raw("\n")
+                    }
+                }
+                raw("\n")
+            }
+        }
     }
 
     private fun repeatedFooterHtml(
         footer: PageFooterConfig,
         pageNumbers: PageNumbersConfig,
-        renderRow: (Row) -> String,
-    ): String {
-        if (!footer.hasRepeatedRows()) return ""
-        val rows = footer.rows.joinToString("") { renderRow(it) }
-        val pageNumbersHtml = if (pageNumbers.enabled && pageNumbers.position == Align.CENTER) {
-            """<div class="page-footer-page-numbers" aria-hidden="true"></div>"""
-        } else {
-            ""
+        renderRow: (Row) -> Html,
+    ): Html {
+        if (!footer.hasRepeatedRows()) return Html.EMPTY
+        return html {
+            tag("footer", "class" to "page-footer page-footer-repeated", "role" to "contentinfo") {
+                footer.rows.forEach { html(renderRow(it)) }
+                if (pageNumbers.enabled && pageNumbers.position == Align.CENTER) {
+                    tag("div", "class" to "page-footer-page-numbers", "aria-hidden" to "true")
+                }
+            }
         }
-        return """<footer class="page-footer page-footer-repeated" role="contentinfo">$rows$pageNumbersHtml</footer>"""
     }
 
     private fun emitDocumentCss(
@@ -272,10 +303,17 @@ $bodyPrefix$bodyHtml
         }
     }
 
-    private fun backgroundObjectHtml(background: PageBackgroundConfig): String =
-        """<div class="pagebg"><object type="${BackgroundObjectDrawer.OBJECT_TYPE}" """ +
-            """data-src="${Html.escape(background.src)}" data-kind="${background.type.name.lowercase()}" """ +
-            """style="width:1px;height:1px"></object></div>"""
+    private fun backgroundObjectHtml(background: PageBackgroundConfig): Html = html {
+        tag("div", "class" to "pagebg") {
+            tag(
+                "object",
+                "type" to BackgroundObjectDrawer.OBJECT_TYPE,
+                "data-src" to background.src,
+                "data-kind" to background.type.name.lowercase(),
+                "style" to "width:1px;height:1px",
+            )
+        }
+    }
 
     private fun emitBaseCss(css: CssRegistry) {
         css.css("body") {
