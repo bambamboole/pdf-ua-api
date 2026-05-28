@@ -5,7 +5,7 @@ import bambamboole.pdfua.models.template.Align
 import bambamboole.pdfua.models.template.Block
 import bambamboole.pdfua.models.template.BlockConfig
 import bambamboole.pdfua.models.template.CustomPageSize
-import bambamboole.pdfua.models.template.FontFace
+import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.models.template.Orientation
 import bambamboole.pdfua.models.template.PageBackgroundConfig
 import bambamboole.pdfua.models.template.PageConfig

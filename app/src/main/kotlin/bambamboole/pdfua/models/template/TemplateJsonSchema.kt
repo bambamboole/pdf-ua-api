@@ -1,6 +1,7 @@
 package bambamboole.pdfua.models.template
 
-import bambamboole.pdfua.services.BundledFonts
+import bambamboole.pdfua.fonts.BundledFonts
+import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.schema.json.AdditionalPropertiesConstraint
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.ArrayPropertyDefinition

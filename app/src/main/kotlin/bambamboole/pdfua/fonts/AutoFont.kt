@@ -1,4 +1,4 @@
-package bambamboole.pdfua.util
+package bambamboole.pdfua.fonts
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder

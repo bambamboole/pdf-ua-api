@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.fonts
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

@@ -1,5 +1,6 @@
 package bambamboole.pdfua.models.template
 
+import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.serialization.Serializable
 
 @Serializable

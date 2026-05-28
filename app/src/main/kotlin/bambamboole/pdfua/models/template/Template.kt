@@ -1,5 +1,6 @@
 package bambamboole.pdfua.models.template
 
+import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.models.FileAttachment
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

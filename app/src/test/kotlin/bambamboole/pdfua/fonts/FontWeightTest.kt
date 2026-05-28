@@ -1,4 +1,4 @@
-package bambamboole.pdfua.models.template
+package bambamboole.pdfua.fonts
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json

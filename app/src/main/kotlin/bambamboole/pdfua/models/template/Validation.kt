@@ -1,5 +1,7 @@
 package bambamboole.pdfua.models.template
 
+import bambamboole.pdfua.fonts.FontFace
+import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable

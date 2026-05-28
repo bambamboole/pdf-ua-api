@@ -6,7 +6,7 @@ import bambamboole.pdfua.models.template.BaseBlockConfig
 import bambamboole.pdfua.models.template.DividerBlock
 import bambamboole.pdfua.models.template.DividerConfig
 import bambamboole.pdfua.models.template.DividerStyle
-import bambamboole.pdfua.models.template.FontFace
+import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.models.template.HeadingBlock
 import bambamboole.pdfua.models.template.HeadingConfig
 import bambamboole.pdfua.models.template.PageBackgroundConfig

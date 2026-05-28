@@ -1,4 +1,4 @@
-package bambamboole.pdfua.services
+package bambamboole.pdfua.fonts
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

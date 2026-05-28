@@ -1,5 +1,6 @@
 package bambamboole.pdfua.services
 
+import bambamboole.pdfua.fonts.BundledFonts
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.java2d.api.BufferedImagePageProcessor
