@@ -147,7 +147,7 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
     installAuthentication(config, jwkProvider)
 
     routing {
-        swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.yaml")
+        swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.json")
         if (config.webUIEnabled) {
             indexRoutes()
             templateBuilderWebRoutes()
