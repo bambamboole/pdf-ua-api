@@ -26,6 +26,14 @@ curl -X POST http://localhost:8080/convert \
   --output out.pdf
 ```
 
+Run the container with the key set:
+
+```bash
+docker run -p 8080:8080 \
+  -e API_KEY="super-secret-key" \
+  ghcr.io/bambamboole/pdf-ua-api:latest
+```
+
 ## JWT (JWKS)
 
 The API only **verifies** tokens; it never issues them. Configure:
@@ -36,3 +44,31 @@ The API only **verifies** tokens; it never issues them. Configure:
 
 The signature, issuer, and expiry are always checked; the audience is checked only when
 `JWT_AUDIENCE` is set. Send the token as `Authorization: Bearer <token>`.
+
+Run the container configured to verify tokens from your issuer:
+
+```bash
+docker run -p 8080:8080 \
+  -e JWT_ISSUER="https://auth.example.com/" \
+  -e JWT_JWKS_URL="https://auth.example.com/.well-known/jwks.json" \
+  -e JWT_AUDIENCE="pdf-ua-api" \
+  ghcr.io/bambamboole/pdf-ua-api:latest
+```
+
+Omit `JWT_AUDIENCE` to skip the audience check. The API reaches the JWKS URL to fetch the
+issuer's public keys, so the container needs network access to it.
+
+## Rejected requests
+
+A missing or invalid credential returns `401 Unauthorized` and the request never reaches the
+renderer:
+
+```bash
+curl -i -X POST http://localhost:8080/convert \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<h1>Hi</h1>"}'
+# HTTP/1.1 401 Unauthorized
+```
+
+The public endpoints (`/health`, the template schema, and the API docs) stay reachable without
+credentials.
