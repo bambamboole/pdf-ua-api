@@ -14,7 +14,12 @@ data class AppConfig(
     val assetAllowedDomains: Set<String>,
     val uploadEnabled: Boolean,
     val uploadTimeoutMs: Long,
-    val uploadAllowedDomains: Set<String>
+    val uploadAllowedDomains: Set<String>,
+    val rateLimitEnabled: Boolean,
+    val rateLimitPerIp: Int,
+    val rateLimitGlobal: Int,
+    val rateLimitWindowSeconds: Long,
+    val rateLimitTrustForwardedFor: Boolean
 ) {
     companion object {
         fun load(environment: ApplicationEnvironment): AppConfig {
@@ -29,6 +34,9 @@ data class AppConfig(
 
             fun getLong(key: String, default: Long): Long =
                 getOptional(key)?.toLong() ?: default
+
+            fun getInt(key: String, default: Int): Int =
+                getOptional(key)?.toInt() ?: default
 
             fun getLogLevel(key: String, default: LogLevel): LogLevel =
                 getOptional(key)?.let { LogLevel.fromString(it) } ?: default
@@ -49,7 +57,12 @@ data class AppConfig(
                 uploadTimeoutMs = getLong("upload.timeout", 30_000),
                 uploadAllowedDomains = getOptional("upload.allowedDomains")
                     ?.split(",")?.map { it.trim().lowercase() }?.filter { it.isNotBlank() }?.toSet()
-                    ?: emptySet()
+                    ?: emptySet(),
+                rateLimitEnabled = getBoolean("rateLimit.enabled", true),
+                rateLimitPerIp = getInt("rateLimit.perIp", 20),
+                rateLimitGlobal = getInt("rateLimit.global", 200),
+                rateLimitWindowSeconds = getLong("rateLimit.windowSeconds", 60),
+                rateLimitTrustForwardedFor = getBoolean("rateLimit.trustForwardedFor", false)
             )
         }
     }

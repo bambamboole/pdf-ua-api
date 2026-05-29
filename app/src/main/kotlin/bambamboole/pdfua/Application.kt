@@ -23,6 +23,9 @@ import io.ktor.server.auth.*
 import io.ktor.server.mustache.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.forwardedheaders.*
+import io.ktor.server.plugins.origin
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.plugins.swagger.*
@@ -30,6 +33,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.util.Properties
+import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -97,6 +101,22 @@ fun Application.module() {
         }
     }
 
+    if (config.rateLimitTrustForwardedFor) {
+        install(XForwardedHeaders)
+    }
+
+    if (config.rateLimitEnabled) {
+        install(RateLimit) {
+            register(RateLimitName("perIp")) {
+                rateLimiter(limit = config.rateLimitPerIp, refillPeriod = config.rateLimitWindowSeconds.seconds)
+                requestKey { call -> call.request.origin.remoteHost }
+            }
+            register(RateLimitName("global")) {
+                rateLimiter(limit = config.rateLimitGlobal, refillPeriod = config.rateLimitWindowSeconds.seconds)
+            }
+        }
+    }
+
     if (config.isAuthenticationEnabled) {
         install(Authentication) {
             bearer("api-key-auth") {
@@ -122,20 +142,29 @@ fun Application.module() {
 
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
-                convertRoutes(config.pdfProducer, assetResolver, documentUploader)
-                renderRoutes(config.pdfProducer, assetResolver, documentUploader)
-                validationRoutes()
-                convertAndValidateRoutes(config.pdfProducer, assetResolver)
-                renderImageRoutes(assetResolver, documentUploader)
-                identifyRoutes()
+                rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
             }
         } else {
-            convertRoutes(config.pdfProducer, assetResolver, documentUploader)
-            renderRoutes(config.pdfProducer, assetResolver, documentUploader)
-            validationRoutes()
-            convertAndValidateRoutes(config.pdfProducer, assetResolver)
-            renderImageRoutes(assetResolver, documentUploader)
-            identifyRoutes()
+            rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
         }
+    }
+}
+
+private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolver, uploader: DocumentUploader?) {
+    convertRoutes(config.pdfProducer, assetResolver, uploader)
+    renderRoutes(config.pdfProducer, assetResolver, uploader)
+    validationRoutes()
+    convertAndValidateRoutes(config.pdfProducer, assetResolver)
+    renderImageRoutes(assetResolver, uploader)
+    identifyRoutes()
+}
+
+private fun Route.rateLimited(config: AppConfig, block: Route.() -> Unit) {
+    if (config.rateLimitEnabled) {
+        rateLimit(RateLimitName("perIp")) {
+            rateLimit(RateLimitName("global")) { block() }
+        }
+    } else {
+        block()
     }
 }
