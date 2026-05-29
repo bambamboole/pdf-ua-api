@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import org.apache.pdfbox.Loader
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class ApplicationConfigTest {
@@ -107,5 +108,32 @@ class ApplicationConfigTest {
             Loader.loadPDF(response.bodyAsBytes()).use { document ->
                 assertEquals("custom-producer-v1.0", document.documentInformation.producer)
             }
+        }
+
+    @Test
+    fun testPartialJwtConfigFailsToStart() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("jwt.issuer" to "https://issuer.test")
+            }
+            application {
+                module()
+            }
+
+            assertFailsWith<IllegalStateException> { startApplication() }
+        }
+
+    @Test
+    fun testJwksUrlWithoutIssuerFailsToStart() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("jwt.jwksUrl" to "https://issuer.test/.well-known/jwks.json")
+            }
+            application {
+                module()
+            }
+
+            val exception = assertFailsWith<IllegalStateException> { startApplication() }
+            assertTrue(exception.message!!.contains("JWT_ISSUER"))
         }
 }

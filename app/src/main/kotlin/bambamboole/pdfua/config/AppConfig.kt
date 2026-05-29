@@ -2,8 +2,15 @@ package bambamboole.pdfua.config
 
 import io.ktor.server.application.*
 
+data class JwtConfig(
+    val issuer: String,
+    val jwksUrl: String,
+    val audience: String?,
+)
+
 data class AppConfig(
     val apiKey: String?,
+    val jwt: JwtConfig?,
     val webUIEnabled: Boolean,
     val pdfProducer: String,
     val maxRequestSizeBytes: Long,
@@ -50,8 +57,24 @@ data class AppConfig(
                 default: LogLevel,
             ): LogLevel = getOptional(key)?.let { LogLevel.fromString(it) } ?: default
 
+            val jwtIssuer = getOptional("jwt.issuer")
+            val jwtJwksUrl = getOptional("jwt.jwksUrl")
+            val jwtAudience = getOptional("jwt.audience")
+            val jwt =
+                when {
+                    jwtIssuer != null && jwtJwksUrl != null ->
+                        JwtConfig(issuer = jwtIssuer, jwksUrl = jwtJwksUrl, audience = jwtAudience)
+                    jwtIssuer != null || jwtJwksUrl != null ->
+                        error(
+                            "JWT auth requires both JWT_ISSUER and JWT_JWKS_URL to be set; missing " +
+                                if (jwtIssuer == null) "JWT_ISSUER" else "JWT_JWKS_URL",
+                        )
+                    else -> null
+                }
+
             return AppConfig(
                 apiKey = getOptional("api.key"),
+                jwt = jwt,
                 webUIEnabled = getBoolean("ui.enabled", true),
                 pdfProducer = getRequired("pdf.producer", "pdf-ua-api.com"),
                 maxRequestSizeBytes = getLong("pdf.maxRequestSize", 10 * 1024 * 1024),
@@ -85,5 +108,5 @@ data class AppConfig(
     }
 
     val isAuthenticationEnabled: Boolean
-        get() = apiKey != null
+        get() = jwt != null || apiKey != null
 }
