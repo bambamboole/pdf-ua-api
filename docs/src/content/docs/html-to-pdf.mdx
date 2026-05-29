@@ -1,0 +1,48 @@
+---
+title: HTML to PDF
+description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported.
+---
+
+import TryItPdf from "../../components/TryItPdf.tsx";
+import styledTable from "../../examples/styled-table.html?raw";
+
+`POST /convert` takes a JSON body `{ "html": "..." }` and returns a PDF/A-3a document
+with PDF/UA accessibility.
+
+```bash
+curl -X POST http://localhost:8080/convert \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}' \
+  --output out.pdf
+```
+
+Set a `lang` attribute and a `<title>` — both are required for accessible output. Bundled
+fonts are available by `font-family` (no system fonts needed), and wide tables paginate
+automatically.
+
+## HTML & CSS support
+
+Rendering uses [openhtmltopdf](https://github.com/danfickle/openhtmltopdf), a static
+renderer. It supports:
+
+- CSS 2.1 (the box model, tables, floats) and a subset of CSS3 (colors, backgrounds, borders)
+- `@page` for page size/margins and `page-break-before/after/inside`
+- `@font-face` and the bundled font families
+- Inline SVG and raster images
+
+It does **not** support:
+
+- JavaScript (no scripts run)
+- CSS Flexbox or Grid
+- CSS transitions/animations and most modern dynamic layout
+
+Design documents with classic block/table/float layout. See the openhtmltopdf docs for the
+authoritative feature list.
+
+## Try it
+
+Edit the HTML and click **Render PDF**. The live render calls the API at `PUBLIC_API_URL`
+(default `http://localhost:8080`); the API must allow this site's origin via
+`CORS_ALLOWED_ORIGINS`.
+
+<TryItPdf mode="html" initialCode={styledTable} client:only="react" />
