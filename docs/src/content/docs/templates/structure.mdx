@@ -1,0 +1,17 @@
+---
+title: Structure
+description: The shape of a template — rows and blocks.
+---
+
+import TryItPdf from "../../../components/TryItPdf.tsx";
+import structure from "../../../examples/templates/structure.json?raw";
+
+A template is rendered with `POST /render/template`, whose body is
+`{ "template": { … }, "data": { … }, "options": { … } }`. The `template` holds
+`version`, a `config` (page size, locale, typography), and `rows`. Each row contains one or
+more `blocks` (`text`, `heading`, `table`, `image`, `key-value`, `spacer`, raw `html`). Blocks
+in the same row lay out side by side using `config.width`.
+
+Edit the JSON and click **Render PDF**.
+
+<TryItPdf mode="template" initialCode={structure} client:only="react" />

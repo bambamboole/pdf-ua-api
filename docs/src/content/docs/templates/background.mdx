@@ -1,0 +1,13 @@
+---
+title: Background
+description: Set a full-page background image.
+---
+
+import TryItPdf from "../../../components/TryItPdf.tsx";
+import background from "../../../examples/templates/background.json?raw";
+
+Set `config.page.background` to a `{ "src": "<data-uri-or-url>", "type": "image" }` to draw a
+full-page background behind every page. The example below uses an embedded data-URI image (so the
+seed is large), then places content on top across two pages.
+
+<TryItPdf mode="template" initialCode={background} client:only="react" />
