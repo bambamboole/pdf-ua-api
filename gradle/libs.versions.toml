@@ -14,6 +14,7 @@ jsoup = "1.18.3"
 spotless = "8.5.1"
 detekt = "2.0.0-alpha.3"
 ktlint = "1.8.0"
+inspektor = "0.10.0-alpha"
 
 [libraries]
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
@@ -34,6 +35,9 @@ logstashLogbackEncoder = { module = "net.logstash.logback:logstash-logback-encod
 # Testing
 kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
+# OpenAPI generation
+inspektorAnnotations = { module = "io.github.tabilzad.inspektor:annotations", version.ref = "inspektor" }
+
 # veraPDF Validation
 verapdfValidation = { module = "org.verapdf:validation-model", version.ref = "verapdf" }
 verapdfCore = { module = "org.verapdf:core", version.ref = "verapdf" }
@@ -43,3 +47,4 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+inspektor = { id = "io.github.tabilzad.inspektor", version.ref = "inspektor" }

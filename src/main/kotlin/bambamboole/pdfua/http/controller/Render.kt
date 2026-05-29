@@ -48,17 +48,21 @@ data class RenderRequest(
     val options: RenderOptions = RenderOptions(),
 )
 
+private const val SERIALIZATION_CAUSE_UNWRAP_DEPTH = 4
+
 private fun Throwable.unwrapToSerializationException(): SerializationException? {
     var current: Throwable? = this
-    repeat(4) {
-        if (current is SerializationException) return current as SerializationException
-        current = current?.cause
+    repeat(SERIALIZATION_CAUSE_UNWRAP_DEPTH) {
+        val candidate = current
+        if (candidate is SerializationException) return candidate
+        current = candidate?.cause
     }
     return null
 }
 
 @GenerateOpenApi
 @Tag(["Rendering"])
+@Suppress("TooGenericExceptionCaught") // intentional: any deserialization error → structured ValidationErrorResponse
 fun Route.renderRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
@@ -76,7 +80,7 @@ fun Route.renderRoutes(
         ],
     )
     post("/render/template") {
-        val request =
+        val request: RenderRequest =
             try {
                 call.receive<RenderRequest>()
             } catch (e: Exception) {
@@ -94,35 +98,26 @@ fun Route.renderRoutes(
             return@post
         }
 
-        try {
-            request.options.baseUrl
-                .takeIf { it.isNotEmpty() }
-                ?.let { validateBaseUrl(it) }
-            val html = TemplateRenderer.render(request.template, request.data, request.options)
+        request.options.baseUrl
+            .takeIf { it.isNotEmpty() }
+            ?.let { validateBaseUrl(it) }
+        val html = TemplateRenderer.render(request.template, request.data, request.options)
 
-            val result =
-                PdfRenderer.convertHtmlToPdf(
-                    html = html,
-                    producer = pdfProducer,
-                    assetResolver = assetResolver,
-                    baseUrl = request.options.baseUrl,
-                    attachments = request.template.attachments,
-                )
+        val result =
+            PdfRenderer.convertHtmlToPdf(
+                html = html,
+                producer = pdfProducer,
+                assetResolver = assetResolver,
+                baseUrl = request.options.baseUrl,
+                attachments = request.template.attachments,
+            )
 
-            respondDocumentOrUpload(
-                bytes = result.bytes,
-                contentType = ContentType.Application.Pdf,
-                fileName = "output.pdf",
-                documentId = result.documentId,
-                uploader = uploader,
-            )
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid request")))
-        } catch (e: Exception) {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to render template: ${e.message}"),
-            )
-        }
+        respondDocumentOrUpload(
+            bytes = result.bytes,
+            contentType = ContentType.Application.Pdf,
+            fileName = "output.pdf",
+            documentId = result.documentId,
+            uploader = uploader,
+        )
     }
 }

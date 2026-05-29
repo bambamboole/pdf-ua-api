@@ -272,7 +272,8 @@
                         "type": "string"
                     },
                     "weight": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "One or more whitespace-separated [FontWeight] values, e.g. \"400\" or \"400 700\"."
                     }
                 },
                 "required": [

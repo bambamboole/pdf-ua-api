@@ -2,16 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:AppConfig.kt:AppConfig.Companion$fun load: AppConfig</ID>
     <ID>CyclomaticComplexMethod:PdfValidator.kt:PdfValidator$private fun categorizePdfUaClause: String</ID>
     <ID>LongMethod:TemplateJsonSchema.kt:TemplateJsonSchema$private fun definitions: Map&lt;String, PropertyDefinition&gt;</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$10</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$20</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$200</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$30_000</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$5</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$5000</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$60</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$200</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$299</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$5</ID>
@@ -24,8 +16,6 @@
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$255</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$256</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$4</ID>
-    <ID>MagicNumber:Render.kt:4</ID>
-    <ID>MagicNumber:RenderImage.kt:4096</ID>
     <ID>MagicNumber:Template.kt:PageConfig$20</ID>
     <ID>MagicNumber:Template.kt:PageConfig$25</ID>
     <ID>MaxLineLength:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$// Per-document XObject memo. Guarded for concurrent renders of different documents; a single document is rendered on one thread, so check-then-put need not be atomic.</ID>
@@ -39,15 +29,9 @@
     <ID>ReturnCount:ImageBlock.kt:private fun inlineSanitizedSvg: String?</ID>
     <ID>TooGenericExceptionCaught:AssetResolver.kt:AssetResolver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:Convert.kt:e: Exception</ID>
-    <ID>TooGenericExceptionCaught:ConvertAndValidate.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:DocumentUploader.kt:DocumentUploader$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:Identify.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImageOptimizer.kt:ImageOptimizer$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PdfValidator.kt:PdfValidator$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:Render.kt:e: Exception</ID>
-    <ID>TooGenericExceptionCaught:RenderImage.kt:e: Exception</ID>
-    <ID>TooGenericExceptionCaught:Validation.kt:e: Exception</ID>
     <ID>TooManyFunctions:TemplateJsonSchema.kt:TemplateJsonSchema</ID>
   </CurrentIssues>
 </SmellBaseline>

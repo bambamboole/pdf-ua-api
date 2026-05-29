@@ -56,48 +56,29 @@ fun Route.convertAndValidateRoutes(
         ],
     )
     post("/convert-and-validate") {
-        try {
-            val request = call.receive<ConvertRequest>()
+        val request = call.receive<ConvertRequest>()
+        require(request.html.isNotBlank()) { "HTML content cannot be empty" }
 
-            if (request.html.isBlank()) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty"),
-                )
-                return@post
-            }
+        val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
-
-            val result =
-                PdfRenderer.convertHtmlToPdf(
-                    html = request.html,
-                    producer = pdfProducer,
-                    assetResolver = assetResolver,
-                    baseUrl = baseUrl,
-                    attachments = request.attachments,
-                )
-            val validation = PdfValidator.validatePdf(result.bytes)
-            val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
-
-            call.response.header("X-Document-UUID", result.documentId)
-            call.respond(
-                HttpStatusCode.OK,
-                ConvertAndValidateResponse(
-                    validation = validation,
-                    pdf = pdfBase64,
-                ),
+        val result =
+            PdfRenderer.convertHtmlToPdf(
+                html = request.html,
+                producer = pdfProducer,
+                assetResolver = assetResolver,
+                baseUrl = baseUrl,
+                attachments = request.attachments,
             )
-        } catch (e: IllegalArgumentException) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request")),
-            )
-        } catch (e: Exception) {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert and validate PDF: ${e.message}"),
-            )
-        }
+        val validation = PdfValidator.validatePdf(result.bytes)
+        val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
+
+        call.response.header("X-Document-UUID", result.documentId)
+        call.respond(
+            HttpStatusCode.OK,
+            ConvertAndValidateResponse(
+                validation = validation,
+                pdf = pdfBase64,
+            ),
+        )
     }
 }

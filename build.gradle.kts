@@ -12,7 +12,7 @@ plugins {
 
     application
 
-    id("io.github.tabilzad.inspektor") version "0.10.0-alpha"
+    alias(libs.plugins.inspektor)
 }
 
 kotlin {
@@ -113,7 +113,7 @@ dependencies {
     implementation(libs.verapdfCore)
 
     // OpenAPI annotations
-    implementation("io.github.tabilzad.inspektor:annotations:0.10.0-alpha")
+    implementation(libs.inspektorAnnotations)
 
     // Testing
     testImplementation(ktorLibs.server.testHost)

@@ -43,28 +43,18 @@ fun Route.identifyRoutes() {
         ],
     )
     post("/identify") {
-        try {
-            val pdfBytes = call.receive<ByteArray>()
+        val pdfBytes = call.receive<ByteArray>()
+        require(pdfBytes.isNotEmpty()) { "PDF content cannot be empty" }
 
-            if (pdfBytes.isEmpty()) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to "PDF content cannot be empty"),
-                )
-                return@post
-            }
-
-            val documentId =
+        val documentId =
+            try {
                 Loader.loadPDF(pdfBytes).use { document ->
                     document.documentInformation.getCustomMetadataValue("X-Document-UUID")
                 }
+            } catch (e: java.io.IOException) {
+                throw IllegalArgumentException("Failed to read PDF: ${e.message}", e)
+            }
 
-            call.respond(HttpStatusCode.OK, IdentifyResponse(documentId))
-        } catch (e: Exception) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                mapOf("error" to "Failed to read PDF: ${e.message}"),
-            )
-        }
+        call.respond(HttpStatusCode.OK, IdentifyResponse(documentId))
     }
 }

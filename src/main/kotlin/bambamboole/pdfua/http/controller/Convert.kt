@@ -50,46 +50,27 @@ fun Route.convertRoutes(
         ],
     )
     post("/convert") {
-        try {
-            val request = call.receive<ConvertRequest>()
+        val request = call.receive<ConvertRequest>()
+        require(request.html.isNotBlank()) { "HTML content cannot be empty" }
 
-            if (request.html.isBlank()) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to "HTML content cannot be empty"),
-                )
-                return@post
-            }
+        val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
-
-            val result =
-                PdfRenderer.convertHtmlToPdf(
-                    html = request.html,
-                    producer = pdfProducer,
-                    assetResolver = assetResolver,
-                    baseUrl = baseUrl,
-                    attachments = request.attachments,
-                )
-
-            respondDocumentOrUpload(
-                bytes = result.bytes,
-                contentType = ContentType.Application.Pdf,
-                fileName = "output.pdf",
-                documentId = result.documentId,
-                uploader = uploader,
+        val result =
+            PdfRenderer.convertHtmlToPdf(
+                html = request.html,
+                producer = pdfProducer,
+                assetResolver = assetResolver,
+                baseUrl = baseUrl,
+                attachments = request.attachments,
             )
-        } catch (e: IllegalArgumentException) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                mapOf("error" to (e.message ?: "Invalid request")),
-            )
-        } catch (e: Exception) {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to convert HTML to PDF: ${e.message}"),
-            )
-        }
+
+        respondDocumentOrUpload(
+            bytes = result.bytes,
+            contentType = ContentType.Application.Pdf,
+            fileName = "output.pdf",
+            documentId = result.documentId,
+            uploader = uploader,
+        )
     }
 }
 

@@ -40,6 +40,12 @@ fun Application.serialization() {
 
 fun Application.statusPages() {
     install(StatusPages) {
+        exception<IllegalArgumentException> { call, cause ->
+            call.respond(
+                io.ktor.http.HttpStatusCode.BadRequest,
+                mapOf("error" to (cause.message ?: "Invalid request")),
+            )
+        }
         exception<Throwable> { call, cause ->
             call.respond(
                 io.ktor.http.HttpStatusCode.InternalServerError,

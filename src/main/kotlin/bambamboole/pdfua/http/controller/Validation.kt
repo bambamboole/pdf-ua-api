@@ -38,29 +38,10 @@ fun Route.validationRoutes() {
         ],
     )
     post("/validate") {
-        try {
-            val pdfBytes = call.receive<ByteArray>()
+        val pdfBytes = call.receive<ByteArray>()
+        require(pdfBytes.isNotEmpty()) { "PDF content cannot be empty" }
 
-            if (pdfBytes.isEmpty()) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to "PDF content cannot be empty"),
-                )
-                return@post
-            }
-
-            val validationResult = PdfValidator.validatePdf(pdfBytes)
-            call.respond(HttpStatusCode.OK, validationResult)
-        } catch (e: IllegalStateException) {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to (e.message ?: "Validation service error")),
-            )
-        } catch (e: Exception) {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to "Failed to validate PDF: ${e.message}"),
-            )
-        }
+        val validationResult = PdfValidator.validatePdf(pdfBytes)
+        call.respond(HttpStatusCode.OK, validationResult)
     }
 }
