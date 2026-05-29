@@ -16,7 +16,7 @@ const editorTheme = EditorView.theme({
   },
 });
 
-type Mode = "html" | "template";
+type Mode = "html" | "template" | "image";
 
 interface TryItPdfProps {
   mode: Mode;
@@ -41,27 +41,24 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
   const apiUrl = import.meta.env.PUBLIC_API_URL ?? DEFAULT_API_URL;
   const isDark = useStarlightDark();
   const [code, setCode] = useState(initialCode);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
-  }, [pdfUrl]);
+  }, [resultUrl]);
 
-  const extensions = [mode === "html" ? html() : json(), editorTheme];
+  const extensions = [mode === "template" ? json() : html(), editorTheme];
 
   async function render() {
     setStatus(null);
 
     let endpoint: string;
     let body: string;
-    if (mode === "html") {
-      endpoint = `${apiUrl}/convert`;
-      body = JSON.stringify({ html: code });
-    } else {
+    if (mode === "template") {
       endpoint = `${apiUrl}/render/template`;
       let parsed: unknown;
       try {
@@ -71,6 +68,12 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
         return;
       }
       body = JSON.stringify(parsed);
+    } else if (mode === "image") {
+      endpoint = `${apiUrl}/render`;
+      body = JSON.stringify({ html: code, format: "png" });
+    } else {
+      endpoint = `${apiUrl}/convert`;
+      body = JSON.stringify({ html: code });
     }
 
     setLoading(true);
@@ -86,7 +89,7 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
         return;
       }
       const blob = await res.blob();
-      setPdfUrl((prev) => {
+      setResultUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
         return URL.createObjectURL(blob);
       });
@@ -96,6 +99,8 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
       setLoading(false);
     }
   }
+
+  const actionLabel = mode === "image" ? "Render image" : "Render PDF";
 
   return (
     <div>
@@ -109,25 +114,39 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
       />
       <p>
         <button onClick={render} disabled={loading}>
-          {loading ? "Rendering…" : "Render PDF"}
+          {loading ? "Rendering…" : actionLabel}
         </button>{" "}
         <small>API: {apiUrl}</small>
       </p>
       {status && <p role="alert">{status}</p>}
-      {pdfUrl && (
-        <>
-          <iframe
-            title="PDF preview"
-            src={pdfUrl}
-            style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
-          />
-          <p>
-            <a href={pdfUrl} download="document.pdf">
-              Download PDF
-            </a>
-          </p>
-        </>
-      )}
+      {resultUrl &&
+        (mode === "image" ? (
+          <>
+            <img
+              src={resultUrl}
+              alt="Rendered output"
+              style={{ maxWidth: "100%", border: "1px solid #ccc" }}
+            />
+            <p>
+              <a href={resultUrl} download="image.png">
+                Download image
+              </a>
+            </p>
+          </>
+        ) : (
+          <>
+            <iframe
+              title="PDF preview"
+              src={resultUrl}
+              style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
+            />
+            <p>
+              <a href={resultUrl} download="document.pdf">
+                Download PDF
+              </a>
+            </p>
+          </>
+        ))}
     </div>
   );
 }

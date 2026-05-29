@@ -1,0 +1,42 @@
+---
+title: HTML to Image
+description: Render an HTML document to a PNG or JPEG image.
+---
+
+import TryItPdf from "../../../components/TryItPdf.tsx";
+import styledTable from "../../../examples/styled-table.html?raw";
+
+`POST /render` rasterizes an HTML document to an image and returns the image binary. It's useful
+for thumbnails, social-card previews, or anywhere you need a bitmap instead of a PDF. It uses the
+same rendering engine as [HTML to PDF](/html/html-to-pdf/), so the same HTML and CSS support — and
+the same limitations (no JavaScript, Flexbox, or Grid) — apply.
+
+## Request
+
+Send the HTML and pick a format; the response body is the image, so write it straight to a file:
+
+```bash
+curl -X POST http://localhost:8080/render \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>","format":"png","width":800}' \
+  --output out.png
+```
+
+## Options
+
+The request body accepts these fields:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `html` | — | The HTML document to render (required) |
+| `format` | `png` | Output format: `png` or `jpg` |
+| `width` | `800` | Render width in pixels; the height grows with the content |
+| `baseUrl` | — | Optional base URL for resolving relative asset links in the HTML |
+
+## Try it
+
+Edit the HTML and click **Render image**. The live render calls the API at `PUBLIC_API_URL`
+(default `http://localhost:8080`); the API must allow this site's origin via
+`CORS_ALLOWED_ORIGINS`.
+
+<TryItPdf mode="image" initialCode={styledTable} client:only="react" />

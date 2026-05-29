@@ -30,7 +30,13 @@ export default defineConfig({
         },
         { label: "Authentication", link: "/authentication/" },
         { label: "Rate Limiting", link: "/rate-limiting/" },
-        { label: "HTML to PDF", link: "/html-to-pdf/" },
+        {
+          label: "HTML",
+          items: [
+            { label: "HTML to PDF", link: "/html/html-to-pdf/" },
+            { label: "HTML to Image", link: "/html/html-to-image/" },
+          ],
+        },
         {
           label: "Templates",
           items: [

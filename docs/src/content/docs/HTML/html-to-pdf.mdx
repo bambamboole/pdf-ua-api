@@ -3,8 +3,8 @@ title: HTML to PDF
 description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported.
 ---
 
-import TryItPdf from "../../components/TryItPdf.tsx";
-import styledTable from "../../examples/styled-table.html?raw";
+import TryItPdf from "../../../components/TryItPdf.tsx";
+import styledTable from "../../../examples/styled-table.html?raw";
 
 `POST /convert` takes a JSON body `{ "html": "..." }` and returns a PDF/A-3a document
 with PDF/UA accessibility.
@@ -22,7 +22,7 @@ automatically.
 
 ## HTML & CSS support
 
-Rendering uses <a href="https://github.com/danfickle/openhtmltopdf" target="_blank" rel="noopener">OpenHTMLToPDF</a>,
+Rendering uses <a href="https://github.com/openhtmltopdf/openhtmltopdf" target="_blank" rel="noopener">OpenHTMLToPDF</a>,
 a static renderer. It supports:
 
 - CSS 2.1 (the box model, tables, floats) and a subset of CSS3 (colors, backgrounds, borders)
