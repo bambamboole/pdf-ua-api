@@ -27,6 +27,7 @@ data class AppConfig(
     val rateLimitGlobal: Int,
     val rateLimitWindowSeconds: Long,
     val rateLimitTrustForwardedFor: Boolean,
+    val corsAllowedOrigins: Set<String>,
 ) {
     companion object {
         fun load(environment: ApplicationEnvironment): AppConfig {
@@ -109,6 +110,13 @@ data class AppConfig(
                 rateLimitGlobal = getInt("rateLimit.global", 200),
                 rateLimitWindowSeconds = getLong("rateLimit.windowSeconds", 60),
                 rateLimitTrustForwardedFor = getBoolean("rateLimit.trustForwardedFor", false),
+                corsAllowedOrigins =
+                    getOptional("cors.allowedOrigins")
+                        ?.split(",")
+                        ?.map { it.trim().lowercase() }
+                        ?.filter { it.isNotBlank() }
+                        ?.toSet()
+                        ?: emptySet(),
             )
         }
     }

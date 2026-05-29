@@ -30,7 +30,7 @@ Guidance for Claude Code when working in this repository.
 ## Runtime Configuration
 
 - Config lives in `app/src/main/resources/application.conf` and is environment-variable driven.
-- Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`.
+- Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `CORS_ALLOWED_ORIGINS`.
 - Docker builds a Gradle install distribution, runs on Eclipse Temurin 24 Alpine, and optionally attaches the OpenTelemetry Java agent from `entrypoint.sh`.
 
 ## Coding Conventions

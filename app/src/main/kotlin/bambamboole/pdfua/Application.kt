@@ -26,6 +26,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.mustache.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.ratelimit.*
@@ -111,6 +112,19 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
                 io.ktor.http.HttpStatusCode.InternalServerError,
                 mapOf("error" to (cause.message ?: "Unknown error")),
             )
+        }
+    }
+
+    if (config.corsAllowedOrigins.isNotEmpty()) {
+        install(CORS) {
+            config.corsAllowedOrigins.forEach { host ->
+                allowHost(host, schemes = listOf("http", "https"))
+            }
+            allowMethod(io.ktor.http.HttpMethod.Options)
+            allowMethod(io.ktor.http.HttpMethod.Post)
+            allowHeader(io.ktor.http.HttpHeaders.ContentType)
+            allowHeader(io.ktor.http.HttpHeaders.Authorization)
+            allowHeader("X-Upload-Url")
         }
     }
 
