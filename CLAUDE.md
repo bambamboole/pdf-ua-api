@@ -7,16 +7,16 @@ Guidance for Claude Code when working in this repository.
 - Kotlin/JVM HTTP API for converting HTML to accessible PDF/A-3a and PDF/UA output using Ktor and OpenHTMLToPDF.
 - Also validates PDFs with veraPDF, identifies generated document UUIDs, and renders HTML to images through OpenHTMLToPDF Java2D.
 - Java 24 is required. The Gradle wrapper and Foojay toolchain resolver are part of the repo.
-- Main application module: `app`; shared Gradle convention plugin: `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
+- Single-module Gradle build: source lives at `src/main/kotlin/`, tests at `src/test/kotlin/`, the build script is the root `build.gradle.kts`.
 
 ## Important Paths
 
-- `app/src/main/kotlin/bambamboole/pdfua/Application.kt` wires Ktor plugins, auth, services, and routes.
-- `app/src/main/kotlin/bambamboole/pdfua/routes/` contains one route extension per endpoint.
-- `app/src/main/kotlin/bambamboole/pdfua/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
-- `app/src/main/kotlin/bambamboole/pdfua/models/` contains kotlinx-serializable request/response DTOs.
-- `app/src/main/resources/` contains Ktor config, logback config, bundled open-source fonts, ICC color profile, templates, and examples.
-- `app/src/test/resources/fixtures/` and `app/src/test/resources/image-fixtures/` are regression baselines. Treat expected PDFs/images as test artifacts, not disposable output.
+- `src/main/kotlin/bambamboole/pdfua/Application.kt` wires Ktor plugins, auth, services, and routes.
+- `src/main/kotlin/bambamboole/pdfua/routes/` contains one route extension per endpoint.
+- `src/main/kotlin/bambamboole/pdfua/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
+- `src/main/kotlin/bambamboole/pdfua/models/` contains kotlinx-serializable request/response DTOs.
+- `src/main/resources/` contains Ktor config, logback config, bundled open-source fonts, ICC color profile, templates, and examples.
+- `src/test/resources/fixtures/` and `src/test/resources/image-fixtures/` are regression baselines. Treat expected PDFs/images as test artifacts, not disposable output.
 
 ## Build And Test
 
@@ -29,7 +29,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Runtime Configuration
 
-- Config lives in `app/src/main/resources/application.conf` and is environment-variable driven.
+- Config lives in `src/main/resources/application.conf` and is environment-variable driven.
 - Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `CORS_ALLOWED_ORIGINS`.
 - Docker builds a Gradle install distribution, runs on Eclipse Temurin 24 Alpine, and optionally attaches the OpenTelemetry Java agent from `entrypoint.sh`.
 
@@ -53,8 +53,8 @@ Guidance for Claude Code when working in this repository.
 
 ## Testing Expectations
 
-- For route or model changes, add or update focused route tests under `app/src/test/kotlin/bambamboole/pdfua/routes/`.
-- For PDF service behavior, add service tests or fixture coverage under `app/src/test/resources/fixtures/`.
+- For route or model changes, add or update focused route tests under `src/test/kotlin/bambamboole/pdfua/routes/`.
+- For PDF service behavior, add service tests or fixture coverage under `src/test/resources/fixtures/`.
 - For image rendering, use `image-fixtures` and `RenderImageRoutesTest`.
 - For security-sensitive URL fetching, update `AssetResolverTest`.
 - Do not create one-off verification scripts when Gradle tests or focused fixtures can prove the behavior.

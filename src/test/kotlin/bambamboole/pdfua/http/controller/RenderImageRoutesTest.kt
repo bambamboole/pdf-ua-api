@@ -25,8 +25,8 @@ class RenderImageRoutesTest {
                 RenderImageRoutesTest::class.java.classLoader.getResource("fixtures/image")
                     ?: fail("fixtures/image directory not found in classpath")
             val buildFixturesDir = File(fixturesUrl.toURI())
-            val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/fixtures/image")
+            val projectRoot = buildFixturesDir.absolutePath.substringBefore("/build/")
+            return File(projectRoot, "src/test/resources/fixtures/image")
         }
 
         private const val PER_CHANNEL_THRESHOLD = 32

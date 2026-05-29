@@ -26,8 +26,8 @@ class TemplatePdfFixtureTest {
             val url =
                 TemplatePdfFixtureTest::class.java.classLoader.getResource("fixtures/template")
                     ?: fail("fixtures/template directory not found in classpath")
-            val projectRoot = File(url.toURI()).absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/fixtures/template")
+            val projectRoot = File(url.toURI()).absolutePath.substringBefore("/build/")
+            return File(projectRoot, "src/test/resources/fixtures/template")
         }
 
         private suspend fun ApplicationTestBuilder.assertTemplatePdfFixture(

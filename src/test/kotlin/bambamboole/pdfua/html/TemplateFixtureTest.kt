@@ -17,8 +17,8 @@ class TemplateFixtureTest {
                 TemplateFixtureTest::class.java.classLoader.getResource("fixtures/template")
                     ?: fail("fixtures/template directory not found in classpath")
             val buildDir = File(url.toURI())
-            val projectRoot = buildDir.absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/fixtures/template")
+            val projectRoot = buildDir.absolutePath.substringBefore("/build/")
+            return File(projectRoot, "src/test/resources/fixtures/template")
         }
 
         private fun assertTemplateFixture(name: String) {

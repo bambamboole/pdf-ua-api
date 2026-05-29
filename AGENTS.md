@@ -11,14 +11,13 @@ Instructions for coding agents working in this repository.
 
 ## Repository Map
 
-- `app/src/main/kotlin/bambamboole/pdfua/Application.kt`: Ktor app setup, dependency wiring, auth, route registration.
-- `app/src/main/kotlin/bambamboole/pdfua/routes/`: endpoint definitions for `/`, `/health`, `/convert`, `/validate`, `/convert-and-validate`, `/render`, `/identify`.
-- `app/src/main/kotlin/bambamboole/pdfua/services/`: conversion, validation, image rendering, asset resolution, and image optimization logic.
-- `app/src/main/kotlin/bambamboole/pdfua/config/`: environment-backed app configuration and log-level mapping.
-- `app/src/main/kotlin/bambamboole/pdfua/models/`: kotlinx serialization DTOs.
-- `app/src/main/resources/`: Ktor config, logback, Mustache UI template, examples, fonts, and `sRGB.icc`.
-- `app/src/test/`: Ktor route tests, service tests, PDF fixtures, and image fixtures.
-- `buildSrc/`: shared Gradle Kotlin/JVM convention plugin.
+- `src/main/kotlin/bambamboole/pdfua/Application.kt`: Ktor app setup, dependency wiring, auth, route registration.
+- `src/main/kotlin/bambamboole/pdfua/routes/`: endpoint definitions for `/`, `/health`, `/convert`, `/validate`, `/convert-and-validate`, `/render`, `/identify`.
+- `src/main/kotlin/bambamboole/pdfua/services/`: conversion, validation, image rendering, asset resolution, and image optimization logic.
+- `src/main/kotlin/bambamboole/pdfua/config/`: environment-backed app configuration and log-level mapping.
+- `src/main/kotlin/bambamboole/pdfua/models/`: kotlinx serialization DTOs.
+- `src/main/resources/`: Ktor config, logback, Mustache UI template, examples, fonts, and `sRGB.icc`.
+- `src/test/`: Ktor route tests, service tests, PDF fixtures, and image fixtures.
 
 ## Common Commands
 
@@ -47,7 +46,7 @@ Instructions for coding agents working in this repository.
 
 ## Testing Guidance
 
-- Route changes: update tests under `app/src/test/kotlin/bambamboole/pdfua/routes/`.
+- Route changes: update tests under `src/test/kotlin/bambamboole/pdfua/routes/`.
 - Conversion output changes: update fixture tests and expected PDFs only after inspecting visual differences.
 - Validation changes: update expected validation JSON or validation-focused assertions.
 - Image rendering changes: update `image-fixtures` and `RenderImageRoutesTest`.
@@ -64,7 +63,7 @@ Instructions for coding agents working in this repository.
 
 ## Operational Notes
 
-- Environment variables are defined through `app/src/main/resources/application.conf`: `PORT`, `API_KEY`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`.
+- Environment variables are defined through `src/main/resources/application.conf`: `PORT`, `API_KEY`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`.
 - Docker uses a Gradle build stage and an Eclipse Temurin 24 Alpine runtime image. `entrypoint.sh` attaches the OpenTelemetry Java agent when `OTEL_ENABLED=true`.
 - Do not revert unrelated worktree changes. Report them only if they affect the requested task.
 - Only create new documentation files when explicitly requested.

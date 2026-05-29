@@ -36,10 +36,10 @@ jobs:
         name: test-failures
         path: |
           build/reports/spotless/
-          app/build/reports/detekt/
-          app/src/test/resources/fixtures/**/generated.*
-          app/src/test/resources/fixtures/**/*diff*.png
-          app/src/test/resources/fixtures/**/diff.*
-          app/build/reports/tests/test/
+          build/reports/detekt/
+          src/test/resources/fixtures/**/generated.*
+          src/test/resources/fixtures/**/*diff*.png
+          src/test/resources/fixtures/**/diff.*
+          build/reports/tests/test/
         if-no-files-found: ignore
         retention-days: 14

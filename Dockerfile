@@ -2,10 +2,10 @@ FROM node:24-alpine AS webui-build
 
 WORKDIR /webui
 
-COPY app/src/webui/template-builder/package*.json ./
+COPY src/webui/template-builder/package*.json ./
 RUN npm ci
 
-COPY app/src/webui/template-builder/ ./
+COPY src/webui/template-builder/ ./
 RUN npm run build
 
 FROM gradle:9-jdk24-alpine AS build
@@ -15,7 +15,7 @@ ARG APP_VERSION=dev
 WORKDIR /app
 
 COPY . .
-COPY --from=webui-build /webui/dist/ /app/app/build/generated-resources/webui/template-builder/
+COPY --from=webui-build /webui/dist/ /app/build/generated-resources/webui/template-builder/
 
 RUN ./gradlew installDist -x test --no-daemon -Papp.version=${APP_VERSION} -PskipTemplateBuilderWebUiBuild=true
 
@@ -37,7 +37,7 @@ RUN apk add --no-cache \
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser
 
-COPY --from=build /app/app/build/install/app/ /app/
+COPY --from=build /app/build/install/pdf-ua-api/ /app/
 COPY --from=otel-agent /opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 COPY entrypoint.sh /app/entrypoint.sh
 
@@ -56,4 +56,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAM
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["/app/bin/app"]
+CMD ["/app/bin/pdf-ua-api"]

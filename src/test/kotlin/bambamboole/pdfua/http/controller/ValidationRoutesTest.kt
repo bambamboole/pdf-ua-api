@@ -130,8 +130,8 @@ class ValidationRoutesTest {
                     ?: fail("fixtures/html directory not found in classpath")
 
             val buildFixturesDir = File(fixturesUrl.toURI())
-            val projectRoot = buildFixturesDir.absolutePath.substringBefore("/app/build/")
-            return File(projectRoot, "app/src/test/resources/fixtures/html")
+            val projectRoot = buildFixturesDir.absolutePath.substringBefore("/build/")
+            return File(projectRoot, "src/test/resources/fixtures/html")
         }
     }
 

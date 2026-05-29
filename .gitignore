@@ -23,7 +23,7 @@ out/
 
 ### Node ###
 node_modules/
-app/src/webui/**/dist/
+src/webui/**/dist/
 
 ### Eclipse ###
 .apt_generated
