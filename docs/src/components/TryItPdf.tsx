@@ -12,7 +12,7 @@ const editorTheme = EditorView.theme({
   "&": { fontSize: "13px" },
   ".cm-scroller": {
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    lineHeight: "18px",
+    lineHeight: "1rem",
   },
 });
 
