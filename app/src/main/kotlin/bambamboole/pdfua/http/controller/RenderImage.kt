@@ -1,6 +1,7 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.image.ImageRenderer
+import bambamboole.pdfua.services.DocumentUploader
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -23,7 +24,10 @@ data class RenderImageRequest(
 
 @GenerateOpenApi
 @Tag(["Rendering"])
-fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
+fun Route.renderImageRoutes(
+    assetResolver: FSStreamFactory? = null,
+    uploader: DocumentUploader? = null,
+) {
     @KtorDescription(
         summary = "Render HTML to image",
         description = "Renders HTML to a PNG or JPEG image. Returns the image binary.",
@@ -75,18 +79,12 @@ fun Route.renderImageRoutes(assetResolver: FSStreamFactory? = null) {
             val contentType = if (format == "jpg") ContentType.Image.JPEG else ContentType.Image.PNG
             val extension = if (format == "jpg") "jpg" else "png"
 
-            call.response.header(
-                HttpHeaders.ContentDisposition,
-                ContentDisposition.Attachment.withParameter(
-                    ContentDisposition.Parameters.FileName,
-                    "output.$extension",
-                ).toString(),
-            )
-
-            call.respondBytes(
+            respondDocumentOrUpload(
                 bytes = imageBytes,
                 contentType = contentType,
-                status = HttpStatusCode.OK,
+                fileName = "output.$extension",
+                documentId = null,
+                uploader = uploader,
             )
         } catch (e: IllegalArgumentException) {
             call.respond(

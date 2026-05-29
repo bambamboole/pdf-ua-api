@@ -12,6 +12,7 @@ import bambamboole.pdfua.http.controller.templateBuilderWebRoutes
 import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
 import bambamboole.pdfua.services.AssetResolver
+import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
@@ -63,6 +64,16 @@ fun Application.module() {
         maxSizeBytes = config.assetMaxSizeBytes,
         allowedDomains = config.assetAllowedDomains
     )
+
+    val documentUploader = if (config.uploadEnabled) {
+        DocumentUploader(
+            httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
+            timeoutMs = config.uploadTimeoutMs,
+            allowedDomains = config.uploadAllowedDomains
+        )
+    } else {
+        null
+    }
 
     install(ContentNegotiation) {
         json(Json {
@@ -131,20 +142,20 @@ fun Application.module() {
 
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
-                rateLimited(config) { expensiveRoutes(config, assetResolver) }
+                rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
             }
         } else {
-            rateLimited(config) { expensiveRoutes(config, assetResolver) }
+            rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
         }
     }
 }
 
-private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolver) {
-    convertRoutes(config.pdfProducer, assetResolver)
-    renderRoutes(config.pdfProducer, assetResolver)
+private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolver, uploader: DocumentUploader?) {
+    convertRoutes(config.pdfProducer, assetResolver, uploader)
+    renderRoutes(config.pdfProducer, assetResolver, uploader)
     validationRoutes()
     convertAndValidateRoutes(config.pdfProducer, assetResolver)
-    renderImageRoutes(assetResolver)
+    renderImageRoutes(assetResolver, uploader)
     identifyRoutes()
 }
 
