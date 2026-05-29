@@ -3,15 +3,50 @@ title: PDF UA API
 description: HTTP API for converting HTML to accessible PDF/A-3a and PDF/UA documents.
 ---
 
-PDF UA API converts HTML to **PDF/A-3a** documents with full **PDF/UA** accessibility,
-validates PDFs with veraPDF, and renders HTML to images — all over a simple HTTP API.
+PDF UA API turns HTML and JSON templates into **PDF/A-3a** documents with full **PDF/UA**
+accessibility — tagged structure, a declared document language, and embedded fonts — so the
+output is both long-term archivable and screen-reader friendly. Beyond conversion it validates
+existing PDFs, identifies documents it produced, and renders HTML to images, all over a small
+HTTP API that runs as a single container with no external services.
+
+## Two ways to create a PDF
+
+You can drive the API with raw HTML or with a structured template, depending on what you already
+have:
+
+- **From HTML** — send a complete HTML document to `POST /convert`. Best when you already produce
+  markup or use a templating engine. See [HTML to PDF](/html-to-pdf/).
+- **From a template** — send a JSON template of rows and blocks to `POST /render/template`. Best
+  for structured documents like invoices, where layout and data stay separate. See
+  [Templates](/templates/structure/).
+
+Both paths produce the same accessible PDF/A-3a output.
 
 ## Highlights
 
 - HTML → accessible PDF/A-3a conversion
-- Built-in PDF/A & PDF/UA validation (veraPDF)
+- Built-in PDF/A & PDF/UA validation
 - Bundled open-source fonts, full CSS 2.1 styling, automatic table pagination
 - Editable, [live HTML→PDF](/html-to-pdf/) and [template](/templates/structure/) examples
 
-Start with the [Quick Start](/getting-started/quick-start/) or browse the
-[API Reference](/api/).
+## Built with
+
+The API stands on a handful of well-established open-source libraries — follow the links for
+their own documentation:
+
+- <a href="https://ktor.io" target="_blank" rel="noopener noreferrer">Ktor</a> — the Kotlin HTTP
+  server framework that powers the endpoints.
+- <a href="https://github.com/danfickle/openhtmltopdf" target="_blank" rel="noopener noreferrer">OpenHTMLToPDF</a>
+  — renders HTML and CSS to PDF/A and to images.
+- <a href="https://pdfbox.apache.org" target="_blank" rel="noopener noreferrer">Apache PDFBox</a>
+  — reads and writes the underlying PDF documents.
+- <a href="https://verapdf.org" target="_blank" rel="noopener noreferrer">veraPDF</a> — validates
+  output against the PDF/A and PDF/UA standards.
+- <a href="https://jsoup.org" target="_blank" rel="noopener noreferrer">jsoup</a> — parses and
+  normalizes incoming HTML.
+
+## Next steps
+
+Follow the [Quick Start](/getting-started/quick-start/) to run the API and create your first PDF,
+then secure it with [Authentication](/authentication/) and tune [Rate Limiting](/rate-limiting/).
+The full [API Reference](/api/) documents every endpoint.
