@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { json } from "@codemirror/lang-json";
 
 const DEFAULT_API_URL = "http://localhost:8080";
+
+// Explicit, integer line-height shared by content and gutter keeps the line
+// numbers aligned while scrolling, and a monospace stack overrides the inherited
+// prose styles from the docs theme.
+const editorTheme = EditorView.theme({
+  "&": { fontSize: "13px" },
+  ".cm-scroller": {
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    lineHeight: "18px",
+  },
+});
 
 type Mode = "html" | "template";
 
@@ -12,8 +23,23 @@ interface TryItPdfProps {
   initialCode: string;
 }
 
+/** Tracks Starlight's resolved color scheme via the `data-theme` attribute. */
+function useStarlightDark(): boolean {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const read = () => setIsDark(root.dataset.theme === "dark");
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
 export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
   const apiUrl = import.meta.env.PUBLIC_API_URL ?? DEFAULT_API_URL;
+  const isDark = useStarlightDark();
   const [code, setCode] = useState(initialCode);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -25,7 +51,7 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
     };
   }, [pdfUrl]);
 
-  const extensions = mode === "html" ? [html()] : [json()];
+  const extensions = [mode === "html" ? html() : json(), editorTheme];
 
   async function render() {
     setStatus(null);
@@ -73,7 +99,14 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
 
   return (
     <div>
-      <CodeMirror value={code} height="300px" extensions={extensions} onChange={(v) => setCode(v)} />
+      <CodeMirror
+        value={code}
+        height="420px"
+        theme={isDark ? "dark" : "light"}
+        extensions={extensions}
+        basicSetup={{ foldGutter: false }}
+        onChange={(v) => setCode(v)}
+      />
       <p>
         <button onClick={render} disabled={loading}>
           {loading ? "Rendering…" : "Render PDF"}
