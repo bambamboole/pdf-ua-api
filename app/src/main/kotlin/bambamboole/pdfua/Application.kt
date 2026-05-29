@@ -16,10 +16,13 @@ import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
+import com.auth0.jwk.JwkProvider
+import com.auth0.jwk.JwkProviderBuilder
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.mustache.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -32,7 +35,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import java.net.URI
 import java.util.Properties
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
@@ -50,7 +55,7 @@ private fun loadVersion(): String {
     return props.getProperty("version", "dev")
 }
 
-fun Application.module() {
+fun Application.module(jwkProvider: JwkProvider? = null) {
     val config = AppConfig.load(environment)
     val version = loadVersion()
     LoggerFactory
@@ -125,19 +130,7 @@ fun Application.module() {
         }
     }
 
-    if (config.isAuthenticationEnabled) {
-        install(Authentication) {
-            bearer("api-key-auth") {
-                authenticate { credential ->
-                    if (credential.token == config.apiKey) {
-                        UserIdPrincipal("api-user")
-                    } else {
-                        null
-                    }
-                }
-            }
-        }
-    }
+    installAuthentication(config, jwkProvider)
 
     routing {
         swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.yaml")
@@ -148,8 +141,9 @@ fun Application.module() {
         healthRoutes()
         templateSchemaRoutes()
 
-        if (config.isAuthenticationEnabled) {
-            authenticate("api-key-auth") {
+        val providerName = authProviderName(config)
+        if (providerName != null) {
+            authenticate(providerName) {
                 rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
             }
         } else {
@@ -183,3 +177,55 @@ private fun Route.rateLimited(
         block()
     }
 }
+
+private const val JWKS_CACHE_SIZE = 10L
+private const val JWKS_CACHE_EXPIRES_HOURS = 24L
+private const val JWKS_RATE_LIMIT_BUCKET_SIZE = 10L
+private const val JWKS_RATE_LIMIT_REFILL_MINUTES = 1L
+
+private fun Application.installAuthentication(
+    config: AppConfig,
+    jwkProvider: JwkProvider?,
+) {
+    val jwtConfig = config.jwt
+    when {
+        jwtConfig != null -> {
+            val resolvedJwkProvider = jwkProvider ?: buildJwkProvider(jwtConfig.jwksUrl)
+            install(Authentication) {
+                jwt("jwt-auth") {
+                    verifier(resolvedJwkProvider, jwtConfig.issuer) {
+                        jwtConfig.audience?.let { withAudience(it) }
+                    }
+                    validate { credential -> JWTPrincipal(credential.payload) }
+                }
+            }
+        }
+
+        config.apiKey != null -> {
+            install(Authentication) {
+                bearer("api-key-auth") {
+                    authenticate { credential ->
+                        if (credential.token == config.apiKey) {
+                            UserIdPrincipal("api-user")
+                        } else {
+                            null
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun authProviderName(config: AppConfig): String? =
+    when {
+        config.jwt != null -> "jwt-auth"
+        config.apiKey != null -> "api-key-auth"
+        else -> null
+    }
+
+private fun buildJwkProvider(jwksUrl: String): JwkProvider =
+    JwkProviderBuilder(URI(jwksUrl).toURL())
+        .cached(JWKS_CACHE_SIZE, JWKS_CACHE_EXPIRES_HOURS, TimeUnit.HOURS)
+        .rateLimited(JWKS_RATE_LIMIT_BUCKET_SIZE, JWKS_RATE_LIMIT_REFILL_MINUTES, TimeUnit.MINUTES)
+        .build()

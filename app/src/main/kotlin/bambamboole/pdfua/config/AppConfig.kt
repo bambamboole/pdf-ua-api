@@ -62,14 +62,20 @@ data class AppConfig(
             val jwtAudience = getOptional("jwt.audience")
             val jwt =
                 when {
-                    jwtIssuer != null && jwtJwksUrl != null ->
+                    jwtIssuer != null && jwtJwksUrl != null -> {
                         JwtConfig(issuer = jwtIssuer, jwksUrl = jwtJwksUrl, audience = jwtAudience)
-                    jwtIssuer != null || jwtJwksUrl != null ->
+                    }
+
+                    jwtIssuer != null || jwtJwksUrl != null -> {
                         error(
                             "JWT auth requires both JWT_ISSUER and JWT_JWKS_URL to be set; missing " +
                                 if (jwtIssuer == null) "JWT_ISSUER" else "JWT_JWKS_URL",
                         )
-                    else -> null
+                    }
+
+                    else -> {
+                        null
+                    }
                 }
 
             return AppConfig(
@@ -106,7 +112,4 @@ data class AppConfig(
             )
         }
     }
-
-    val isAuthenticationEnabled: Boolean
-        get() = jwt != null || apiKey != null
 }
