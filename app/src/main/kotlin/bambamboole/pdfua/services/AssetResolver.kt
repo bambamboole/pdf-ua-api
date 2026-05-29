@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.Reader
-import java.net.InetAddress
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -35,28 +34,7 @@ class AssetResolver(
         }
     }
 
-    internal fun validateUrl(uri: URI) {
-        val scheme = uri.scheme?.lowercase()
-        require(scheme == "http" || scheme == "https") {
-            "Only http/https schemes are allowed, got: $scheme"
-        }
-
-        val host = uri.host ?: throw IllegalArgumentException("URL has no host: $uri")
-
-        if (allowedDomains.isNotEmpty()) {
-            require(host.lowercase() in allowedDomains) {
-                "Domain not in allowed list: $host"
-            }
-        }
-
-        val addresses = InetAddress.getAllByName(host)
-        for (addr in addresses) {
-            require(!addr.isLoopbackAddress) { "Loopback addresses are blocked: $host" }
-            require(!addr.isSiteLocalAddress) { "Private network addresses are blocked: $host" }
-            require(!addr.isLinkLocalAddress) { "Link-local addresses are blocked: $host" }
-            require(!addr.isAnyLocalAddress) { "Wildcard addresses are blocked: $host" }
-        }
-    }
+    internal fun validateUrl(uri: URI) = validatePublicHttpUrl(uri, allowedDomains)
 
     private fun fetchUrl(uri: URI): FSStream {
         val request = HttpRequest.newBuilder()

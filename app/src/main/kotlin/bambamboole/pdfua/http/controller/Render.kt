@@ -2,6 +2,7 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.template.Template
@@ -45,6 +46,7 @@ private fun Throwable.unwrapToSerializationException(): SerializationException? 
 fun Route.renderRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
+    uploader: DocumentUploader? = null,
 ) {
     @KtorDescription(
         summary = "Render a template to PDF",
@@ -84,15 +86,13 @@ fun Route.renderRoutes(
                 attachments = request.template.attachments,
             )
 
-            call.response.header("X-Document-UUID", result.documentId)
-            call.response.header(
-                HttpHeaders.ContentDisposition,
-                ContentDisposition.Attachment.withParameter(
-                    ContentDisposition.Parameters.FileName,
-                    "output.pdf",
-                ).toString(),
+            respondDocumentOrUpload(
+                bytes = result.bytes,
+                contentType = ContentType.Application.Pdf,
+                fileName = "output.pdf",
+                documentId = result.documentId,
+                uploader = uploader,
             )
-            call.respondBytes(result.bytes, ContentType.Application.Pdf, HttpStatusCode.OK)
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid request")))
         } catch (e: Exception) {

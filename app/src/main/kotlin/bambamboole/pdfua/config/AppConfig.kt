@@ -11,7 +11,10 @@ data class AppConfig(
     val logFormat: String,
     val assetTimeoutMs: Long,
     val assetMaxSizeBytes: Long,
-    val assetAllowedDomains: Set<String>
+    val assetAllowedDomains: Set<String>,
+    val uploadEnabled: Boolean,
+    val uploadTimeoutMs: Long,
+    val uploadAllowedDomains: Set<String>
 ) {
     companion object {
         fun load(environment: ApplicationEnvironment): AppConfig {
@@ -40,6 +43,11 @@ data class AppConfig(
                 assetTimeoutMs = getLong("assets.timeout", 5000),
                 assetMaxSizeBytes = getLong("assets.maxSize", 5 * 1024 * 1024),
                 assetAllowedDomains = getOptional("assets.allowedDomains")
+                    ?.split(",")?.map { it.trim().lowercase() }?.filter { it.isNotBlank() }?.toSet()
+                    ?: emptySet(),
+                uploadEnabled = getBoolean("upload.enabled", true),
+                uploadTimeoutMs = getLong("upload.timeout", 30_000),
+                uploadAllowedDomains = getOptional("upload.allowedDomains")
                     ?.split(",")?.map { it.trim().lowercase() }?.filter { it.isNotBlank() }?.toSet()
                     ?: emptySet()
             )

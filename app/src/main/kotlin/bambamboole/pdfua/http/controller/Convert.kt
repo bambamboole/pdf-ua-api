@@ -2,6 +2,7 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.services.DocumentUploader
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -19,6 +20,7 @@ import java.net.URI
 fun Route.convertRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
+    uploader: DocumentUploader? = null,
 ) {
     @KtorDescription(
         summary = "Convert HTML to PDF",
@@ -51,19 +53,12 @@ fun Route.convertRoutes(
                 attachments = request.attachments,
             )
 
-            call.response.header("X-Document-UUID", result.documentId)
-            call.response.header(
-                HttpHeaders.ContentDisposition,
-                ContentDisposition.Attachment.withParameter(
-                    ContentDisposition.Parameters.FileName,
-                    "output.pdf",
-                ).toString(),
-            )
-
-            call.respondBytes(
+            respondDocumentOrUpload(
                 bytes = result.bytes,
                 contentType = ContentType.Application.Pdf,
-                status = HttpStatusCode.OK,
+                fileName = "output.pdf",
+                documentId = result.documentId,
+                uploader = uploader,
             )
         } catch (e: IllegalArgumentException) {
             call.respond(
