@@ -1,50 +1,47 @@
 package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.routes.convertAndValidateRoutes
-import bambamboole.pdfua.routes.convertRoutes
-import bambamboole.pdfua.routes.healthRoutes
-import bambamboole.pdfua.routes.identifyRoutes
-import bambamboole.pdfua.routes.indexRoutes
-import bambamboole.pdfua.routes.renderImageRoutes
-import bambamboole.pdfua.routes.renderRoutes
-import bambamboole.pdfua.routes.templateBuilderWebRoutes
-import bambamboole.pdfua.routes.templateSchemaRoutes
-import bambamboole.pdfua.routes.validationRoutes
+import bambamboole.pdfua.http.controller.convertAndValidateRoutes
+import bambamboole.pdfua.http.controller.convertRoutes
+import bambamboole.pdfua.http.controller.healthRoutes
+import bambamboole.pdfua.http.controller.identifyRoutes
+import bambamboole.pdfua.http.controller.indexRoutes
+import bambamboole.pdfua.http.controller.renderImageRoutes
+import bambamboole.pdfua.http.controller.renderRoutes
+import bambamboole.pdfua.http.controller.templateBuilderWebRoutes
+import bambamboole.pdfua.http.controller.templateSchemaRoutes
+import bambamboole.pdfua.http.controller.validationRoutes
 import bambamboole.pdfua.services.AssetResolver
-import bambamboole.pdfua.services.ImageRenderService
-import bambamboole.pdfua.services.PdfService
-import bambamboole.pdfua.services.PdfValidationService
+import bambamboole.pdfua.services.DocumentUploader
+import bambamboole.pdfua.image.ImageRenderer
+import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.pdf.PdfValidator
 import com.github.mustachejava.DefaultMustacheFactory
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.UserIdPrincipal
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.bearer
-import io.ktor.server.mustache.Mustache
-import io.ktor.server.plugins.calllogging.CallLogging
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.plugins.statuspages.exception
-import io.ktor.server.plugins.swagger.swaggerUI
-import io.ktor.server.response.respond
-import io.ktor.server.routing.routing
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.mustache.*
+import io.ktor.server.plugins.calllogging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.forwardedheaders.*
+import io.ktor.server.plugins.origin
+import io.ktor.server.plugins.ratelimit.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.response.*
+import io.ktor.server.plugins.swagger.*
+import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.util.Properties
+import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain
-        .main(args)
+    io.ktor.server.netty.EngineMain.main(args)
 }
 
 private fun loadVersion(): String {
     val props = Properties()
-    Thread
-        .currentThread()
-        .contextClassLoader
+    Thread.currentThread().contextClassLoader
         .getResourceAsStream("version.properties")
         ?.use { props.load(it) }
     return props.getProperty("version", "dev")
@@ -53,30 +50,36 @@ private fun loadVersion(): String {
 fun Application.module() {
     val config = AppConfig.load(environment)
     val version = loadVersion()
-    LoggerFactory
-        .getLogger("bambamboole.pdfua.Application")
+    LoggerFactory.getLogger("bambamboole.pdfua.Application")
         .info("PDF API version {} started", version)
 
-    PdfService.warmup()
-    PdfValidationService.warmup()
-    ImageRenderService.warmup()
+    PdfRenderer.warmup()
+    PdfValidator.warmup()
+    ImageRenderer.warmup()
 
     val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
-    val assetResolver =
-        AssetResolver(
-            httpClient = httpClient,
-            timeoutMs = config.assetTimeoutMs,
-            maxSizeBytes = config.assetMaxSizeBytes,
-            allowedDomains = config.assetAllowedDomains,
+    val assetResolver = AssetResolver(
+        httpClient = httpClient,
+        timeoutMs = config.assetTimeoutMs,
+        maxSizeBytes = config.assetMaxSizeBytes,
+        allowedDomains = config.assetAllowedDomains
+    )
+
+    val documentUploader = if (config.uploadEnabled) {
+        DocumentUploader(
+            httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
+            timeoutMs = config.uploadTimeoutMs,
+            allowedDomains = config.uploadAllowedDomains
         )
+    } else {
+        null
+    }
 
     install(ContentNegotiation) {
-        json(
-            Json {
-                prettyPrint = true
-                isLenient = true
-            },
-        )
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+        })
     }
 
     if (config.webUIEnabled) {
@@ -93,8 +96,24 @@ fun Application.module() {
         exception<Throwable> { call, cause ->
             call.respond(
                 io.ktor.http.HttpStatusCode.InternalServerError,
-                mapOf("error" to (cause.message ?: "Unknown error")),
+                mapOf("error" to (cause.message ?: "Unknown error"))
             )
+        }
+    }
+
+    if (config.rateLimitTrustForwardedFor) {
+        install(XForwardedHeaders)
+    }
+
+    if (config.rateLimitEnabled) {
+        install(RateLimit) {
+            register(RateLimitName("perIp")) {
+                rateLimiter(limit = config.rateLimitPerIp, refillPeriod = config.rateLimitWindowSeconds.seconds)
+                requestKey { call -> call.request.origin.remoteHost }
+            }
+            register(RateLimitName("global")) {
+                rateLimiter(limit = config.rateLimitGlobal, refillPeriod = config.rateLimitWindowSeconds.seconds)
+            }
         }
     }
 
@@ -123,20 +142,29 @@ fun Application.module() {
 
         if (config.isAuthenticationEnabled) {
             authenticate("api-key-auth") {
-                convertRoutes(config.pdfProducer, assetResolver)
-                renderRoutes(config.pdfProducer, assetResolver)
-                validationRoutes()
-                convertAndValidateRoutes(config.pdfProducer, assetResolver)
-                renderImageRoutes(assetResolver)
-                identifyRoutes()
+                rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
             }
         } else {
-            convertRoutes(config.pdfProducer, assetResolver)
-            renderRoutes(config.pdfProducer, assetResolver)
-            validationRoutes()
-            convertAndValidateRoutes(config.pdfProducer, assetResolver)
-            renderImageRoutes(assetResolver)
-            identifyRoutes()
+            rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
         }
+    }
+}
+
+private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolver, uploader: DocumentUploader?) {
+    convertRoutes(config.pdfProducer, assetResolver, uploader)
+    renderRoutes(config.pdfProducer, assetResolver, uploader)
+    validationRoutes()
+    convertAndValidateRoutes(config.pdfProducer, assetResolver)
+    renderImageRoutes(assetResolver, uploader)
+    identifyRoutes()
+}
+
+private fun Route.rateLimited(config: AppConfig, block: Route.() -> Unit) {
+    if (config.rateLimitEnabled) {
+        rateLimit(RateLimitName("perIp")) {
+            rateLimit(RateLimitName("global")) { block() }
+        }
+    } else {
+        block()
     }
 }
