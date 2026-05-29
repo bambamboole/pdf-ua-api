@@ -20,7 +20,7 @@ export default defineConfig({
             ],
             plugins: [
                 starlightOpenAPI([
-                    {base: "api", label: "API Reference", schema: "./docs/openapi/openapi.yaml"},
+                    {base: "api", label: "API Reference", schema: "./docs/openapi/openapi.json"},
                 ]),
             ],
             sidebar: [
@@ -33,6 +33,7 @@ export default defineConfig({
                 },
                 {label: "Authentication", link: "/authentication/"},
                 {label: "Rate Limiting", link: "/rate-limiting/"},
+                {label: "S3 PDF Upload", link: "/s3-upload/"},
                 {
                     label: "HTML",
                     items: [
