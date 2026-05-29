@@ -44,8 +44,9 @@ bin/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
+### Astro ###
+dist/
+.astro/
 
 ### Mac OS ###
 .DS_Store
@@ -59,3 +60,4 @@ bin/
 
 #AI
 docs/superpowers
+

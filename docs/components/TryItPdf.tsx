@@ -3,7 +3,7 @@ import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { json } from "@codemirror/lang-json";
 
-const DEFAULT_API_URL = "http://localhost:8080";
+const DEFAULT_API_URL = "https://pdf-ua-api.c1.bambamboole.com";
 
 // Explicit, integer line-height shared by content and gutter keeps the line
 // numbers aligned while scrolling, and a monospace stack overrides the inherited
@@ -12,7 +12,7 @@ const editorTheme = EditorView.theme({
   "&": { fontSize: "13px" },
   ".cm-scroller": {
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    lineHeight: "1rem",
+    lineHeight: "16px",
   },
 });
 
@@ -116,7 +116,6 @@ export default function TryItPdf({ mode, initialCode }: TryItPdfProps) {
         <button onClick={render} disabled={loading}>
           {loading ? "Rendering…" : actionLabel}
         </button>{" "}
-        <small>API: {apiUrl}</small>
       </p>
       {status && <p role="alert">{status}</p>}
       {resultUrl &&
