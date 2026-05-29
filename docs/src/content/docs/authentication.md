@@ -1,0 +1,38 @@
+---
+title: Authentication
+description: Protect the API with a JWT (JWKS) or a static API key.
+---
+
+Authentication is optional and configured by environment variables. Exactly one mechanism is
+active at a time:
+
+1. **JWT (JWKS)** — active when `JWT_ISSUER` and `JWT_JWKS_URL` are both set.
+2. **API key** — active when `API_KEY` is set (and JWT is not).
+3. **Public** — when neither is configured, the API is open.
+
+JWT takes precedence over the API key when both are configured. Authentication guards the
+conversion, rendering, validation, and identification endpoints; `/health`, the template schema,
+and the API docs stay public. Failed or missing credentials return `401`.
+
+## API key
+
+Set `API_KEY`, then send it as a Bearer token:
+
+```bash
+curl -X POST http://localhost:8080/convert \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}' \
+  --output out.pdf
+```
+
+## JWT (JWKS)
+
+The API only **verifies** tokens; it never issues them. Configure:
+
+- `JWT_ISSUER` — expected `iss` and the JWKS issuer
+- `JWT_JWKS_URL` — the issuer's JWKS endpoint (public keys, RS256)
+- `JWT_AUDIENCE` — optional; when set, the `aud` claim must match
+
+The signature, issuer, and expiry are always checked; the audience is checked only when
+`JWT_AUDIENCE` is set. Send the token as `Authorization: Bearer <token>`.
