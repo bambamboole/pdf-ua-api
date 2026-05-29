@@ -32,16 +32,22 @@ data class HeadingBlock(
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        if (config.level in 1..6) emptyList()
-        else listOf(
-            issue(
-                path.child("config").child("level"),
-                ValidationCodes.OUT_OF_RANGE,
-                "Heading level must be between 1 and 6: ${config.level}",
-            ),
-        )
+        if (config.level in 1..6) {
+            emptyList()
+        } else {
+            listOf(
+                issue(
+                    path.child("config").child("level"),
+                    ValidationCodes.OUT_OF_RANGE,
+                    "Heading level must be between 1 and 6: ${config.level}",
+                ),
+            )
+        }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("text"), path) + optionalStringField(obj, "text", path)

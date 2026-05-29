@@ -21,11 +21,11 @@ import kotlin.test.fail
  * against a committed expected.pdf baseline.
  */
 class TemplatePdfFixtureTest {
-
     companion object {
         private fun templateFixturesDir(): File {
-            val url = TemplatePdfFixtureTest::class.java.classLoader.getResource("fixtures/template")
-                ?: fail("fixtures/template directory not found in classpath")
+            val url =
+                TemplatePdfFixtureTest::class.java.classLoader.getResource("fixtures/template")
+                    ?: fail("fixtures/template directory not found in classpath")
             val projectRoot = File(url.toURI()).absolutePath.substringBefore("/app/build/")
             return File(projectRoot, "app/src/test/resources/fixtures/template")
         }
@@ -39,10 +39,11 @@ class TemplatePdfFixtureTest {
             val dir = File(templateFixturesDir(), name)
             val body = File(dir, "input.json").readText()
 
-            val response = client.post("/render/template") {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
+            val response =
+                client.post("/render/template") {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
             assertEquals(HttpStatusCode.OK, response.status, "Fixture '$name': should return 200 OK")
             val pdf = response.readRawBytes()
             assertTrue(pdf.isNotEmpty(), "Fixture '$name': PDF should not be empty")
@@ -84,7 +85,11 @@ class TemplatePdfFixtureTest {
             }
         }
 
-        private fun assertPdfPageText(name: String, pdf: ByteArray, pageTextAssertions: Map<Int, List<String>>) {
+        private fun assertPdfPageText(
+            name: String,
+            pdf: ByteArray,
+            pageTextAssertions: Map<Int, List<String>>,
+        ) {
             Loader.loadPDF(pdf).use { document ->
                 val maxAssertedPage = pageTextAssertions.keys.maxOrNull() ?: 0
                 assertTrue(
@@ -108,24 +113,30 @@ class TemplatePdfFixtureTest {
 
         private fun String.normalizedForMatch(): String = replace(Regex("\\s+"), " ")
 
-        private fun assertKeepsTogether(name: String, pdf: ByteArray, groups: List<List<String>>) {
+        private fun assertKeepsTogether(
+            name: String,
+            pdf: ByteArray,
+            groups: List<List<String>>,
+        ) {
             Loader.loadPDF(pdf).use { document ->
                 val stripper = PDFTextStripper()
-                val pageTexts = (1..document.numberOfPages).map { page ->
-                    stripper.startPage = page
-                    stripper.endPage = page
-                    stripper.getText(document).normalizedForMatch()
-                }
-                groups.forEach { group ->
-                    val pages = group.map { snippet ->
-                        val match = pageTexts.indexOfFirst { it.contains(snippet) }
-                        if (match < 0) {
-                            fail(
-                                "Fixture '$name': snippet '$snippet' not found on any page; group $group cannot be evaluated",
-                            )
-                        }
-                        match + 1
+                val pageTexts =
+                    (1..document.numberOfPages).map { page ->
+                        stripper.startPage = page
+                        stripper.endPage = page
+                        stripper.getText(document).normalizedForMatch()
                     }
+                groups.forEach { group ->
+                    val pages =
+                        group.map { snippet ->
+                            val match = pageTexts.indexOfFirst { it.contains(snippet) }
+                            if (match < 0) {
+                                fail(
+                                    "Fixture '$name': snippet '$snippet' not found on any page; group $group cannot be evaluated",
+                                )
+                            }
+                            match + 1
+                        }
                     val distinct = pages.toSet()
                     assertTrue(
                         distinct.size == 1,
@@ -137,159 +148,183 @@ class TemplatePdfFixtureTest {
     }
 
     @Test
-    fun externalFont() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture("external-font", embeddedFont = "Lobster")
-    }
+    fun externalFont() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture("external-font", embeddedFont = "Lobster")
+        }
 
     @Test
-    fun pageBackground() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture("page-background", embeddedFont = "LiberationSans")
-    }
+    fun pageBackground() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture("page-background", embeddedFont = "LiberationSans")
+        }
 
     @Test
-    fun keyValueBasic() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture("key-value-basic", embeddedFont = "Inter")
-    }
+    fun keyValueBasic() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture("key-value-basic", embeddedFont = "Inter")
+        }
 
     @Test
-    fun keyValueRuntime() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture("key-value-runtime", embeddedFont = "Inter")
-    }
+    fun keyValueRuntime() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture("key-value-runtime", embeddedFont = "Inter")
+        }
 
     @Test
-    fun repeatedFooter() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "repeated-footer",
-            embeddedFont = "LiberationSans",
-            pageTextAssertions = mapOf(2 to listOf("Runtime footer for every page")),
-        )
-    }
+    fun repeatedFooter() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "repeated-footer",
+                embeddedFont = "LiberationSans",
+                pageTextAssertions = mapOf(2 to listOf("Runtime footer for every page")),
+            )
+        }
 
     @Test
-    fun repeatedFooterRightPageNumbers() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "repeated-footer-right-page-numbers",
-            embeddedFont = "LiberationSans",
-            pageTextAssertions = mapOf(2 to listOf("Runtime footer plus right page numbers")),
-        )
-    }
+    fun repeatedFooterRightPageNumbers() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "repeated-footer-right-page-numbers",
+                embeddedFont = "LiberationSans",
+                pageTextAssertions = mapOf(2 to listOf("Runtime footer plus right page numbers")),
+            )
+        }
 
     @Test
-    fun footerWithLeftPageNumbers() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "footer-with-left-page-numbers",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf("Acme Industries GmbH"),
-                2 to listOf("Acme Industries GmbH"),
-            ),
-        )
-    }
+    fun footerWithLeftPageNumbers() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "footer-with-left-page-numbers",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to listOf("Acme Industries GmbH"),
+                        2 to listOf("Acme Industries GmbH"),
+                    ),
+            )
+        }
 
     @Test
-    fun invoice() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "invoice",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf(
-                    "RE-2026-001234",
-                    "Issue date",
-                    "Max Mustermann",
-                    "Musterkunde AG",
-                    "Currency EUR",
-                ),
-            ),
-            keepTogetherGroups = listOf(
-                listOf("Invoice no.", "RE-2026-001234", "Currency EUR"),
-                listOf("Seller", "Musterstraße 1", "VAT ID"),
-                listOf("Buyer", "Buyer reference"),
-                listOf("Subtotal", "VAT 19%", "Grand total", "7.282,80"),
-                listOf("Bank", "IBAN", "BIC"),
-            ),
-        )
-    }
+    fun invoice() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "invoice",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to
+                            listOf(
+                                "RE-2026-001234",
+                                "Issue date",
+                                "Max Mustermann",
+                                "Musterkunde AG",
+                                "Currency EUR",
+                            ),
+                    ),
+                keepTogetherGroups =
+                    listOf(
+                        listOf("Invoice no.", "RE-2026-001234", "Currency EUR"),
+                        listOf("Seller", "Musterstraße 1", "VAT ID"),
+                        listOf("Buyer", "Buyer reference"),
+                        listOf("Subtotal", "VAT 19%", "Grand total", "7.282,80"),
+                        listOf("Bank", "IBAN", "BIC"),
+                    ),
+            )
+        }
 
     @Test
-    fun footerWithCenterPageNumbers() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "footer-with-center-page-numbers",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf("Acme Industries GmbH"),
-                2 to listOf("Acme Industries GmbH"),
-            ),
-        )
-    }
+    fun footerWithCenterPageNumbers() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "footer-with-center-page-numbers",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to listOf("Acme Industries GmbH"),
+                        2 to listOf("Acme Industries GmbH"),
+                    ),
+            )
+        }
 
     @Test
-    fun dunningNotice() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "dunning-notice",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf(
-                    "MA-2026-00018",
-                    "Notice number",
-                    "Musterkunde AG",
-                    "04011000-12345-67",
-                ),
-            ),
-            keepTogetherGroups = listOf(
-                listOf("Notice number", "MA-2026-00018", "Payment due"),
-                listOf("Creditor", "Musterstraße 1", "VAT ID"),
-                listOf("Debtor", "Debtor reference"),
-                listOf("Amount due", "Bank", "IBAN", "BIC", "Payment reference"),
-            ),
-        )
-    }
+    fun dunningNotice() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "dunning-notice",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to
+                            listOf(
+                                "MA-2026-00018",
+                                "Notice number",
+                                "Musterkunde AG",
+                                "04011000-12345-67",
+                            ),
+                    ),
+                keepTogetherGroups =
+                    listOf(
+                        listOf("Notice number", "MA-2026-00018", "Payment due"),
+                        listOf("Creditor", "Musterstraße 1", "VAT ID"),
+                        listOf("Debtor", "Debtor reference"),
+                        listOf("Amount due", "Bank", "IBAN", "BIC", "Payment reference"),
+                    ),
+            )
+        }
 
     @Test
-    fun footerWithRightPageNumbers() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "footer-with-right-page-numbers",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf("Acme Industries GmbH"),
-                2 to listOf("Acme Industries GmbH"),
-            ),
-        )
-    }
+    fun footerWithRightPageNumbers() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "footer-with-right-page-numbers",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to listOf("Acme Industries GmbH"),
+                        2 to listOf("Acme Industries GmbH"),
+                    ),
+            )
+        }
 
     @Test
-    fun quote() = testApplication {
-        application { module() }
-        assertTemplatePdfFixture(
-            "quote",
-            embeddedFont = "Inter",
-            pageTextAssertions = mapOf(
-                1 to listOf(
-                    "AN-2026-000087",
-                    "Valid until",
-                    "Maria Beispiel",
-                    "Musterkunde AG",
-                    "Quote / Proposal",
-                    "Grand total",
-                    "9.210,60 €",
-                ),
-            ),
-            keepTogetherGroups = listOf(
-                listOf("Quote no.", "AN-2026-000087", "Account manager"),
-                listOf("Provider", "Musterstraße 1"),
-                listOf("Customer", "Musterkunde AG"),
-                listOf("Subtotal", "VAT 19%", "Grand total", "9.210,60"),
-            ),
-        )
-    }
+    fun quote() =
+        testApplication {
+            application { module() }
+            assertTemplatePdfFixture(
+                "quote",
+                embeddedFont = "Inter",
+                pageTextAssertions =
+                    mapOf(
+                        1 to
+                            listOf(
+                                "AN-2026-000087",
+                                "Valid until",
+                                "Maria Beispiel",
+                                "Musterkunde AG",
+                                "Quote / Proposal",
+                                "Grand total",
+                                "9.210,60 €",
+                            ),
+                    ),
+                keepTogetherGroups =
+                    listOf(
+                        listOf("Quote no.", "AN-2026-000087", "Account manager"),
+                        listOf("Provider", "Musterstraße 1"),
+                        listOf("Customer", "Musterkunde AG"),
+                        listOf("Subtotal", "VAT 19%", "Grand total", "9.210,60"),
+                    ),
+            )
+        }
 }

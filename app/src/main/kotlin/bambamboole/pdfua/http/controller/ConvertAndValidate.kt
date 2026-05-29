@@ -33,11 +33,13 @@ fun Route.convertAndValidateRoutes(
         summary = "Convert and validate HTML to PDF",
         description = "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF"),
-        ResponseEntry("400", Nothing::class, description = "Invalid request"),
-        ResponseEntry("500", Nothing::class, description = "Conversion or validation failed"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF"),
+            ResponseEntry("400", Nothing::class, description = "Invalid request"),
+            ResponseEntry("500", Nothing::class, description = "Conversion or validation failed"),
+        ],
+    )
     post("/convert-and-validate") {
         try {
             val request = call.receive<ConvertRequest>()
@@ -52,13 +54,14 @@ fun Route.convertAndValidateRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val result = PdfRenderer.convertHtmlToPdf(
-                html = request.html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-                attachments = request.attachments,
-            )
+            val result =
+                PdfRenderer.convertHtmlToPdf(
+                    html = request.html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = baseUrl,
+                    attachments = request.attachments,
+                )
             val validation = PdfValidator.validatePdf(result.bytes)
             val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)
 

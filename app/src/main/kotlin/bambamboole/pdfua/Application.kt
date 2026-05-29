@@ -11,11 +11,11 @@ import bambamboole.pdfua.http.controller.renderRoutes
 import bambamboole.pdfua.http.controller.templateBuilderWebRoutes
 import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
-import bambamboole.pdfua.services.AssetResolver
-import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
+import bambamboole.pdfua.services.AssetResolver
+import bambamboole.pdfua.services.DocumentUploader
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -27,8 +27,8 @@ import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.response.*
 import io.ktor.server.plugins.swagger.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
@@ -36,12 +36,15 @@ import java.util.Properties
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    io.ktor.server.netty.EngineMain
+        .main(args)
 }
 
 private fun loadVersion(): String {
     val props = Properties()
-    Thread.currentThread().contextClassLoader
+    Thread
+        .currentThread()
+        .contextClassLoader
         .getResourceAsStream("version.properties")
         ?.use { props.load(it) }
     return props.getProperty("version", "dev")
@@ -50,7 +53,8 @@ private fun loadVersion(): String {
 fun Application.module() {
     val config = AppConfig.load(environment)
     val version = loadVersion()
-    LoggerFactory.getLogger("bambamboole.pdfua.Application")
+    LoggerFactory
+        .getLogger("bambamboole.pdfua.Application")
         .info("PDF API version {} started", version)
 
     PdfRenderer.warmup()
@@ -58,28 +62,32 @@ fun Application.module() {
     ImageRenderer.warmup()
 
     val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
-    val assetResolver = AssetResolver(
-        httpClient = httpClient,
-        timeoutMs = config.assetTimeoutMs,
-        maxSizeBytes = config.assetMaxSizeBytes,
-        allowedDomains = config.assetAllowedDomains
-    )
-
-    val documentUploader = if (config.uploadEnabled) {
-        DocumentUploader(
-            httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
-            timeoutMs = config.uploadTimeoutMs,
-            allowedDomains = config.uploadAllowedDomains
+    val assetResolver =
+        AssetResolver(
+            httpClient = httpClient,
+            timeoutMs = config.assetTimeoutMs,
+            maxSizeBytes = config.assetMaxSizeBytes,
+            allowedDomains = config.assetAllowedDomains,
         )
-    } else {
-        null
-    }
+
+    val documentUploader =
+        if (config.uploadEnabled) {
+            DocumentUploader(
+                httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
+                timeoutMs = config.uploadTimeoutMs,
+                allowedDomains = config.uploadAllowedDomains,
+            )
+        } else {
+            null
+        }
 
     install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-        })
+        json(
+            Json {
+                prettyPrint = true
+                isLenient = true
+            },
+        )
     }
 
     if (config.webUIEnabled) {
@@ -96,7 +104,7 @@ fun Application.module() {
         exception<Throwable> { call, cause ->
             call.respond(
                 io.ktor.http.HttpStatusCode.InternalServerError,
-                mapOf("error" to (cause.message ?: "Unknown error"))
+                mapOf("error" to (cause.message ?: "Unknown error")),
             )
         }
     }
@@ -150,7 +158,11 @@ fun Application.module() {
     }
 }
 
-private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolver, uploader: DocumentUploader?) {
+private fun Route.expensiveRoutes(
+    config: AppConfig,
+    assetResolver: AssetResolver,
+    uploader: DocumentUploader?,
+) {
     convertRoutes(config.pdfProducer, assetResolver, uploader)
     renderRoutes(config.pdfProducer, assetResolver, uploader)
     validationRoutes()
@@ -159,7 +171,10 @@ private fun Route.expensiveRoutes(config: AppConfig, assetResolver: AssetResolve
     identifyRoutes()
 }
 
-private fun Route.rateLimited(config: AppConfig, block: Route.() -> Unit) {
+private fun Route.rateLimited(
+    config: AppConfig,
+    block: Route.() -> Unit,
+) {
     if (config.rateLimitEnabled) {
         rateLimit(RateLimitName("perIp")) {
             rateLimit(RateLimitName("global")) { block() }

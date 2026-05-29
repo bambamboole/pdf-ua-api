@@ -11,10 +11,10 @@ import kotlin.test.assertTrue
  * before PDF conversion.
  */
 class PdfRendererJsoupTest {
-
     @Test
     fun demonstrateJsoupManipulation() {
-        val html = """
+        val html =
+            """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -29,7 +29,7 @@ class PdfRendererJsoupTest {
                 </table>
             </body>
             </html>
-        """.trimIndent()
+            """.trimIndent()
 
         // Parse with jsoup
         val jsoupDoc = Jsoup.parse(html)
@@ -42,7 +42,9 @@ class PdfRendererJsoupTest {
         jsoupDoc.select("img").attr("loading", "eager")
 
         // 3. Add meta tags dynamically
-        jsoupDoc.head().appendElement("meta")
+        jsoupDoc
+            .head()
+            .appendElement("meta")
             .attr("name", "keywords")
             .attr("content", "pdf, document")
 
@@ -64,7 +66,8 @@ class PdfRendererJsoupTest {
 
     @Test
     fun demonstrateConditionalManipulation() {
-        val html = """
+        val html =
+            """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -80,7 +83,7 @@ class PdfRendererJsoupTest {
                 </div>
             </body>
             </html>
-        """.trimIndent()
+            """.trimIndent()
 
         val jsoupDoc = Jsoup.parse(html)
 
@@ -97,7 +100,8 @@ class PdfRendererJsoupTest {
 
     @Test
     fun demonstrateTextManipulation() {
-        val html = """
+        val html =
+            """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -108,7 +112,7 @@ class PdfRendererJsoupTest {
                 <p id="target">Original Text</p>
             </body>
             </html>
-        """.trimIndent()
+            """.trimIndent()
 
         val jsoupDoc = Jsoup.parse(html)
 

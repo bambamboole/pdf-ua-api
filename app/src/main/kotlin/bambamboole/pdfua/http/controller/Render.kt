@@ -1,10 +1,10 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.RenderOptions
-import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.template.ValidationIssue
@@ -52,21 +52,25 @@ fun Route.renderRoutes(
         summary = "Render a template to PDF",
         description = "Renders a JSON template (with optional per-block data overrides) to a PDF/A-3a document.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ByteArray::class, description = "PDF document"),
-        ResponseEntry("400", ValidationErrorResponse::class, description = "Invalid template, data, or request"),
-        ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry("400", ValidationErrorResponse::class, description = "Invalid template, data, or request"),
+            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
+        ],
+    )
     post("/render/template") {
-        val request = try {
-            call.receive<RenderRequest>()
-        } catch (e: Exception) {
-            val serializationCause = e.unwrapToSerializationException()
-            val issue = serializationCause?.let(::serializationIssue)
-                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
-            call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
-            return@post
-        }
+        val request =
+            try {
+                call.receive<RenderRequest>()
+            } catch (e: Exception) {
+                val serializationCause = e.unwrapToSerializationException()
+                val issue =
+                    serializationCause?.let(::serializationIssue)
+                        ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
+                call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
+                return@post
+            }
 
         val issues = request.template.validate(request.data)
         if (issues.isNotEmpty()) {
@@ -75,16 +79,19 @@ fun Route.renderRoutes(
         }
 
         try {
-            request.options.baseUrl.takeIf { it.isNotEmpty() }?.let { validateBaseUrl(it) }
+            request.options.baseUrl
+                .takeIf { it.isNotEmpty() }
+                ?.let { validateBaseUrl(it) }
             val html = TemplateRenderer.render(request.template, request.data, request.options)
 
-            val result = PdfRenderer.convertHtmlToPdf(
-                html = html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = request.options.baseUrl,
-                attachments = request.template.attachments,
-            )
+            val result =
+                PdfRenderer.convertHtmlToPdf(
+                    html = html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = request.options.baseUrl,
+                    attachments = request.template.attachments,
+                )
 
             respondDocumentOrUpload(
                 bytes = result.bytes,

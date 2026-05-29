@@ -21,7 +21,9 @@ data class TemplateConfig(
 )
 
 @Serializable
-data class Row(val blocks: List<Block>)
+data class Row(
+    val blocks: List<Block>,
+)
 
 @Serializable
 data class PageConfig(
@@ -41,9 +43,14 @@ data class PageNumbersConfig(
 
 @Serializable
 enum class PageBackgroundType {
-    @SerialName("auto") AUTO,
-    @SerialName("image") IMAGE,
-    @SerialName("pdf") PDF,
+    @SerialName("auto")
+    AUTO,
+
+    @SerialName("image")
+    IMAGE,
+
+    @SerialName("pdf")
+    PDF,
 }
 
 @Serializable
@@ -92,7 +99,12 @@ data class BaseBlockConfig(
 
 @Serializable
 enum class Align {
-    @SerialName("left") LEFT,
-    @SerialName("center") CENTER,
-    @SerialName("right") RIGHT,
+    @SerialName("left")
+    LEFT,
+
+    @SerialName("center")
+    CENTER,
+
+    @SerialName("right")
+    RIGHT,
 }

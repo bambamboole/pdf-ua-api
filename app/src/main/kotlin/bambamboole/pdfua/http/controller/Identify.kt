@@ -13,7 +13,9 @@ import kotlinx.serialization.Serializable
 import org.apache.pdfbox.Loader
 
 @Serializable
-data class IdentifyResponse(val documentId: String?)
+data class IdentifyResponse(
+    val documentId: String?,
+)
 
 @GenerateOpenApi
 @Tag(["Identification"])
@@ -22,11 +24,13 @@ fun Route.identifyRoutes() {
         summary = "Identify PDF",
         description = "Checks whether a PDF was produced by this API and returns its document UUID if found.",
     )
-    @KtorResponds([
-        ResponseEntry("200", IdentifyResponse::class, description = "Identification result"),
-        ResponseEntry("400", Nothing::class, description = "PDF content is empty or invalid"),
-        ResponseEntry("500", Nothing::class, description = "Failed to read PDF"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", IdentifyResponse::class, description = "Identification result"),
+            ResponseEntry("400", Nothing::class, description = "PDF content is empty or invalid"),
+            ResponseEntry("500", Nothing::class, description = "Failed to read PDF"),
+        ],
+    )
     post("/identify") {
         try {
             val pdfBytes = call.receive<ByteArray>()
@@ -39,9 +43,10 @@ fun Route.identifyRoutes() {
                 return@post
             }
 
-            val documentId = Loader.loadPDF(pdfBytes).use { document ->
-                document.documentInformation.getCustomMetadataValue("X-Document-UUID")
-            }
+            val documentId =
+                Loader.loadPDF(pdfBytes).use { document ->
+                    document.documentInformation.getCustomMetadataValue("X-Document-UUID")
+                }
 
             call.respond(HttpStatusCode.OK, IdentifyResponse(documentId))
         } catch (e: Exception) {

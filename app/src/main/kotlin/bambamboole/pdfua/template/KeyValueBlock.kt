@@ -1,10 +1,10 @@
 package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
-import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.css.css
-import bambamboole.pdfua.html.html
 import bambamboole.pdfua.css.safeCssWidth
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -33,8 +33,7 @@ data class KeyValueBlock(
     val values: Map<String, String?> = emptyMap(),
     override val config: KeyValueConfig = KeyValueConfig(),
 ) : Block {
-    override fun applyData(values: JsonElement): Block =
-        if (values is JsonObject) copy(values = values.stringValues()) else this
+    override fun applyData(values: JsonElement): Block = if (values is JsonObject) copy(values = values.stringValues()) else this
 
     override fun render(): Html {
         validateFields()
@@ -70,17 +69,27 @@ data class KeyValueBlock(
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         config.fields.flatMapIndexed { index, field ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) emptyList()
-            else listOf(
-                issue(
-                    path.child("config").child("fields").index(index).child("key"),
-                    ValidationCodes.INVALID_KEY,
-                    "Key-value field key is invalid: ${field.key}",
-                ),
-            )
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
+                emptyList()
+            } else {
+                listOf(
+                    issue(
+                        path
+                            .child("config")
+                            .child("fields")
+                            .index(index)
+                            .child("key"),
+                        ValidationCodes.INVALID_KEY,
+                        "Key-value field key is invalid: ${field.key}",
+                    ),
+                )
+            }
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         val allowed = config.fields.map { it.key }.toSet()

@@ -8,7 +8,10 @@ import java.net.URI
  * Rejects non-http(s) schemes, hosts outside an optional allowlist, and any host that
  * resolves to a loopback, private, link-local, or wildcard address.
  */
-internal fun validatePublicHttpUrl(uri: URI, allowedDomains: Set<String>) {
+internal fun validatePublicHttpUrl(
+    uri: URI,
+    allowedDomains: Set<String>,
+) {
     val scheme = uri.scheme?.lowercase()
     require(scheme == "http" || scheme == "https") {
         "Only http/https schemes are allowed, got: $scheme"

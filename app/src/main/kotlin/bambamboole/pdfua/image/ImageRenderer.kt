@@ -5,7 +5,6 @@ import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.java2d.api.BufferedImagePageProcessor
 import com.openhtmltopdf.java2d.api.Java2DRendererBuilder
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
 import org.slf4j.LoggerFactory
@@ -15,17 +14,28 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import javax.imageio.ImageIO
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 
 object ImageRenderer {
     private val logger = LoggerFactory.getLogger(ImageRenderer::class.java)
     private val w3cDom = W3CDom()
 
-    private fun parseAndInjectViewportWidth(html: String, width: Int): org.w3c.dom.Document {
+    private fun parseAndInjectViewportWidth(
+        html: String,
+        width: Int,
+    ): org.w3c.dom.Document {
         val jsoupDoc = Jsoup.parse(html)
-        jsoupDoc.head().prependElement("style").attr("type", "text/css")
+        jsoupDoc
+            .head()
+            .prependElement("style")
+            .attr("type", "text/css")
             .text("html { font-family: 'Liberation Sans'; }")
         val style = "@page { size: ${width}px 1px; margin: 0; }"
-        jsoupDoc.head().appendElement("style").attr("type", "text/css").text(style)
+        jsoupDoc
+            .head()
+            .appendElement("style")
+            .attr("type", "text/css")
+            .text(style)
         return w3cDom.fromJsoup(jsoupDoc)
     }
 
@@ -40,7 +50,7 @@ object ImageRenderer {
         format: String = "png",
         width: Int = 800,
         assetResolver: FSStreamFactory? = null,
-        baseUrl: String = ""
+        baseUrl: String = "",
     ): ByteArray {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")

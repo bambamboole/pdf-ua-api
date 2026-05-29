@@ -5,7 +5,6 @@ import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.render.DefaultObjectDrawerFactory
 import org.apache.pdfbox.Loader
@@ -22,8 +21,12 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 
-data class PdfResult(val bytes: ByteArray, val documentId: String)
+data class PdfResult(
+    val bytes: ByteArray,
+    val documentId: String,
+)
 
 object PdfRenderer {
     private val logger = LoggerFactory.getLogger(PdfRenderer::class.java)
@@ -36,8 +39,7 @@ object PdfRenderer {
             ?: throw IllegalStateException("sRGB.icc color profile not found in resources")
     }
 
-    private fun loadResource(path: String): ByteArray? =
-        PdfRenderer::class.java.getResourceAsStream(path)?.use { it.readBytes() }
+    private fun loadResource(path: String): ByteArray? = PdfRenderer::class.java.getResourceAsStream(path)?.use { it.readBytes() }
 
     fun warmup() {
         logger.info("Warming up PdfRenderer...")
@@ -51,7 +53,7 @@ object PdfRenderer {
         producer: String = "pdf-ua-api.com",
         assetResolver: FSStreamFactory? = null,
         baseUrl: String = "",
-        attachments: List<FileAttachment>? = null
+        attachments: List<FileAttachment>? = null,
     ): PdfResult {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
@@ -63,18 +65,19 @@ object PdfRenderer {
         val jsoupDoc = Jsoup.parse(html)
         val w3cDoc = w3cDom.fromJsoup(jsoupDoc)
 
-        val pdfBytes = ByteArrayOutputStream(512 * 1024).use { outputStream ->
-            val builder = PdfRendererBuilder()
-            configurePdfUA(builder, html)
-            builder.withProducer(producer)
-            if (assetResolver != null) {
-                builder.useHttpStreamImplementation(assetResolver)
+        val pdfBytes =
+            ByteArrayOutputStream(512 * 1024).use { outputStream ->
+                val builder = PdfRendererBuilder()
+                configurePdfUA(builder, html)
+                builder.withProducer(producer)
+                if (assetResolver != null) {
+                    builder.useHttpStreamImplementation(assetResolver)
+                }
+                builder.withW3cDocument(w3cDoc, baseUrl)
+                builder.toStream(outputStream)
+                builder.run()
+                outputStream.toByteArray()
             }
-            builder.withW3cDocument(w3cDoc, baseUrl)
-            builder.toStream(outputStream)
-            builder.run()
-            outputStream.toByteArray()
-        }
 
         val finalBytes = if (attachments.isNullOrEmpty()) pdfBytes else addAttachments(pdfBytes, attachments)
         return embedDocumentId(finalBytes)
@@ -112,7 +115,10 @@ object PdfRenderer {
         }
     }
 
-    private fun addAttachments(pdfBytes: ByteArray, attachments: List<FileAttachment>): ByteArray {
+    private fun addAttachments(
+        pdfBytes: ByteArray,
+        attachments: List<FileAttachment>,
+    ): ByteArray {
         Loader.loadPDF(pdfBytes).use { document ->
             val embeddedFilesMap = mutableMapOf<String, PDComplexFileSpecification>()
             val afArray = COSArray()
@@ -157,7 +163,10 @@ object PdfRenderer {
         }
     }
 
-    private fun configurePdfUA(builder: PdfRendererBuilder, html: String) {
+    private fun configurePdfUA(
+        builder: PdfRendererBuilder,
+        html: String,
+    ) {
         builder.useColorProfile(colorProfileBytes)
 
         BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
@@ -168,7 +177,7 @@ object PdfRenderer {
                 config.weight,
                 config.style.toRendererStyle(),
                 true,
-                EnumSet.of(FSFontUseCase.FALLBACK_FINAL)
+                EnumSet.of(FSFontUseCase.FALLBACK_FINAL),
             )
         }
 

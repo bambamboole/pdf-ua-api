@@ -23,7 +23,8 @@ class BlockDeserializationTest {
 
     @Test
     fun decodesBlocksByTypeDiscriminator() {
-        val input = """
+        val input =
+            """
             [
               {"type":"text","id":"intro","text":"Hello"},
               {"type":"html","html":"<b>x</b>"},
@@ -33,7 +34,7 @@ class BlockDeserializationTest {
               {"type":"image","id":"logo","src":"logo.png","alt":"Logo","config":{"maxHeight":80}},
               {"type":"key-value","id":"meta","values":{"invoice":"INV-1","empty":null},"config":{"labelWidth":"24mm","fields":[{"key":"invoice","label":"Invoice"},{"key":"empty","label":"Empty"}]}}
             ]
-        """.trimIndent()
+            """.trimIndent()
         val blocks = json.decodeFromString(ListSerializer(Block.serializer()), input)
 
         val text = assertIs<TextBlock>(blocks[0])
@@ -96,7 +97,10 @@ class BlockDeserializationTest {
     @Test
     fun headingRendersEscapedTextAtConfiguredLevel() {
         assertEquals("<h2>Hello</h2>", HeadingBlock(text = "Hello").render().serialize())
-        assertEquals("<h1>&lt;script&gt;x&lt;/script&gt;</h1>", HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render().serialize())
+        assertEquals(
+            "<h1>&lt;script&gt;x&lt;/script&gt;</h1>",
+            HeadingBlock(text = "<script>x</script>", config = HeadingConfig(level = 1)).render().serialize(),
+        )
     }
 
     @Test
@@ -108,7 +112,8 @@ class BlockDeserializationTest {
 
     @Test
     fun imageInlinesAndSanitizesSvgDataUrls() {
-        val svg = """
+        val svg =
+            """
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onclick="alert(1)">
               <script>alert(1)</script>
               <foreignObject><div>unsafe</div></foreignObject>
@@ -117,7 +122,7 @@ class BlockDeserializationTest {
               </a>
               <rect width="10" height="10"/>
             </svg>
-        """.trimIndent()
+            """.trimIndent()
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
@@ -135,7 +140,8 @@ class BlockDeserializationTest {
 
     @Test
     fun imageStripsSvgExternalReferencesAndStyles() {
-        val svg = """
+        val svg =
+            """
             <svg xmlns="http://www.w3.org/2000/svg">
               <style>@import url(https://example.com/x.css); rect { fill: url(https://example.com/p.svg); }</style>
               <defs><path id="shape" d="M0 0h10v10z"/></defs>
@@ -143,7 +149,7 @@ class BlockDeserializationTest {
               <use href="#shape"/>
               <rect style="fill: url(https://example.com/p.svg)" fill="red" width="10" height="10"/>
             </svg>
-        """.trimIndent()
+            """.trimIndent()
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
@@ -161,12 +167,13 @@ class BlockDeserializationTest {
 
     @Test
     fun imageDoesNotFallbackToImgForRejectedSvgDataUrls() {
-        val svg = """
+        val svg =
+            """
             <!DOCTYPE svg [
               <!ENTITY xxe SYSTEM "file:///etc/passwd">
             ]>
             <svg xmlns="http://www.w3.org/2000/svg"><text>&xxe;</text></svg>
-        """.trimIndent()
+            """.trimIndent()
         val encoded = Base64.getEncoder().encodeToString(svg.toByteArray())
         val src = "data:image/svg+xml;base64,$encoded"
 
@@ -181,7 +188,8 @@ class BlockDeserializationTest {
 
     @Test
     fun decodesTableBlockWithColumnsAndStyle() {
-        val input = """
+        val input =
+            """
             {"type":"table","id":"items","config":{
               "numberRows":true,
               "style":"bordered",
@@ -190,7 +198,7 @@ class BlockDeserializationTest {
                 {"key":"description","label":"Description","align":"left"}
               ]
             }}
-        """.trimIndent()
+            """.trimIndent()
         val table = assertIs<TableBlock>(json.decodeFromString(Block.serializer(), input))
 
         assertEquals("items", table.id)
@@ -211,18 +219,22 @@ class BlockDeserializationTest {
 
     @Test
     fun tableRendersConfiguredColumnsInOrderEscapingCells() {
-        val block = TableBlock(
-            rows = listOf(
-                row("description" to "Service & repair", "quantity" to "1", "total" to "100,00 €"),
-            ),
-            config = TableConfig(
-                columns = listOf(
-                    TableColumn(key = "description", label = "Description"),
-                    TableColumn(key = "quantity", label = "<Qty>"),
-                    TableColumn(key = "total", label = "Total"),
-                ),
-            ),
-        )
+        val block =
+            TableBlock(
+                rows =
+                    listOf(
+                        row("description" to "Service & repair", "quantity" to "1", "total" to "100,00 €"),
+                    ),
+                config =
+                    TableConfig(
+                        columns =
+                            listOf(
+                                TableColumn(key = "description", label = "Description"),
+                                TableColumn(key = "quantity", label = "<Qty>"),
+                                TableColumn(key = "total", label = "Total"),
+                            ),
+                    ),
+            )
 
         val html = block.render().serialize()
 
@@ -233,30 +245,36 @@ class BlockDeserializationTest {
 
     @Test
     fun tableRendersMissingColumnValuesAsEmptyCells() {
-        val block = TableBlock(
-            rows = listOf(row("description" to "Only this")),
-            config = TableConfig(
-                columns = listOf(
-                    TableColumn(key = "description", label = "Description"),
-                    TableColumn(key = "missing", label = "Missing"),
-                ),
-            ),
-        )
+        val block =
+            TableBlock(
+                rows = listOf(row("description" to "Only this")),
+                config =
+                    TableConfig(
+                        columns =
+                            listOf(
+                                TableColumn(key = "description", label = "Description"),
+                                TableColumn(key = "missing", label = "Missing"),
+                            ),
+                    ),
+            )
 
         assertTrue(block.render().serialize().contains("<td>Only this</td><td></td>"))
     }
 
     @Test
     fun tableEmitsPerColumnAlignmentInline() {
-        val block = TableBlock(
-            rows = listOf(row("first" to "1", "second" to "2")),
-            config = TableConfig(
-                columns = listOf(
-                    TableColumn(key = "first", label = "A", align = Align.LEFT),
-                    TableColumn(key = "second", label = "B", align = Align.RIGHT),
-                ),
-            ),
-        )
+        val block =
+            TableBlock(
+                rows = listOf(row("first" to "1", "second" to "2")),
+                config =
+                    TableConfig(
+                        columns =
+                            listOf(
+                                TableColumn(key = "first", label = "A", align = Align.LEFT),
+                                TableColumn(key = "second", label = "B", align = Align.RIGHT),
+                            ),
+                    ),
+            )
 
         val html = block.render().serialize()
 
@@ -268,37 +286,44 @@ class BlockDeserializationTest {
 
     @Test
     fun tableRendersColgroupOnlyWhenAColumnHasWidth() {
-        val withWidths = TableBlock(
-            rows = listOf(row("sku" to "A-100", "description" to "Setup")),
-            config = TableConfig(
-                columns = listOf(
-                    TableColumn(key = "sku", label = "SKU", width = "7%"),
-                    TableColumn(key = "description", label = "Description"),
-                ),
-            ),
-        )
+        val withWidths =
+            TableBlock(
+                rows = listOf(row("sku" to "A-100", "description" to "Setup")),
+                config =
+                    TableConfig(
+                        columns =
+                            listOf(
+                                TableColumn(key = "sku", label = "SKU", width = "7%"),
+                                TableColumn(key = "description", label = "Description"),
+                            ),
+                    ),
+            )
         val widthHtml = withWidths.render().serialize()
         assertTrue(widthHtml.contains("<colgroup><col style=\"width: 7%;\"><col></colgroup>"))
 
-        val noWidths = TableBlock(
-            rows = listOf(row("sku" to "A-100")),
-            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
-        )
+        val noWidths =
+            TableBlock(
+                rows = listOf(row("sku" to "A-100")),
+                config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+            )
         assertTrue(!noWidths.render().serialize().contains("<colgroup"))
     }
 
     @Test
     fun tableNumberRowsPrependsRightAlignedCounterColumn() {
-        val block = TableBlock(
-            rows = listOf(
-                row("description" to "Accessible PDF setup"),
-                row("description" to "Structure review"),
-            ),
-            config = TableConfig(
-                numberRows = true,
-                columns = listOf(TableColumn(key = "description", label = "Description")),
-            ),
-        )
+        val block =
+            TableBlock(
+                rows =
+                    listOf(
+                        row("description" to "Accessible PDF setup"),
+                        row("description" to "Structure review"),
+                    ),
+                config =
+                    TableConfig(
+                        numberRows = true,
+                        columns = listOf(TableColumn(key = "description", label = "Description")),
+                    ),
+            )
 
         val html = block.render().serialize()
 
@@ -309,13 +334,15 @@ class BlockDeserializationTest {
 
     @Test
     fun tableNumberRowsColgroupPrependsLeadingCol() {
-        val block = TableBlock(
-            rows = listOf(row("sku" to "A-100")),
-            config = TableConfig(
-                numberRows = true,
-                columns = listOf(TableColumn(key = "sku", label = "SKU", width = "10mm")),
-            ),
-        )
+        val block =
+            TableBlock(
+                rows = listOf(row("sku" to "A-100")),
+                config =
+                    TableConfig(
+                        numberRows = true,
+                        columns = listOf(TableColumn(key = "sku", label = "SKU", width = "10mm")),
+                    ),
+            )
 
         assertTrue(block.render().serialize().contains("<colgroup><col><col style=\"width: 10mm;\"></colgroup>"))
     }
@@ -350,14 +377,16 @@ class BlockDeserializationTest {
 
     @Test
     fun tableApplyDataReplacesRowsFromBareArray() {
-        val block = TableBlock(
-            id = "items",
-            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
-        )
-        val data = buildJsonArray {
-            add(buildJsonObject { put("sku", "A-100") })
-            add(buildJsonObject { put("sku", "B-200") })
-        }
+        val block =
+            TableBlock(
+                id = "items",
+                config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+            )
+        val data =
+            buildJsonArray {
+                add(buildJsonObject { put("sku", "A-100") })
+                add(buildJsonObject { put("sku", "B-200") })
+            }
 
         val updated = assertIs<TableBlock>(block.applyData(data))
 
@@ -369,10 +398,11 @@ class BlockDeserializationTest {
 
     @Test
     fun tableApplyDataClearsRowsForNonArrayData() {
-        val block = TableBlock(
-            rows = listOf(row("sku" to "A-100")),
-            config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
-        )
+        val block =
+            TableBlock(
+                rows = listOf(row("sku" to "A-100")),
+                config = TableConfig(columns = listOf(TableColumn(key = "sku", label = "SKU"))),
+            )
 
         val updated = assertIs<TableBlock>(block.applyData(JsonObject(mapOf("rows" to JsonPrimitive("nope")))))
 
@@ -381,16 +411,19 @@ class BlockDeserializationTest {
 
     @Test
     fun keyValueRendersConfiguredFieldsInOrderAndEscapes() {
-        val block = KeyValueBlock(
-            values = mapOf("name" to "<ACME>", "invoice" to "INV-1", "ignored" to "x"),
-            config = KeyValueConfig(
-                fields = listOf(
-                    KeyValueField("invoice", "Invoice"),
-                    KeyValueField("missing", "Missing"),
-                    KeyValueField("name", "Customer <name>"),
-                ),
-            ),
-        )
+        val block =
+            KeyValueBlock(
+                values = mapOf("name" to "<ACME>", "invoice" to "INV-1", "ignored" to "x"),
+                config =
+                    KeyValueConfig(
+                        fields =
+                            listOf(
+                                KeyValueField("invoice", "Invoice"),
+                                KeyValueField("missing", "Missing"),
+                                KeyValueField("name", "Customer <name>"),
+                            ),
+                    ),
+            )
 
         assertEquals(
             "<table class=\"key-value\"><tbody>" +
@@ -405,14 +438,15 @@ class BlockDeserializationTest {
     @Test
     fun keyValueApplyDataReplacesValuesWithFlatStringMap() {
         val block = KeyValueBlock(values = mapOf("invoice" to "Original"))
-        val overridden = block.applyData(
-            JsonObject(
-                mapOf(
-                    "invoice" to JsonPrimitive("Runtime"),
-                    "empty" to JsonNull,
+        val overridden =
+            block.applyData(
+                JsonObject(
+                    mapOf(
+                        "invoice" to JsonPrimitive("Runtime"),
+                        "empty" to JsonNull,
+                    ),
                 ),
-            ),
-        )
+            )
 
         val keyValue = assertIs<KeyValueBlock>(overridden)
         assertEquals(mapOf("invoice" to "Runtime", "empty" to null), keyValue.values)
@@ -425,6 +459,5 @@ class BlockDeserializationTest {
         }
     }
 
-    private fun row(vararg cells: Pair<String, String>): JsonObject =
-        buildJsonObject { cells.forEach { (key, value) -> put(key, value) } }
+    private fun row(vararg cells: Pair<String, String>): JsonObject = buildJsonObject { cells.forEach { (key, value) -> put(key, value) } }
 }

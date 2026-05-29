@@ -9,8 +9,14 @@ import java.time.Duration
 
 sealed interface UploadResult {
     data object Success : UploadResult
-    data class InvalidUrl(val message: String) : UploadResult
-    data class Failed(val message: String) : UploadResult
+
+    data class InvalidUrl(
+        val message: String,
+    ) : UploadResult
+
+    data class Failed(
+        val message: String,
+    ) : UploadResult
 }
 
 /**
@@ -24,23 +30,29 @@ class DocumentUploader(
     private val allowedDomains: Set<String> = emptySet(),
     private val validateUrl: (URI, Set<String>) -> Unit = ::validatePublicHttpUrl,
 ) {
-
     private val logger = LoggerFactory.getLogger(DocumentUploader::class.java)
 
-    fun upload(url: String, bytes: ByteArray, contentType: String): UploadResult {
-        val uri = try {
-            URI.create(url).also { validateUrl(it, allowedDomains) }
-        } catch (e: IllegalArgumentException) {
-            return UploadResult.InvalidUrl(e.message ?: "Invalid upload URL")
-        }
+    fun upload(
+        url: String,
+        bytes: ByteArray,
+        contentType: String,
+    ): UploadResult {
+        val uri =
+            try {
+                URI.create(url).also { validateUrl(it, allowedDomains) }
+            } catch (e: IllegalArgumentException) {
+                return UploadResult.InvalidUrl(e.message ?: "Invalid upload URL")
+            }
 
         return try {
-            val request = HttpRequest.newBuilder()
-                .uri(uri)
-                .timeout(Duration.ofMillis(timeoutMs))
-                .header("Content-Type", contentType)
-                .PUT(HttpRequest.BodyPublishers.ofByteArray(bytes))
-                .build()
+            val request =
+                HttpRequest
+                    .newBuilder()
+                    .uri(uri)
+                    .timeout(Duration.ofMillis(timeoutMs))
+                    .header("Content-Type", contentType)
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(bytes))
+                    .build()
 
             val response = httpClient.send(request, HttpResponse.BodyHandlers.discarding())
             if (response.statusCode() in 200..299) {
@@ -57,7 +69,8 @@ class DocumentUploader(
 
     companion object {
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
-            HttpClient.newBuilder()
+            HttpClient
+                .newBuilder()
                 .connectTimeout(Duration.ofMillis(connectTimeoutMs))
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build()

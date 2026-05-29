@@ -5,69 +5,66 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class CssRegistryTest {
-
     @Test
     fun mergesRulesForTheSameSelector() {
-        val css = CssRegistry()
-            .css(".block-1") {
-                rule("width", "80mm")
-            }
-            .css(".block-1") {
-                rule("margin-left", "auto")
-            }
-            .render()
+        val css =
+            CssRegistry()
+                .css(".block-1") {
+                    rule("width", "80mm")
+                }.css(".block-1") {
+                    rule("margin-left", "auto")
+                }.render()
 
         assertEquals(".block-1 { width: 80mm; margin-left: auto; }", css)
     }
 
     @Test
     fun laterRuleForSamePropertyReplacesEarlierRule() {
-        val css = CssRegistry()
-            .css(".block-1") {
-                rule("color", "#111827")
-                rule("width", "60mm")
-            }
-            .css(".block-1") {
-                rule("color", "#ff0000")
-            }
-            .render()
+        val css =
+            CssRegistry()
+                .css(".block-1") {
+                    rule("color", "#111827")
+                    rule("width", "60mm")
+                }.css(".block-1") {
+                    rule("color", "#ff0000")
+                }.render()
 
         assertEquals(".block-1 { color: #ff0000; width: 60mm; }", css)
     }
 
     @Test
     fun omitsDeclarationWhenAllRulesAreNullOrBlank() {
-        val css = CssRegistry()
-            .css(".block-1") {
-                rule("width", null)
-                rule("color", "")
-            }
-            .render()
+        val css =
+            CssRegistry()
+                .css(".block-1") {
+                    rule("width", null)
+                    rule("color", "")
+                }.render()
 
         assertEquals("", css)
     }
 
     @Test
     fun cssHelperReturnsDeclarationEvenWhenRulesAreEmpty() {
-        val declaration = css(".block-1") {
-            rule("width", null)
-            rule("color", "")
-        }
+        val declaration =
+            css(".block-1") {
+                rule("width", null)
+                rule("color", "")
+            }
 
         assertEquals(CssDeclaration(CssSelector.Rule(".block-1"), emptyList()), declaration)
     }
 
     @Test
     fun emitsNestedAtRuleForPageMarginBox() {
-        val css = CssRegistry()
-            .nestedCss("@page", "@bottom-right") {
-                rule("content", """counter(page) " / " counter(pages)""")
-                rule("font-size", "8pt")
-            }
-            .nestedCss("@page", "@bottom-right") {
-                rule("color", "#9ca3af")
-            }
-            .render()
+        val css =
+            CssRegistry()
+                .nestedCss("@page", "@bottom-right") {
+                    rule("content", """counter(page) " / " counter(pages)""")
+                    rule("font-size", "8pt")
+                }.nestedCss("@page", "@bottom-right") {
+                    rule("color", "#9ca3af")
+                }.render()
 
         assertEquals(
             """@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }""",
@@ -77,20 +74,19 @@ class CssRegistryTest {
 
     @Test
     fun preservesRepeatedFontFaceRulesWithoutMerging() {
-        val css = CssRegistry()
-            .fontFace {
-                rule("font-family", cssQuotedString("Lobster"))
-                rule("src", cssUrlValue("https://cdn.example.com/lobster.ttf"))
-                rule("font-weight", "400")
-                rule("font-style", cssIdentifierLikeValue("normal"))
-            }
-            .fontFace {
-                rule("font-family", cssQuotedString("Lobster"))
-                rule("src", cssUrlValue("https://cdn.example.com/lobster.ttf"))
-                rule("font-weight", "700")
-                rule("font-style", cssIdentifierLikeValue("normal"))
-            }
-            .render()
+        val css =
+            CssRegistry()
+                .fontFace {
+                    rule("font-family", cssQuotedString("Lobster"))
+                    rule("src", cssUrlValue("https://cdn.example.com/lobster.ttf"))
+                    rule("font-weight", "400")
+                    rule("font-style", cssIdentifierLikeValue("normal"))
+                }.fontFace {
+                    rule("font-family", cssQuotedString("Lobster"))
+                    rule("src", cssUrlValue("https://cdn.example.com/lobster.ttf"))
+                    rule("font-weight", "700")
+                    rule("font-style", cssIdentifierLikeValue("normal"))
+                }.render()
 
         assertEquals(
             """

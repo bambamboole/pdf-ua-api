@@ -39,20 +39,21 @@ object TemplateJsonSchema {
 
     private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
 
-    private val definitionTsTypes = mapOf(
-        "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
-        "headingConfig" to "BlockConfig & { level?: number }",
-        "imageConfig" to "BlockConfig & { maxHeight?: number }",
-        "keyValueField" to "{ key: string; label: string }",
-        "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
-        "spacerConfig" to "BlockConfig & { height?: number }",
-        "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
-        "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
-        "pageFooterConfig" to "{ repeat?: boolean; rows?: Row[] }",
-        "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
-            "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
-        "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
-    )
+    private val definitionTsTypes =
+        mapOf(
+            "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
+            "headingConfig" to "BlockConfig & { level?: number }",
+            "imageConfig" to "BlockConfig & { maxHeight?: number }",
+            "keyValueField" to "{ key: string; label: string }",
+            "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
+            "spacerConfig" to "BlockConfig & { height?: number }",
+            "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
+            "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
+            "pageFooterConfig" to "{ repeat?: boolean; rows?: Row[] }",
+            "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
+                "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
+            "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
+        )
 
     fun current(): JsonObject =
         JsonSchema(
@@ -62,13 +63,14 @@ object TemplateJsonSchema {
             type = listOf("object"),
             required = listOf("version"),
             additionalProperties = AdditionalPropertiesConstraint.deny(),
-            properties = mapOf(
-                "version" to constInteger(TEMPLATE_VERSION),
-                "config" to ref("templateConfig"),
-                "fonts" to fontsProperty(),
-                "attachments" to arrayOf(ref("fileAttachment")),
-                "rows" to arrayOf(ref("row")),
-            ),
+            properties =
+                mapOf(
+                    "version" to constInteger(TEMPLATE_VERSION),
+                    "config" to ref("templateConfig"),
+                    "fonts" to fontsProperty(),
+                    "attachments" to arrayOf(ref("fileAttachment")),
+                    "rows" to arrayOf(ref("row")),
+                ),
             defs = definitions(),
         ).encodeToJsonObject()
             .withRootExtension("x-pdfUa", pdfUaMetadata())
@@ -119,55 +121,63 @@ object TemplateJsonSchema {
             "typographyConfig" to typographyConfig(),
             "spacingConfig" to spacingConfig(),
             "blockConfig" to blockConfig(),
-            "headingConfig" to extendedBlockConfig(
-                "HeadingConfig",
-                "level" to int(min = 1, max = 6, default = 2),
-            ),
-            "imageConfig" to extendedBlockConfig(
-                "ImageConfig",
-                "maxHeight" to int(min = 1, default = 60),
-            ),
+            "headingConfig" to
+                extendedBlockConfig(
+                    "HeadingConfig",
+                    "level" to int(min = 1, max = 6, default = 2),
+                ),
+            "imageConfig" to
+                extendedBlockConfig(
+                    "ImageConfig",
+                    "maxHeight" to int(min = 1, default = 60),
+                ),
             "keyValueField" to keyValueField(),
-            "keyValueConfig" to extendedBlockConfig(
-                "KeyValueConfig",
-                "labelWidth" to string(default = "30mm"),
-                "fields" to arrayOf(ref("keyValueField")),
-            ),
-            "spacerConfig" to extendedBlockConfig(
-                "SpacerConfig",
-                "height" to int(min = 0, default = 5),
-            ),
-            "dividerConfig" to extendedBlockConfig(
-                "DividerConfig",
-                "thickness" to int(min = 0, default = 1),
-                "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
-                "style" to ref("dividerStyle"),
-            ),
+            "keyValueConfig" to
+                extendedBlockConfig(
+                    "KeyValueConfig",
+                    "labelWidth" to string(default = "30mm"),
+                    "fields" to arrayOf(ref("keyValueField")),
+                ),
+            "spacerConfig" to
+                extendedBlockConfig(
+                    "SpacerConfig",
+                    "height" to int(min = 0, default = 5),
+                ),
+            "dividerConfig" to
+                extendedBlockConfig(
+                    "DividerConfig",
+                    "thickness" to int(min = 0, default = 1),
+                    "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
+                    "style" to ref("dividerStyle"),
+                ),
             "tableColumn" to tableColumn(),
-            "tableConfig" to extendedBlockConfig(
-                "TableConfig",
-                "numberRows" to boolean(default = false),
-                "columns" to arrayOf(ref("tableColumn")),
-                "style" to ref("tableStyle"),
-            ),
+            "tableConfig" to
+                extendedBlockConfig(
+                    "TableConfig",
+                    "numberRows" to boolean(default = false),
+                    "columns" to arrayOf(ref("tableColumn")),
+                    "style" to ref("tableStyle"),
+                ),
             "textBlock" to block("TextBlock", "text", listOf("text"), "blockConfig", "text" to string()),
             "htmlBlock" to block("HtmlBlock", "html", listOf("html"), "blockConfig", "html" to string()),
             "headingBlock" to block("HeadingBlock", "heading", listOf("text"), "headingConfig", "text" to string()),
-            "imageBlock" to block(
-                "ImageBlock",
-                "image",
-                listOf("src"),
-                "imageConfig",
-                "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
-                "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
-            ),
-            "keyValueBlock" to block(
-                "KeyValueBlock",
-                "key-value",
-                emptyList(),
-                "keyValueConfig",
-                "values" to keyValueValues(),
-            ),
+            "imageBlock" to
+                block(
+                    "ImageBlock",
+                    "image",
+                    listOf("src"),
+                    "imageConfig",
+                    "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
+                    "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
+                ),
+            "keyValueBlock" to
+                block(
+                    "KeyValueBlock",
+                    "key-value",
+                    emptyList(),
+                    "keyValueConfig",
+                    "values" to keyValueValues(),
+                ),
             "spacerBlock" to block("SpacerBlock", "spacer", emptyList(), "spacerConfig"),
             "dividerBlock" to block("DividerBlock", "divider", emptyList(), "dividerConfig"),
             "tableBlock" to block("TableBlock", "table", emptyList(), "tableConfig"),
@@ -189,10 +199,11 @@ object TemplateJsonSchema {
         schemaObject("TypographyConfig") {
             "family" to nullableString(description = "Bundled or external font family key.")
             "size" to nullableInt(min = 1, description = "Font size in points.")
-            "weight" to nullableEnum(
-                FontWeight.entries.map { it.serializedName() },
-                description = "Font weight; one of the FontWeight enum values.",
-            )
+            "weight" to
+                nullableEnum(
+                    FontWeight.entries.map { it.serializedName() },
+                    description = "Font weight; one of the FontWeight enum values.",
+                )
             "align" to nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope.")
             "color" to nullableString(description = "CSS color value used for text.")
         }
@@ -205,11 +216,12 @@ object TemplateJsonSchema {
             "left" to nullableInt(min = 0, description = "Left spacing in millimetres.")
         }
 
-    private fun blockConfig(): PropertyDefinition =
-        schemaObject("BlockConfig", baseBlockConfigProperties())
+    private fun blockConfig(): PropertyDefinition = schemaObject("BlockConfig", baseBlockConfigProperties())
 
-    private fun extendedBlockConfig(title: String, vararg properties: Pair<String, PropertyDefinition>): PropertyDefinition =
-        schemaObject(title, baseBlockConfigProperties() + properties)
+    private fun extendedBlockConfig(
+        title: String,
+        vararg properties: Pair<String, PropertyDefinition>,
+    ): PropertyDefinition = schemaObject(title, baseBlockConfigProperties() + properties)
 
     private fun keyValueField(): PropertyDefinition =
         schemaObject("KeyValueField", required = listOf("key", "label")) {
@@ -229,10 +241,11 @@ object TemplateJsonSchema {
             "typography" to nullableRef("typographyConfig"),
             "spacing" to nullableRef("spacingConfig"),
             "width" to nullableString(description = "CSS width for this block, such as 50%, 80mm, or auto."),
-            "align" to nullableEnum(
-                Align.entries.map { it.serializedName() },
-                description = "Horizontal placement of this block within its row cell.",
-            ),
+            "align" to
+                nullableEnum(
+                    Align.entries.map { it.serializedName() },
+                    description = "Horizontal placement of this block within its row cell.",
+                ),
         )
 
     private fun block(
@@ -245,25 +258,28 @@ object TemplateJsonSchema {
         schemaObject(
             title,
             required = listOf("type") + requiredFields,
-            properties = linkedMapOf(
-                "type" to constString(type),
-                "id" to nullableString(description = "Stable block identifier used for runtime data overrides."),
-                *fields,
-                "config" to ref(configDefinition),
-            ),
+            properties =
+                linkedMapOf(
+                    "type" to constString(type),
+                    "id" to nullableString(description = "Stable block identifier used for runtime data overrides."),
+                    *fields,
+                    "config" to ref(configDefinition),
+                ),
         )
 
     private fun tableColumn(): PropertyDefinition =
         schemaObject("TableColumn", required = listOf("key", "label")) {
-            "key" to string(
-                pattern = "^[A-Za-z][A-Za-z0-9_]*$",
-                description = "Runtime data key used for this table column.",
-            )
+            "key" to
+                string(
+                    pattern = "^[A-Za-z][A-Za-z0-9_]*$",
+                    description = "Runtime data key used for this table column.",
+                )
             "label" to string(description = "Header label rendered for this table column.")
-            "align" to nullableEnum(
-                Align.entries.map { it.serializedName() },
-                description = "Text alignment for this table column.",
-            )
+            "align" to
+                nullableEnum(
+                    Align.entries.map { it.serializedName() },
+                    description = "Text alignment for this table column.",
+                )
             "width" to nullableString(description = "Column width as a CSS width value, such as 20mm or 15%.")
         }
 
@@ -292,10 +308,11 @@ object TemplateJsonSchema {
 
     private fun pageBackgroundConfig(): PropertyDefinition =
         schemaObject("PageBackgroundConfig", required = listOf("src")) {
-            "src" to string(
-                minLength = 1,
-                description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
-            )
+            "src" to
+                string(
+                    minLength = 1,
+                    description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+                )
             "type" to ref("pageBackgroundType")
         }
 
@@ -324,10 +341,11 @@ object TemplateJsonSchema {
     private fun fontFace(): PropertyDefinition =
         schemaObject("FontFace", required = listOf("src")) {
             "src" to string()
-            "weight" to string(
-                default = "400",
-                description = "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
-            )
+            "weight" to
+                string(
+                    default = "400",
+                    description = "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
+                )
             "style" to string(default = "normal")
         }
 
@@ -362,39 +380,39 @@ object TemplateJsonSchema {
         title: String,
         required: List<String> = emptyList(),
         properties: SchemaPropertiesBuilder.() -> Unit,
+    ): PropertyDefinition = schemaObject(title, SchemaPropertiesBuilder().apply(properties).build(), required)
+
+    private fun stringEnum(
+        title: String,
+        values: List<String>,
+    ): PropertyDefinition = StringPropertyDefinition(title = title, enum = values)
+
+    private fun nullableEnum(
+        values: List<String>,
+        description: String? = null,
     ): PropertyDefinition =
-        schemaObject(title, SchemaPropertiesBuilder().apply(properties).build(), required)
-
-    private fun stringEnum(title: String, values: List<String>): PropertyDefinition =
-        StringPropertyDefinition(title = title, enum = values)
-
-    private fun nullableEnum(values: List<String>, description: String? = null): PropertyDefinition =
         GenericPropertyDefinition(
             type = listOf("string", "null"),
             enum = values.map(::JsonPrimitive) + JsonNull,
             description = description,
         )
 
-    private fun oneOf(schemas: List<PropertyDefinition>, title: String? = null): PropertyDefinition =
-        OneOfPropertyDefinition(oneOf = schemas, title = title)
+    private fun oneOf(
+        schemas: List<PropertyDefinition>,
+        title: String? = null,
+    ): PropertyDefinition = OneOfPropertyDefinition(oneOf = schemas, title = title)
 
-    private fun arrayOf(item: PropertyDefinition): PropertyDefinition =
-        ArrayPropertyDefinition(items = item)
+    private fun arrayOf(item: PropertyDefinition): PropertyDefinition = ArrayPropertyDefinition(items = item)
 
-    private fun ref(definition: String): PropertyDefinition =
-        ReferencePropertyDefinition(ref = "#/\$defs/$definition")
+    private fun ref(definition: String): PropertyDefinition = ReferencePropertyDefinition(ref = "#/\$defs/$definition")
 
-    private fun nullableRef(definition: String): PropertyDefinition =
-        oneOf(listOf(ref(definition), nullType()))
+    private fun nullableRef(definition: String): PropertyDefinition = oneOf(listOf(ref(definition), nullType()))
 
-    private fun nullType(): PropertyDefinition =
-        GenericPropertyDefinition(type = listOf("null"))
+    private fun nullType(): PropertyDefinition = GenericPropertyDefinition(type = listOf("null"))
 
-    private fun constInteger(value: Int): PropertyDefinition =
-        NumericPropertyDefinition(type = listOf("integer"), constValue = JsonPrimitive(value))
+    private fun constInteger(value: Int): PropertyDefinition = NumericPropertyDefinition(type = listOf("integer"), constValue = JsonPrimitive(value))
 
-    private fun constString(value: String): PropertyDefinition =
-        StringPropertyDefinition(constValue = JsonPrimitive(value))
+    private fun constString(value: String): PropertyDefinition = StringPropertyDefinition(constValue = JsonPrimitive(value))
 
     private fun string(
         pattern: String? = null,
@@ -409,13 +427,15 @@ object TemplateJsonSchema {
             description = description,
         )
 
-    private fun nullableString(description: String? = null): PropertyDefinition =
-        GenericPropertyDefinition(type = listOf("string", "null"), description = description)
+    private fun nullableString(description: String? = null): PropertyDefinition = GenericPropertyDefinition(type = listOf("string", "null"), description = description)
 
-    private fun nullableStringValue(): PropertyDefinition =
-        GenericPropertyDefinition(type = listOf("string", "null"))
+    private fun nullableStringValue(): PropertyDefinition = GenericPropertyDefinition(type = listOf("string", "null"))
 
-    private fun int(min: Int? = null, max: Int? = null, default: Int? = null): PropertyDefinition =
+    private fun int(
+        min: Int? = null,
+        max: Int? = null,
+        default: Int? = null,
+    ): PropertyDefinition =
         NumericPropertyDefinition(
             type = listOf("integer"),
             minimum = min?.toDouble(),
@@ -423,17 +443,22 @@ object TemplateJsonSchema {
             default = default?.let(::JsonPrimitive),
         )
 
-    private fun nullableInt(min: Int? = null, description: String? = null): PropertyDefinition =
+    private fun nullableInt(
+        min: Int? = null,
+        description: String? = null,
+    ): PropertyDefinition =
         GenericPropertyDefinition(
             type = listOf("integer", "null"),
             minimum = min?.toDouble(),
             description = description,
         )
 
-    private fun boolean(default: Boolean? = null): PropertyDefinition =
-        BooleanPropertyDefinition(default = default?.let(::JsonPrimitive))
+    private fun boolean(default: Boolean? = null): PropertyDefinition = BooleanPropertyDefinition(default = default?.let(::JsonPrimitive))
 
-    private fun JsonObject.withRootExtension(name: String, value: JsonElement): JsonObject =
+    private fun JsonObject.withRootExtension(
+        name: String,
+        value: JsonElement,
+    ): JsonObject =
         buildJsonObject {
             this@withRootExtension.forEach { (key, existingValue) -> put(key, existingValue) }
             put(name, value)
@@ -468,29 +493,21 @@ object TemplateJsonSchema {
             }
         }
 
-    private fun PageFormat.serializedName(): String =
-        PageFormat.serializer().descriptor.getElementName(ordinal)
+    private fun PageFormat.serializedName(): String = PageFormat.serializer().descriptor.getElementName(ordinal)
 
-    private fun Orientation.serializedName(): String =
-        Orientation.serializer().descriptor.getElementName(ordinal)
+    private fun Orientation.serializedName(): String = Orientation.serializer().descriptor.getElementName(ordinal)
 
-    private fun Align.serializedName(): String =
-        Align.serializer().descriptor.getElementName(ordinal)
+    private fun Align.serializedName(): String = Align.serializer().descriptor.getElementName(ordinal)
 
-    private fun DividerStyle.serializedName(): String =
-        DividerStyle.serializer().descriptor.getElementName(ordinal)
+    private fun DividerStyle.serializedName(): String = DividerStyle.serializer().descriptor.getElementName(ordinal)
 
-    private fun TableStyle.serializedName(): String =
-        TableStyle.serializer().descriptor.getElementName(ordinal)
+    private fun TableStyle.serializedName(): String = TableStyle.serializer().descriptor.getElementName(ordinal)
 
-    private fun PageBackgroundType.serializedName(): String =
-        PageBackgroundType.serializer().descriptor.getElementName(ordinal)
+    private fun PageBackgroundType.serializedName(): String = PageBackgroundType.serializer().descriptor.getElementName(ordinal)
 
-    private fun FontWeight.serializedName(): String =
-        FontWeight.serializer().descriptor.getElementName(ordinal)
+    private fun FontWeight.serializedName(): String = FontWeight.serializer().descriptor.getElementName(ordinal)
 
-    private fun String.camelCase(): String =
-        replace(Regex("-([a-z])")) { it.groupValues[1].uppercase() }
+    private fun String.camelCase(): String = replace(Regex("-([a-z])")) { it.groupValues[1].uppercase() }
 }
 
 private class SchemaPropertiesBuilder {

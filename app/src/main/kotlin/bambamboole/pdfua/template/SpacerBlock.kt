@@ -1,9 +1,9 @@
 package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
-import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.cssMm
+import bambamboole.pdfua.html.Html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -34,6 +34,8 @@ data class SpacerBlock(
             },
         )
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
-        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = listOf(issue(path, ValidationCodes.INVALID_VALUE, "Spacer block does not accept data"))
 }

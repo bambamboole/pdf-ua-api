@@ -1,10 +1,10 @@
 package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
-import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.css.css
-import bambamboole.pdfua.html.html
 import bambamboole.pdfua.css.safeCssWidth
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -15,9 +15,14 @@ import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
 enum class TableStyle {
-    @SerialName("striped") STRIPED,
-    @SerialName("bordered") BORDERED,
-    @SerialName("minimal") MINIMAL,
+    @SerialName("striped")
+    STRIPED,
+
+    @SerialName("bordered")
+    BORDERED,
+
+    @SerialName("minimal")
+    MINIMAL,
 }
 
 @Serializable
@@ -46,14 +51,14 @@ data class TableBlock(
     val rows: List<JsonObject> = emptyList(),
     override val config: TableConfig = TableConfig(),
 ) : Block {
-    override fun applyData(values: JsonElement): Block =
-        copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
+    override fun applyData(values: JsonElement): Block = copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
 
     override fun render(): Html {
-        val headers = buildList {
-            if (config.numberRows) add("#")
-            config.columns.forEach { add(it.label) }
-        }
+        val headers =
+            buildList {
+                if (config.numberRows) add("#")
+                config.columns.forEach { add(it.label) }
+            }
         return html {
             tag("table", "class" to "data-table") {
                 html(colgroup())
@@ -79,40 +84,52 @@ data class TableBlock(
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
         when (config.style) {
-            TableStyle.STRIPED -> listOf(
-                css(".$cssId tbody tr:nth-child(even)") {
-                    rule("background-color", "#f9fafb")
-                },
-            )
-            TableStyle.BORDERED -> listOf(
-                css(".$cssId") {
-                    rule("border-collapse", "collapse")
-                },
-                css(".$cssId th, .$cssId td") {
-                    rule("border", "1px solid #d1d5db")
-                },
-            )
-            TableStyle.MINIMAL -> listOf(
-                css(".$cssId thead tr") {
-                    rule("border-bottom", "2px solid #1a1a2e")
-                },
-                css(".$cssId tbody tr") {
-                    rule("border-bottom", "1px solid #e5e7eb")
-                },
-            )
+            TableStyle.STRIPED -> {
+                listOf(
+                    css(".$cssId tbody tr:nth-child(even)") {
+                        rule("background-color", "#f9fafb")
+                    },
+                )
+            }
+
+            TableStyle.BORDERED -> {
+                listOf(
+                    css(".$cssId") {
+                        rule("border-collapse", "collapse")
+                    },
+                    css(".$cssId th, .$cssId td") {
+                        rule("border", "1px solid #d1d5db")
+                    },
+                )
+            }
+
+            TableStyle.MINIMAL -> {
+                listOf(
+                    css(".$cssId thead tr") {
+                        rule("border-bottom", "2px solid #1a1a2e")
+                    },
+                    css(".$cssId tbody tr") {
+                        rule("border-bottom", "1px solid #e5e7eb")
+                    },
+                )
+            }
         }
 
-    private fun cellsFor(row: JsonObject, rowIndex: Int): List<String> =
+    private fun cellsFor(
+        row: JsonObject,
+        rowIndex: Int,
+    ): List<String> =
         buildList {
             if (config.numberRows) add((rowIndex + 1).toString())
             config.columns.forEach { column -> add(cellText(row[column.key])) }
         }
 
     private fun colgroup(): Html {
-        val widths = buildList<String?> {
-            if (config.numberRows) add(null)
-            config.columns.forEach { add(safeCssWidth(it.width)) }
-        }
+        val widths =
+            buildList<String?> {
+                if (config.numberRows) add(null)
+                config.columns.forEach { add(safeCssWidth(it.width)) }
+            }
         if (widths.none { !it.isNullOrEmpty() }) return Html.EMPTY
         return html {
             tag("colgroup") {
@@ -142,17 +159,27 @@ data class TableBlock(
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         config.columns.flatMapIndexed { index, column ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) emptyList()
-            else listOf(
-                issue(
-                    path.child("config").child("columns").index(index).child("key"),
-                    ValidationCodes.INVALID_KEY,
-                    "Table column key is invalid: ${column.key}",
-                ),
-            )
+            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
+                emptyList()
+            } else {
+                listOf(
+                    issue(
+                        path
+                            .child("config")
+                            .child("columns")
+                            .index(index)
+                            .child("key"),
+                        ValidationCodes.INVALID_KEY,
+                        "Table column key is invalid: ${column.key}",
+                    ),
+                )
+            }
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (arr, errs) = requireArray(value, path)
         if (arr == null) return errs
         val allowed = config.columns.map { it.key }.toSet()

@@ -1,7 +1,9 @@
 package bambamboole.pdfua.html
 
 @JvmInline
-value class Html internal constructor(internal val raw: String) {
+value class Html internal constructor(
+    internal val raw: String,
+) {
     fun serialize(): String = raw
 
     companion object {
@@ -26,15 +28,20 @@ class HtmlBuilder internal constructor() {
         name: String,
         vararg attrs: Pair<String, String?>,
         content: HtmlBuilder.() -> Unit = {},
-    ): HtmlBuilder = apply {
-        openTag(name, attrs)
-        content()
-        sb.append("</").append(name).append('>')
-    }
+    ): HtmlBuilder =
+        apply {
+            openTag(name, attrs)
+            content()
+            sb.append("</").append(name).append('>')
+        }
 
-    fun voidTag(name: String, vararg attrs: Pair<String, String?>): HtmlBuilder = apply {
-        openTag(name, attrs)
-    }
+    fun voidTag(
+        name: String,
+        vararg attrs: Pair<String, String?>,
+    ): HtmlBuilder =
+        apply {
+            openTag(name, attrs)
+        }
 
     fun text(value: String): HtmlBuilder = apply { appendEscaped(sb, value) }
 
@@ -44,7 +51,10 @@ class HtmlBuilder internal constructor() {
 
     internal fun build(): Html = Html(sb.toString())
 
-    private fun openTag(name: String, attrs: Array<out Pair<String, String?>>) {
+    private fun openTag(
+        name: String,
+        attrs: Array<out Pair<String, String?>>,
+    ) {
         sb.append('<').append(name)
         for ((attrName, attrValue) in attrs) {
             if (attrValue != null) {
@@ -59,7 +69,10 @@ class HtmlBuilder internal constructor() {
 
 fun html(block: HtmlBuilder.() -> Unit): Html = HtmlBuilder().apply(block).build()
 
-private fun appendEscaped(sb: StringBuilder, value: String) {
+private fun appendEscaped(
+    sb: StringBuilder,
+    value: String,
+) {
     for (c in value) {
         when (c) {
             '&' -> sb.append("&amp;")

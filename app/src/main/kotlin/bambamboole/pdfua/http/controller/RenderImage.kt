@@ -32,11 +32,13 @@ fun Route.renderImageRoutes(
         summary = "Render HTML to image",
         description = "Renders HTML to a PNG or JPEG image. Returns the image binary.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ByteArray::class, description = "Rendered image"),
-        ResponseEntry("400", Nothing::class, description = "Invalid request"),
-        ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "Rendered image"),
+            ResponseEntry("400", Nothing::class, description = "Invalid request"),
+            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
+        ],
+    )
     post("/render") {
         try {
             val request = call.receive<RenderImageRequest>()
@@ -68,13 +70,14 @@ fun Route.renderImageRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val imageBytes = ImageRenderer.renderHtmlToImage(
-                html = request.html,
-                format = format,
-                width = request.width,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-            )
+            val imageBytes =
+                ImageRenderer.renderHtmlToImage(
+                    html = request.html,
+                    format = format,
+                    width = request.width,
+                    assetResolver = assetResolver,
+                    baseUrl = baseUrl,
+                )
 
             val contentType = if (format == "jpg") ContentType.Image.JPEG else ContentType.Image.PNG
             val extension = if (format == "jpg") "jpg" else "png"

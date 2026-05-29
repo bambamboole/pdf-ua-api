@@ -7,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class LargeDocumentTest {
-
     @Test
     @Disabled("Long-running performance coverage; run manually when changing large document rendering.")
     fun testConvert50kLineHtml() {
@@ -26,7 +25,10 @@ class LargeDocumentTest {
         assertTrue(validation.isCompliant, "Large document must remain PDF/A-3a compliant: ${validation.failures}")
     }
 
-    private fun buildLargeHtml(tableRows: Int, paragraphs: Int): String {
+    private fun buildLargeHtml(
+        tableRows: Int,
+        paragraphs: Int,
+    ): String {
         val sb = StringBuilder(tableRows * 200 + paragraphs * 400)
         sb.appendLine("""<!DOCTYPE html>""")
         sb.appendLine("""<html lang="en">""")

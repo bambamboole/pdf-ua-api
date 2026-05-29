@@ -11,7 +11,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ImageOptimizerTest {
-
     @Test
     fun nonImageBytesPassThrough() {
         val css = "body { color: red; }".toByteArray()
@@ -101,7 +100,10 @@ class ImageOptimizerTest {
         assertNull(ImageOptimizer.detectFormat("hello".toByteArray()))
     }
 
-    private fun createJpeg(width: Int, height: Int): ByteArray {
+    private fun createJpeg(
+        width: Int,
+        height: Int,
+    ): ByteArray {
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         val g = image.createGraphics()
         g.color = Color.BLUE
@@ -112,7 +114,11 @@ class ImageOptimizerTest {
         return output.toByteArray()
     }
 
-    private fun createPng(width: Int, height: Int, hasAlpha: Boolean): ByteArray {
+    private fun createPng(
+        width: Int,
+        height: Int,
+        hasAlpha: Boolean,
+    ): ByteArray {
         val type = if (hasAlpha) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_RGB
         val image = BufferedImage(width, height, type)
         val g = image.createGraphics()

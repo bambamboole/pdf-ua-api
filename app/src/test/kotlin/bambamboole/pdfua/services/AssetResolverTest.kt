@@ -7,10 +7,10 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class AssetResolverTest {
-
-    private val resolver = AssetResolver(
-        httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build()
-    )
+    private val resolver =
+        AssetResolver(
+            httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build(),
+        )
 
     @Test
     fun blocksLocalhostIp() {
@@ -63,10 +63,11 @@ class AssetResolverTest {
 
     @Test
     fun blocksNonWhitelistedDomain() {
-        val restricted = AssetResolver(
-            httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build(),
-            allowedDomains = setOf("cdn.example.com")
-        )
+        val restricted =
+            AssetResolver(
+                httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build(),
+                allowedDomains = setOf("cdn.example.com"),
+            )
         assertFailsWith<IllegalArgumentException> {
             restricted.validateUrl(URI.create("https://evil.com/file"))
         }
@@ -74,10 +75,11 @@ class AssetResolverTest {
 
     @Test
     fun allowsWhitelistedDomain() {
-        val restricted = AssetResolver(
-            httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build(),
-            allowedDomains = setOf("example.com")
-        )
+        val restricted =
+            AssetResolver(
+                httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build(),
+                allowedDomains = setOf("example.com"),
+            )
         restricted.validateUrl(URI.create("https://example.com/file"))
     }
 

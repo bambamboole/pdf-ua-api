@@ -1,25 +1,25 @@
 package bambamboole.pdfua.html
 
+import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.BaseBlockConfig
+import bambamboole.pdfua.template.CustomPageSize
 import bambamboole.pdfua.template.DividerBlock
 import bambamboole.pdfua.template.DividerConfig
 import bambamboole.pdfua.template.DividerStyle
-import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.template.HeadingBlock
 import bambamboole.pdfua.template.HeadingConfig
-import bambamboole.pdfua.template.PageBackgroundConfig
-import bambamboole.pdfua.template.PageBackgroundType
 import bambamboole.pdfua.template.HtmlBlock
 import bambamboole.pdfua.template.ImageBlock
 import bambamboole.pdfua.template.ImageConfig
 import bambamboole.pdfua.template.KeyValueBlock
 import bambamboole.pdfua.template.KeyValueConfig
 import bambamboole.pdfua.template.KeyValueField
-import bambamboole.pdfua.template.PageConfig
-import bambamboole.pdfua.template.CustomPageSize
 import bambamboole.pdfua.template.Orientation
+import bambamboole.pdfua.template.PageBackgroundConfig
+import bambamboole.pdfua.template.PageBackgroundType
+import bambamboole.pdfua.template.PageConfig
 import bambamboole.pdfua.template.PageFooterConfig
 import bambamboole.pdfua.template.PageFormat
 import bambamboole.pdfua.template.PageNumbersConfig
@@ -27,12 +27,12 @@ import bambamboole.pdfua.template.PresetPageSize
 import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.SpacerBlock
 import bambamboole.pdfua.template.SpacerConfig
-import bambamboole.pdfua.template.Template
-import bambamboole.pdfua.template.TemplateConfig
 import bambamboole.pdfua.template.TableBlock
 import bambamboole.pdfua.template.TableColumn
 import bambamboole.pdfua.template.TableConfig
 import bambamboole.pdfua.template.TableStyle
+import bambamboole.pdfua.template.Template
+import bambamboole.pdfua.template.TemplateConfig
 import bambamboole.pdfua.template.TextBlock
 import bambamboole.pdfua.template.TypographyConfig
 import kotlinx.serialization.json.JsonNull
@@ -46,9 +46,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TemplateRendererTest {
-
-    private fun template(vararg blocks: bambamboole.pdfua.template.Block, config: TemplateConfig = TemplateConfig()) =
-        Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
+    private fun template(
+        vararg blocks: bambamboole.pdfua.template.Block,
+        config: TemplateConfig = TemplateConfig(),
+    ) = Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
 
     @Test
     fun rendersTextBlockInsideRowAndDocument() {
@@ -104,14 +105,16 @@ class TemplateRendererTest {
 
     @Test
     fun rendersImageWithRuntimeDataAndScopedMaxHeight() {
-        val data = mapOf(
-            "logo" to JsonObject(
-                mapOf(
-                    "src" to JsonPrimitive("runtime.png"),
-                    "alt" to JsonPrimitive("Runtime logo"),
-                ),
-            ),
-        )
+        val data =
+            mapOf(
+                "logo" to
+                    JsonObject(
+                        mapOf(
+                            "src" to JsonPrimitive("runtime.png"),
+                            "alt" to JsonPrimitive("Runtime logo"),
+                        ),
+                    ),
+            )
         val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)
 
         assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
@@ -121,28 +124,33 @@ class TemplateRendererTest {
 
     @Test
     fun rendersKeyValueWithRuntimeDataAndScopedLabelWidth() {
-        val block = KeyValueBlock(
-            id = "meta",
-            values = mapOf("invoice" to "Original", "customer" to "Original customer"),
-            config = KeyValueConfig(
-                labelWidth = "28mm",
-                fields = listOf(
-                    KeyValueField("customer", "Customer"),
-                    KeyValueField("invoice", "Invoice <no>"),
-                    KeyValueField("missing", "Missing"),
-                    KeyValueField("empty", "Empty"),
-                ),
-            ),
-        )
-        val data = mapOf(
-            "meta" to JsonObject(
-                mapOf(
-                    "invoice" to JsonPrimitive("INV-1"),
-                    "customer" to JsonPrimitive("<ACME>"),
-                    "empty" to JsonNull,
-                ),
-            ),
-        )
+        val block =
+            KeyValueBlock(
+                id = "meta",
+                values = mapOf("invoice" to "Original", "customer" to "Original customer"),
+                config =
+                    KeyValueConfig(
+                        labelWidth = "28mm",
+                        fields =
+                            listOf(
+                                KeyValueField("customer", "Customer"),
+                                KeyValueField("invoice", "Invoice <no>"),
+                                KeyValueField("missing", "Missing"),
+                                KeyValueField("empty", "Empty"),
+                            ),
+                    ),
+            )
+        val data =
+            mapOf(
+                "meta" to
+                    JsonObject(
+                        mapOf(
+                            "invoice" to JsonPrimitive("INV-1"),
+                            "customer" to JsonPrimitive("<ACME>"),
+                            "empty" to JsonNull,
+                        ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(block), data)
 
@@ -163,12 +171,14 @@ class TemplateRendererTest {
 
     @Test
     fun keyValueDropsUnsafeLabelWidth() {
-        val block = KeyValueBlock(
-            config = KeyValueConfig(
-                labelWidth = "1mm} body{display:none",
-                fields = listOf(KeyValueField("invoice", "Invoice")),
-            ),
-        )
+        val block =
+            KeyValueBlock(
+                config =
+                    KeyValueConfig(
+                        labelWidth = "1mm} body{display:none",
+                        fields = listOf(KeyValueField("invoice", "Invoice")),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(block))
 
@@ -232,13 +242,16 @@ class TemplateRendererTest {
 
     @Test
     fun rendersRepeatedFooterBeforeBodyAndReservesBottomMargin() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Repeated footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Repeated footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
@@ -256,13 +269,16 @@ class TemplateRendererTest {
 
     @Test
     fun appliesRuntimeDataInsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(id = "footer", text = "Original footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(id = "footer", text = "Original footer")))),
+                            ),
+                    ),
+            )
         val data = mapOf("footer" to JsonObject(mapOf("text" to JsonPrimitive("Runtime footer"))))
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg), data)
@@ -273,14 +289,17 @@ class TemplateRendererTest {
 
     @Test
     fun rendersCenteredPageNumbersInsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                pageNumbers = PageNumbersConfig(enabled = true, position = Align.CENTER),
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        pageNumbers = PageNumbersConfig(enabled = true, position = Align.CENTER),
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
@@ -291,14 +310,17 @@ class TemplateRendererTest {
 
     @Test
     fun keepsNonCenteredPageNumbersOutsideRepeatedFooter() {
-        val cfg = TemplateConfig(
-            page = PageConfig(
-                pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT),
-                footer = PageFooterConfig(
-                    rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
-                ),
-            ),
-        )
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        pageNumbers = PageNumbersConfig(enabled = true, position = Align.RIGHT),
+                        footer =
+                            PageFooterConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Footer")))),
+                            ),
+                    ),
+            )
 
         val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
 
@@ -392,11 +414,12 @@ class TemplateRendererTest {
 
     @Test
     fun externalFontEmitsFontFaceAndUsesFamily() {
-        val tpl = Template(
-            version = 1,
-            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
-            rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
-        )
+        val tpl =
+            Template(
+                version = 1,
+                fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
+                rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
+            )
         val html = TemplateRenderer.render(tpl)
         assertTrue(
             html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }"),
@@ -406,11 +429,12 @@ class TemplateRendererTest {
 
     @Test
     fun externalFontMultiWeightEmitsOneFontFaceRulePerWeight() {
-        val tpl = Template(
-            version = 1,
-            fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
-            rows = listOf(Row(listOf(TextBlock(text = "x")))),
-        )
+        val tpl =
+            Template(
+                version = 1,
+                fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
+                rows = listOf(Row(listOf(TextBlock(text = "x")))),
+            )
 
         val html = TemplateRenderer.render(tpl)
 
@@ -434,22 +458,37 @@ class TemplateRendererTest {
 
     @Test
     fun rendersTableWithRuntimeRowDataAsBareArray() {
-        val table = TableBlock(
-            id = "items",
-            config = TableConfig(
-                style = TableStyle.STRIPED,
-                columns = listOf(
-                    TableColumn(key = "sku", label = "SKU"),
-                    TableColumn(key = "description", label = "Description"),
-                ),
-            ),
-        )
-        val data = mapOf(
-            "items" to buildJsonArray {
-                add(buildJsonObject { put("sku", "A-100"); put("description", "Accessible PDF setup") })
-                add(buildJsonObject { put("sku", "B-200"); put("description", "Structure review") })
-            },
-        )
+        val table =
+            TableBlock(
+                id = "items",
+                config =
+                    TableConfig(
+                        style = TableStyle.STRIPED,
+                        columns =
+                            listOf(
+                                TableColumn(key = "sku", label = "SKU"),
+                                TableColumn(key = "description", label = "Description"),
+                            ),
+                    ),
+            )
+        val data =
+            mapOf(
+                "items" to
+                    buildJsonArray {
+                        add(
+                            buildJsonObject {
+                                put("sku", "A-100")
+                                put("description", "Accessible PDF setup")
+                            },
+                        )
+                        add(
+                            buildJsonObject {
+                                put("sku", "B-200")
+                                put("description", "Structure review")
+                            },
+                        )
+                    },
+            )
 
         val html = TemplateRenderer.render(template(table), data)
 

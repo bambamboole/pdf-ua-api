@@ -1,22 +1,31 @@
 package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
-import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.cssPt
-import bambamboole.pdfua.html.html
 import bambamboole.pdfua.css.safeCssColor
+import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
 enum class DividerStyle {
-    @SerialName("solid") SOLID,
-    @SerialName("dashed") DASHED,
-    @SerialName("dotted") DOTTED,
-    @SerialName("double") DOUBLE,
-    @SerialName("none") NONE,
+    @SerialName("solid")
+    SOLID,
+
+    @SerialName("dashed")
+    DASHED,
+
+    @SerialName("dotted")
+    DOTTED,
+
+    @SerialName("double")
+    DOUBLE,
+
+    @SerialName("none")
+    NONE,
 }
 
 @Serializable
@@ -40,8 +49,8 @@ data class DividerBlock(
 
     override fun render(): Html = html { voidTag("hr") }
 
-    override fun renderCss(cssId: String): List<CssDeclaration> {
-        return listOf(
+    override fun renderCss(cssId: String): List<CssDeclaration> =
+        listOf(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
@@ -50,7 +59,6 @@ data class DividerBlock(
                 rule("border-top-style", config.style.cssValue())
             },
         )
-    }
 
     private fun DividerStyle.cssValue(): String =
         when (this) {
@@ -61,6 +69,8 @@ data class DividerBlock(
             DividerStyle.NONE -> "none"
         }
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> =
-        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Divider block does not accept data"))
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = listOf(issue(path, ValidationCodes.INVALID_VALUE, "Divider block does not accept data"))
 }

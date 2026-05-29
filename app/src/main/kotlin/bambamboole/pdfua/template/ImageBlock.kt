@@ -1,9 +1,9 @@
 package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
-import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.cssPx
+import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -52,7 +52,10 @@ data class ImageBlock(
             },
         )
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("src", "alt"), path) +
@@ -63,75 +66,80 @@ data class ImageBlock(
 
 private val SVG_DATA_URL = Regex("^data:image/svg\\+xml(?:;charset=[^;,]+)?;base64,", RegexOption.IGNORE_CASE)
 
-private val SAFE_SVG_ELEMENTS = setOf(
-    "svg",
-    "g",
-    "defs",
-    "title",
-    "desc",
-    "path",
-    "rect",
-    "circle",
-    "ellipse",
-    "line",
-    "polyline",
-    "polygon",
-    "text",
-    "tspan",
-    "lineargradient",
-    "radialgradient",
-    "stop",
-    "clippath",
-)
+private val SAFE_SVG_ELEMENTS =
+    setOf(
+        "svg",
+        "g",
+        "defs",
+        "title",
+        "desc",
+        "path",
+        "rect",
+        "circle",
+        "ellipse",
+        "line",
+        "polyline",
+        "polygon",
+        "text",
+        "tspan",
+        "lineargradient",
+        "radialgradient",
+        "stop",
+        "clippath",
+    )
 
-private val SAFE_SVG_ATTRIBUTES = setOf(
-    "xmlns",
-    "xmlns:xlink",
-    "id",
-    "viewbox",
-    "width",
-    "height",
-    "x",
-    "y",
-    "x1",
-    "y1",
-    "x2",
-    "y2",
-    "cx",
-    "cy",
-    "r",
-    "rx",
-    "ry",
-    "d",
-    "points",
-    "transform",
-    "fill",
-    "stroke",
-    "stroke-width",
-    "stroke-linecap",
-    "stroke-linejoin",
-    "stroke-miterlimit",
-    "stroke-dasharray",
-    "stroke-dashoffset",
-    "opacity",
-    "fill-opacity",
-    "stroke-opacity",
-    "font-family",
-    "font-size",
-    "font-weight",
-    "text-anchor",
-    "dx",
-    "dy",
-    "offset",
-    "stop-color",
-    "stop-opacity",
-    "clip-path",
-    "role",
-    "aria-label",
-)
+private val SAFE_SVG_ATTRIBUTES =
+    setOf(
+        "xmlns",
+        "xmlns:xlink",
+        "id",
+        "viewbox",
+        "width",
+        "height",
+        "x",
+        "y",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "cx",
+        "cy",
+        "r",
+        "rx",
+        "ry",
+        "d",
+        "points",
+        "transform",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "stroke-linecap",
+        "stroke-linejoin",
+        "stroke-miterlimit",
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "opacity",
+        "fill-opacity",
+        "stroke-opacity",
+        "font-family",
+        "font-size",
+        "font-weight",
+        "text-anchor",
+        "dx",
+        "dy",
+        "offset",
+        "stop-color",
+        "stop-opacity",
+        "clip-path",
+        "role",
+        "aria-label",
+    )
 
 private sealed class SvgSource {
-    data class Content(val value: String) : SvgSource()
+    data class Content(
+        val value: String,
+    ) : SvgSource()
+
     object Invalid : SvgSource()
 }
 
@@ -148,23 +156,29 @@ private fun svgSource(source: String): SvgSource? {
     }.getOrDefault(SvgSource.Invalid)
 }
 
-private fun inlineSanitizedSvg(source: String, alt: String): String? {
-    val svg = when (val result = svgSource(source) ?: return null) {
-        is SvgSource.Content -> result.value
-        SvgSource.Invalid -> return ""
-    }
-    val document = runCatching {
-        val factory = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = true
-            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-            setFeature("http://xml.org/sax/features/external-general-entities", false)
-            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-            isXIncludeAware = false
-            isExpandEntityReferences = false
+private fun inlineSanitizedSvg(
+    source: String,
+    alt: String,
+): String? {
+    val svg =
+        when (val result = svgSource(source) ?: return null) {
+            is SvgSource.Content -> result.value
+            SvgSource.Invalid -> return ""
         }
-        factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
-    }.getOrNull() ?: return ""
+    val document =
+        runCatching {
+            val factory =
+                DocumentBuilderFactory.newInstance().apply {
+                    isNamespaceAware = true
+                    setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                    setFeature("http://xml.org/sax/features/external-general-entities", false)
+                    setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+                    setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+                    isXIncludeAware = false
+                    isExpandEntityReferences = false
+                }
+            factory.newDocumentBuilder().parse(ByteArrayInputStream(svg.toByteArray(Charsets.UTF_8)))
+        }.getOrNull() ?: return ""
 
     val root = document.documentElement ?: return ""
     if (!root.hasElementName("svg")) {
@@ -180,23 +194,24 @@ private fun inlineSanitizedSvg(source: String, alt: String): String? {
 }
 
 private fun sanitizeSvgElement(element: Element) {
-    val attributesToRemove = buildList {
-        val attributes = element.attributes
-        for (index in 0 until attributes.length) {
-            val attribute = attributes.item(index)
-            val name = attribute.nodeName.lowercase()
-            val value = attribute.nodeValue.trim().lowercase()
-            if (
-                name !in SAFE_SVG_ATTRIBUTES ||
-                name == "href" ||
-                name == "xlink:href" ||
-                value.contains("url(") ||
-                value.contains("javascript:")
-            ) {
-                add(attribute.nodeName)
+    val attributesToRemove =
+        buildList {
+            val attributes = element.attributes
+            for (index in 0 until attributes.length) {
+                val attribute = attributes.item(index)
+                val name = attribute.nodeName.lowercase()
+                val value = attribute.nodeValue.trim().lowercase()
+                if (
+                    name !in SAFE_SVG_ATTRIBUTES ||
+                    name == "href" ||
+                    name == "xlink:href" ||
+                    value.contains("url(") ||
+                    value.contains("javascript:")
+                ) {
+                    add(attribute.nodeName)
+                }
             }
         }
-    }
     attributesToRemove.forEach(element::removeAttribute)
 
     val childElementsToRemove = mutableListOf<Element>()
@@ -226,7 +241,8 @@ private fun Element.hasAllowedSvgElementName(): Boolean {
 
 private fun serializeElement(element: Element): String {
     val writer = StringWriter()
-    TransformerFactory.newInstance()
+    TransformerFactory
+        .newInstance()
         .newTransformer()
         .apply { setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes") }
         .transform(DOMSource(element), StreamResult(writer))

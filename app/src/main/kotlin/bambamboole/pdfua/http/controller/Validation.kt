@@ -19,11 +19,13 @@ fun Route.validationRoutes() {
         summary = "Validate PDF",
         description = "Validates a PDF against PDF/A-3a and PDF/UA-1 standards using veraPDF. Send PDF binary as request body.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ValidationResponse::class, description = "Validation result"),
-        ResponseEntry("400", Nothing::class, description = "PDF content is empty"),
-        ResponseEntry("500", Nothing::class, description = "Validation service error"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ValidationResponse::class, description = "Validation result"),
+            ResponseEntry("400", Nothing::class, description = "PDF content is empty"),
+            ResponseEntry("500", Nothing::class, description = "Validation service error"),
+        ],
+    )
     post("/validate") {
         try {
             val pdfBytes = call.receive<ByteArray>()

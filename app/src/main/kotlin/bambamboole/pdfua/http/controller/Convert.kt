@@ -26,11 +26,13 @@ fun Route.convertRoutes(
         summary = "Convert HTML to PDF",
         description = "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary.",
     )
-    @KtorResponds([
-        ResponseEntry("200", ByteArray::class, description = "PDF document"),
-        ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
-        ResponseEntry("500", Nothing::class, description = "Conversion failed"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
+            ResponseEntry("500", Nothing::class, description = "Conversion failed"),
+        ],
+    )
     post("/convert") {
         try {
             val request = call.receive<ConvertRequest>()
@@ -45,13 +47,14 @@ fun Route.convertRoutes(
 
             val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
 
-            val result = PdfRenderer.convertHtmlToPdf(
-                html = request.html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-                attachments = request.attachments,
-            )
+            val result =
+                PdfRenderer.convertHtmlToPdf(
+                    html = request.html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = baseUrl,
+                    attachments = request.attachments,
+                )
 
             respondDocumentOrUpload(
                 bytes = result.bytes,

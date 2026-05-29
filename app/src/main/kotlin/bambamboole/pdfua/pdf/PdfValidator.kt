@@ -40,11 +40,13 @@ object PdfValidator {
         try {
             ByteArrayInputStream(pdfBytes).use { inputStream ->
                 Foundries.defaultInstance().createParser(inputStream).use { parser ->
-                    val config = ValidatorConfigBuilder.defaultBuilder()
-                        .recordPasses(true)
-                        .maxFails(-1)
-                        .showErrorMessages(true)
-                        .build()
+                    val config =
+                        ValidatorConfigBuilder
+                            .defaultBuilder()
+                            .recordPasses(true)
+                            .maxFails(-1)
+                            .showErrorMessages(true)
+                            .build()
                     val validator = Foundries.defaultInstance().createValidator(config, validationFlavours)
                     val results = validator.validateAll(parser)
 
@@ -65,7 +67,11 @@ object PdfValidator {
                                     failed++
                                     allFailures.add(buildFailure(assertion, profileName))
                                 }
-                                TestAssertion.Status.PASSED -> passed++
+
+                                TestAssertion.Status.PASSED -> {
+                                    passed++
+                                }
+
                                 else -> {}
                             }
                         }
@@ -77,8 +83,8 @@ object PdfValidator {
                                 isCompliant = result.isCompliant,
                                 totalChecks = passed + failed,
                                 passedChecks = passed,
-                                failedChecks = failed
-                            )
+                                failedChecks = failed,
+                            ),
                         )
 
                         totalPassed += passed
@@ -91,22 +97,23 @@ object PdfValidator {
 
                     logger.info(
                         "Validation complete: compliant=$overallCompliant, " +
-                                "profiles=${profileResults.map { "${it.profile}=${it.isCompliant}" }}, " +
-                                "total=${totalPassed + totalFailed}, passed=$totalPassed, failed=$totalFailed"
+                            "profiles=${profileResults.map { "${it.profile}=${it.isCompliant}" }}, " +
+                            "total=${totalPassed + totalFailed}, passed=$totalPassed, failed=$totalFailed",
                     )
 
                     return ValidationResponse(
                         isCompliant = overallCompliant,
                         profiles = profileResults,
-                        summary = ValidationSummary(
-                            totalChecks = totalPassed + totalFailed,
-                            passedChecks = totalPassed,
-                            failedChecks = totalFailed,
-                            categories = categories
-                        ),
+                        summary =
+                            ValidationSummary(
+                                totalChecks = totalPassed + totalFailed,
+                                passedChecks = totalPassed,
+                                failedChecks = totalFailed,
+                                categories = categories,
+                            ),
                         documentInfo = documentInfo,
                         failures = allFailures.take(100),
-                        metadata = metadata
+                        metadata = metadata,
                     )
                 }
             }
@@ -116,16 +123,18 @@ object PdfValidator {
         }
     }
 
-    fun isPdfCompliant(pdfBytes: ByteArray): Boolean {
-        return try {
+    fun isPdfCompliant(pdfBytes: ByteArray): Boolean =
+        try {
             validatePdf(pdfBytes).isCompliant
         } catch (e: Exception) {
             logger.error("Validation check failed: ${e.message}")
             false
         }
-    }
 
-    private fun buildFailure(assertion: TestAssertion, profileName: String): ValidationFailure {
+    private fun buildFailure(
+        assertion: TestAssertion,
+        profileName: String,
+    ): ValidationFailure {
         val clause = assertion.ruleId?.clause ?: "Unknown"
         val errorDetails = buildErrorDetails(assertion)
 
@@ -136,7 +145,7 @@ object PdfValidator {
             category = categorizeClause(clause, profileName),
             message = assertion.message ?: "No message provided",
             location = assertion.location?.context,
-            errorDetails = errorDetails
+            errorDetails = errorDetails,
         )
     }
 
@@ -165,29 +174,35 @@ object PdfValidator {
     private fun buildCategorySummary(
         failures: List<ValidationFailure>,
         totalPassed: Int,
-        results: List<ValidationResult>
+        results: List<ValidationResult>,
     ): List<CategoryResult> {
-        val failedByCategory = failures.groupBy { it.category }
-            .mapValues { it.value.size }
+        val failedByCategory =
+            failures
+                .groupBy { it.category }
+                .mapValues { it.value.size }
 
         if (failedByCategory.isEmpty()) return emptyList()
 
-        return failedByCategory.map { (category, failedCount) ->
-            CategoryResult(
-                category = category,
-                passedChecks = 0,
-                failedChecks = failedCount
-            )
-        }.sortedByDescending { it.failedChecks }
+        return failedByCategory
+            .map { (category, failedCount) ->
+                CategoryResult(
+                    category = category,
+                    passedChecks = 0,
+                    failedChecks = failedCount,
+                )
+            }.sortedByDescending { it.failedChecks }
     }
 
-    private fun categorizeClause(clause: String, profileName: String): String {
+    private fun categorizeClause(
+        clause: String,
+        profileName: String,
+    ): String {
         if (profileName == "PDF/A-3a") return categorizePdfAClause(clause)
         return categorizePdfUaClause(clause)
     }
 
-    private fun categorizePdfAClause(clause: String): String {
-        return when {
+    private fun categorizePdfAClause(clause: String): String =
+        when {
             clause.startsWith("6.1") -> "PDF/A File Structure"
             clause.startsWith("6.2") -> "PDF/A Graphics"
             clause.startsWith("6.3") -> "PDF/A Fonts"
@@ -199,19 +214,24 @@ object PdfValidator {
             clause.startsWith("6.9") -> "PDF/A Embedded Files"
             else -> "PDF/A Compliance"
         }
-    }
 
-    private fun categorizePdfUaClause(clause: String): String {
-        return when {
+    private fun categorizePdfUaClause(clause: String): String =
+        when {
             clause.startsWith("5") -> "Metadata & Identity"
+
             clause.startsWith("6.1") || clause.startsWith("6.2") -> "File Structure"
+
             clause == "7.1-8" || clause == "7.1-9" || clause == "7.1-10" -> "Metadata & Identity"
+
             clause.startsWith("7.1") -> "Structure & Tagging"
+
             clause == "7.2-2" || clause.startsWith("7.2-2") -> "Natural Language"
+
             clause == "7.2-21" || clause == "7.2-22" || clause == "7.2-23" ||
                 clause == "7.2-24" || clause == "7.2-25" || clause == "7.2-29" ||
                 clause == "7.2-30" || clause == "7.2-31" || clause == "7.2-32" ||
                 clause == "7.2-33" || clause == "7.2-34" -> "Natural Language"
+
             clause == "7.2-3" || clause == "7.2-4" || clause == "7.2-5" ||
                 clause == "7.2-6" || clause == "7.2-7" || clause == "7.2-8" ||
                 clause == "7.2-9" || clause == "7.2-10" || clause == "7.2-11" ||
@@ -220,27 +240,41 @@ object PdfValidator {
                 clause == "7.2-37" || clause == "7.2-38" || clause == "7.2-39" ||
                 clause == "7.2-40" || clause == "7.2-41" || clause == "7.2-42" ||
                 clause == "7.2-43" -> "Tables"
+
             clause == "7.2-17" || clause == "7.2-18" || clause == "7.2-19" ||
                 clause == "7.2-20" -> "Lists"
+
             clause == "7.2-26" || clause == "7.2-27" || clause == "7.2-28" -> "Table of Contents"
+
             clause.startsWith("7.3") -> "Graphics & Figures"
+
             clause.startsWith("7.4") -> "Headings"
+
             clause.startsWith("7.5") -> "Table Headers"
+
             clause.startsWith("7.7") -> "Mathematical Expressions"
+
             clause.startsWith("7.9") -> "Notes & References"
+
             clause.startsWith("7.10") -> "Optional Content"
+
             clause.startsWith("7.11") -> "Embedded Files"
+
             clause.startsWith("7.15") -> "XFA Forms"
+
             clause.startsWith("7.16") -> "Security"
+
             clause.startsWith("7.18") -> "Annotations"
+
             clause.startsWith("7.20") -> "XObjects"
+
             clause.startsWith("7.21") -> "Fonts"
+
             else -> "Other"
         }
-    }
 
-    private fun formatProfileName(flavour: PDFAFlavour): String {
-        return when (flavour) {
+    private fun formatProfileName(flavour: PDFAFlavour): String =
+        when (flavour) {
             PDFAFlavour.PDFA_1_A -> "PDF/A-1a"
             PDFAFlavour.PDFA_1_B -> "PDF/A-1b"
             PDFAFlavour.PDFA_2_A -> "PDF/A-2a"
@@ -253,10 +287,9 @@ object PdfValidator {
             PDFAFlavour.PDFUA_2 -> "PDF/UA-2"
             else -> flavour.id
         }
-    }
 
-    private fun formatSpecificationName(flavour: PDFAFlavour): String {
-        return when (flavour) {
+    private fun formatSpecificationName(flavour: PDFAFlavour): String =
+        when (flavour) {
             PDFAFlavour.PDFA_1_A, PDFAFlavour.PDFA_1_B -> "ISO 19005-1"
             PDFAFlavour.PDFA_2_A, PDFAFlavour.PDFA_2_B, PDFAFlavour.PDFA_2_U -> "ISO 19005-2"
             PDFAFlavour.PDFA_3_A, PDFAFlavour.PDFA_3_B, PDFAFlavour.PDFA_3_U -> "ISO 19005-3"
@@ -264,27 +297,28 @@ object PdfValidator {
             PDFAFlavour.PDFUA_2 -> "ISO 14289-2"
             else -> flavour.part.name
         }
-    }
 
-    private val isoDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
+    private val isoDateFormat =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
 
-    private fun extractDocumentDetails(pdfBytes: ByteArray): Pair<PdfMetadata?, DocumentInfo?> {
-        return try {
+    private fun extractDocumentDetails(pdfBytes: ByteArray): Pair<PdfMetadata?, DocumentInfo?> =
+        try {
             Loader.loadPDF(pdfBytes).use { document ->
                 val info = document.documentInformation
                 val catalog = document.documentCatalog
                 val markInfo = catalog.markInfo
 
-                val metadata = PdfMetadata(
-                    title = info.title?.takeIf { it.isNotBlank() },
-                    subject = info.subject?.takeIf { it.isNotBlank() },
-                    author = info.author?.takeIf { it.isNotBlank() },
-                    creator = info.creator?.takeIf { it.isNotBlank() },
-                    producer = info.producer?.takeIf { it.isNotBlank() },
-                    creationDate = info.creationDate?.let { isoDateFormat.format(it.time) }
-                )
+                val metadata =
+                    PdfMetadata(
+                        title = info.title?.takeIf { it.isNotBlank() },
+                        subject = info.subject?.takeIf { it.isNotBlank() },
+                        author = info.author?.takeIf { it.isNotBlank() },
+                        creator = info.creator?.takeIf { it.isNotBlank() },
+                        producer = info.producer?.takeIf { it.isNotBlank() },
+                        creationDate = info.creationDate?.let { isoDateFormat.format(it.time) },
+                    )
 
                 val fonts = mutableSetOf<FontInfo>()
                 var imageCount = 0
@@ -294,13 +328,16 @@ object PdfValidator {
                         try {
                             val font = resources.getFont(fontName)
                             if (font != null) {
-                                fonts.add(FontInfo(
-                                    name = font.name ?: fontName.name,
-                                    embedded = font.isEmbedded,
-                                    type = font.subType ?: "Unknown"
-                                ))
+                                fonts.add(
+                                    FontInfo(
+                                        name = font.name ?: fontName.name,
+                                        embedded = font.isEmbedded,
+                                        type = font.subType ?: "Unknown",
+                                    ),
+                                )
                             }
-                        } catch (_: Exception) { }
+                        } catch (_: Exception) {
+                        }
                     }
                     for (xObjectName in resources.xObjectNames) {
                         if (resources.isImageXObject(xObjectName)) imageCount++
@@ -309,14 +346,15 @@ object PdfValidator {
 
                 val structureElements = countStructureElements(catalog.structureTreeRoot)
 
-                val documentInfo = DocumentInfo(
-                    pages = document.numberOfPages,
-                    tagged = markInfo?.isMarked == true,
-                    language = catalog.language,
-                    structureElements = structureElements,
-                    fonts = fonts.sortedBy { it.name },
-                    images = imageCount
-                )
+                val documentInfo =
+                    DocumentInfo(
+                        pages = document.numberOfPages,
+                        tagged = markInfo?.isMarked == true,
+                        language = catalog.language,
+                        structureElements = structureElements,
+                        fonts = fonts.sortedBy { it.name },
+                        images = imageCount,
+                    )
 
                 Pair(metadata, documentInfo)
             }
@@ -324,7 +362,6 @@ object PdfValidator {
             logger.warn("Failed to extract PDF details: ${e.message}")
             Pair(null, null)
         }
-    }
 
     private fun countStructureElements(root: org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot?): Int {
         if (root == null) return 0
@@ -341,7 +378,8 @@ object PdfValidator {
                 count++
                 try {
                     stack.addAll(item.kids)
-                } catch (_: Exception) { }
+                } catch (_: Exception) {
+                }
             }
         }
         return count

@@ -27,10 +27,11 @@ suspend fun RoutingContext.respondDocumentOrUpload(
         documentId?.let { call.response.header("X-Document-UUID", it) }
         call.response.header(
             HttpHeaders.ContentDisposition,
-            ContentDisposition.Attachment.withParameter(
-                ContentDisposition.Parameters.FileName,
-                fileName,
-            ).toString(),
+            ContentDisposition.Attachment
+                .withParameter(
+                    ContentDisposition.Parameters.FileName,
+                    fileName,
+                ).toString(),
         )
         call.respondBytes(bytes, contentType, HttpStatusCode.OK)
         return
@@ -47,10 +48,12 @@ suspend fun RoutingContext.respondDocumentOrUpload(
             call.respond(HttpStatusCode.NoContent)
         }
 
-        is UploadResult.InvalidUrl ->
+        is UploadResult.InvalidUrl -> {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+        }
 
-        is UploadResult.Failed ->
+        is UploadResult.Failed -> {
             call.respond(HttpStatusCode.BadGateway, mapOf("error" to result.message))
+        }
     }
 }

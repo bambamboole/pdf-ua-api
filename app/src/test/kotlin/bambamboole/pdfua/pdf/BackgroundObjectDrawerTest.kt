@@ -16,11 +16,11 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class BackgroundObjectDrawerTest {
-
     private fun imageDataUrl(): String {
         val img = BufferedImage(300, 420, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
-        g.color = Color.WHITE; g.fillRect(0, 0, 300, 420)
+        g.color = Color.WHITE
+        g.fillRect(0, 0, 300, 420)
         g.color = Color(0xd1, 0xd5, 0xdb)
         g.font = Font("SansSerif", Font.BOLD, 28)
         g.drawString("CONFIDENTIAL", 30, 210)
@@ -31,14 +31,22 @@ class BackgroundObjectDrawerTest {
     }
 
     private fun pdfDataUrl(): String {
-        val bytes = PDDocument().use { doc ->
-            doc.addPage(PDPage(PDRectangle.A4))
-            ByteArrayOutputStream().use { out -> doc.save(out); out.toByteArray() }
-        }
+        val bytes =
+            PDDocument().use { doc ->
+                doc.addPage(PDPage(PDRectangle.A4))
+                ByteArrayOutputStream().use { out ->
+                    doc.save(out)
+                    out.toByteArray()
+                }
+            }
         return "data:application/pdf;base64," + Base64.getEncoder().encodeToString(bytes)
     }
 
-    private fun htmlWith(dataUrl: String, kind: String): String = """
+    private fun htmlWith(
+        dataUrl: String,
+        kind: String,
+    ): String =
+        """
         <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>t</title>
         <style>
         @page { size: A4; margin: 20mm; }
@@ -50,7 +58,7 @@ class BackgroundObjectDrawerTest {
         <div class="page-bg"><object type="${BackgroundObjectDrawer.OBJECT_TYPE}" data-src="$dataUrl" data-kind="$kind" style="width:1px;height:1px"></object></div>
         <p>Visible content over the background.</p>
         </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun imageBackgroundIsStampedAndCompliant() {

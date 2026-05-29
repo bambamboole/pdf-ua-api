@@ -16,7 +16,10 @@ data class HtmlBlock(
 
     override fun render(): Html = Html.raw(html)
 
-    override fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> {
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
         return allowedKeys(obj, setOf("html"), path) + optionalStringField(obj, "html", path)

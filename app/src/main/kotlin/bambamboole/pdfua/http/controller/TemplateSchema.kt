@@ -17,9 +17,11 @@ fun Route.templateSchemaRoutes() {
         summary = "Get the template schema",
         description = "Returns the canonical JSON Schema for template rendering, including builder metadata under x-pdfUa.",
     )
-    @KtorResponds([
-        ResponseEntry("200", JsonObject::class, description = "Template JSON Schema"),
-    ])
+    @KtorResponds(
+        [
+            ResponseEntry("200", JsonObject::class, description = "Template JSON Schema"),
+        ],
+    )
     get("/schema") {
         call.respond(TemplateJsonSchema.current())
     }

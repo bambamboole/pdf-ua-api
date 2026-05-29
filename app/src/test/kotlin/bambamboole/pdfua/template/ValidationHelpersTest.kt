@@ -12,7 +12,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ValidationHelpersTest {
-
     private val xPath = ValidationPath().child("x")
 
     @Test
@@ -23,8 +22,10 @@ class ValidationHelpersTest {
             "\$.template.rows[0].blocks[1].config.level",
             ValidationPath()
                 .child("template")
-                .child("rows").index(0)
-                .child("blocks").index(1)
+                .child("rows")
+                .index(0)
+                .child("blocks")
+                .index(1)
                 .child("config")
                 .child("level")
                 .toString(),
@@ -65,11 +66,12 @@ class ValidationHelpersTest {
 
     @Test
     fun allowedKeysFlagsUnknownKeysAtChildPaths() {
-        val obj = buildJsonObject {
-            put("a", 1)
-            put("extra", 2)
-            put("more", 3)
-        }
+        val obj =
+            buildJsonObject {
+                put("a", 1)
+                put("extra", 2)
+                put("more", 3)
+            }
 
         val errs = allowedKeys(obj, setOf("a"), xPath)
 
@@ -87,10 +89,11 @@ class ValidationHelpersTest {
 
     @Test
     fun optionalStringFieldRejectsNonStringAndNull() {
-        val obj = buildJsonObject {
-            put("n", JsonNull)
-            put("i", 42)
-        }
+        val obj =
+            buildJsonObject {
+                put("n", JsonNull)
+                put("i", 42)
+            }
 
         val nullErrs = optionalStringField(obj, "n", xPath)
         val intErrs = optionalStringField(obj, "i", xPath)
@@ -104,10 +107,11 @@ class ValidationHelpersTest {
 
     @Test
     fun nullableStringFieldAcceptsStringNullOrAbsent() {
-        val obj = buildJsonObject {
-            put("a", "hi")
-            put("n", JsonNull)
-        }
+        val obj =
+            buildJsonObject {
+                put("a", "hi")
+                put("n", JsonNull)
+            }
 
         assertTrue(nullableStringField(obj, "a", xPath).isEmpty())
         assertTrue(nullableStringField(obj, "n", xPath).isEmpty())

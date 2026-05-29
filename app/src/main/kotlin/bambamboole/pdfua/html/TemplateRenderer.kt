@@ -1,10 +1,21 @@
 package bambamboole.pdfua.html
 
+import bambamboole.pdfua.css.CssRegistry
+import bambamboole.pdfua.css.CssRule
+import bambamboole.pdfua.css.cssIdentifierLikeValue
+import bambamboole.pdfua.css.cssMm
+import bambamboole.pdfua.css.cssPt
+import bambamboole.pdfua.css.cssQuotedString
+import bambamboole.pdfua.css.cssUrlValue
+import bambamboole.pdfua.css.safeCssColor
+import bambamboole.pdfua.css.safeCssWidth
+import bambamboole.pdfua.fonts.FontFace
+import bambamboole.pdfua.pdf.BackgroundObjectDrawer
+import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.Block
 import bambamboole.pdfua.template.BlockConfig
 import bambamboole.pdfua.template.CustomPageSize
-import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.template.Orientation
 import bambamboole.pdfua.template.PageBackgroundConfig
 import bambamboole.pdfua.template.PageConfig
@@ -16,43 +27,32 @@ import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.SpacingConfig
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.TypographyConfig
-import bambamboole.pdfua.css.CssRegistry
-import bambamboole.pdfua.css.CssRule
-import bambamboole.pdfua.css.cssIdentifierLikeValue
-import bambamboole.pdfua.css.cssMm
-import bambamboole.pdfua.css.cssPt
-import bambamboole.pdfua.css.cssQuotedString
-import bambamboole.pdfua.css.cssUrlValue
-import bambamboole.pdfua.css.safeCssColor
-import bambamboole.pdfua.css.safeCssWidth
-import bambamboole.pdfua.pdf.BackgroundObjectDrawer
-import bambamboole.pdfua.services.RenderOptions
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
-private fun pageDimensionCss(value: Double): String =
-    requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
+private fun pageDimensionCss(value: Double): String = requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
 
-private fun pageDimensionCss(value: Int): String =
-    requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
+private fun pageDimensionCss(value: Int): String = requireNotNull(cssMm(value)) { "Page dimensions must be positive millimetres: $value" }
 
-private fun pageSizeCss(size: PageSize): String = when (size) {
-    is PresetPageSize -> {
-        val (w, h) = if (size.orientation == Orientation.LANDSCAPE) {
-            size.format.heightMm to size.format.widthMm
-        } else {
-            size.format.widthMm to size.format.heightMm
+private fun pageSizeCss(size: PageSize): String =
+    when (size) {
+        is PresetPageSize -> {
+            val (w, h) =
+                if (size.orientation == Orientation.LANDSCAPE) {
+                    size.format.heightMm to size.format.widthMm
+                } else {
+                    size.format.widthMm to size.format.heightMm
+                }
+            "${pageDimensionCss(w)} ${pageDimensionCss(h)}"
         }
-        "${pageDimensionCss(w)} ${pageDimensionCss(h)}"
+
+        is CustomPageSize -> {
+            check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
+            "${pageDimensionCss(size.width)} ${pageDimensionCss(size.height)}"
+        }
     }
-    is CustomPageSize -> {
-        check(size.width > 0 && size.height > 0) { "Page dimensions must be positive millimetres: ${size.width}x${size.height}" }
-        "${pageDimensionCss(size.width)} ${pageDimensionCss(size.height)}"
-    }
-}
 
 object TemplateRenderer {
-
     fun render(
         template: Template,
         data: Map<String, JsonElement> = emptyMap(),
@@ -66,7 +66,10 @@ object TemplateRenderer {
         emitDocumentCss(css, page, template.fonts, template.config.typography)
         var counter = 0
 
-        fun renderBlock(block: Block, widthOnCell: Boolean): Html {
+        fun renderBlock(
+            block: Block,
+            widthOnCell: Boolean,
+        ): Html {
             val resolved = block.id?.let { id -> data[id]?.let(block::applyData) } ?: block
             counter++
             val cssId = "block-$counter"
@@ -80,25 +83,31 @@ object TemplateRenderer {
             }
         }
 
-        fun renderRow(row: Row): Html = html {
-            tag("table", "class" to "row", "role" to "presentation") {
-                tag("tr") {
-                    row.blocks.forEach { block ->
-                        val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
-                        tag("td", "style" to cellWidth?.let { "width: $it;" }) {
-                            html(renderBlock(block, widthOnCell = cellWidth != null))
+        fun renderRow(row: Row): Html =
+            html {
+                tag("table", "class" to "row", "role" to "presentation") {
+                    tag("tr") {
+                        row.blocks.forEach { block ->
+                            val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
+                            tag("td", "style" to cellWidth?.let { "width: $it;" }) {
+                                html(renderBlock(block, widthOnCell = cellWidth != null))
+                            }
                         }
                     }
                 }
             }
-        }
 
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
         val rowsHtml = template.rows.map { renderRow(it) }
         return wrapDocument(footerHtml, rowsHtml, template, css, options).serialize()
     }
 
-    private fun emitPositioningCss(css: CssRegistry, cssId: String, config: BlockConfig, widthOnCell: Boolean) {
+    private fun emitPositioningCss(
+        css: CssRegistry,
+        cssId: String,
+        config: BlockConfig,
+        widthOnCell: Boolean,
+    ) {
         css.css(".$cssId") {
             val width = if (widthOnCell) null else safeCssWidth(config.width)
             rule("width", width)
@@ -107,16 +116,22 @@ object TemplateRenderer {
                     rule("margin-left", "auto")
                     rule("margin-right", "auto")
                 }
+
                 Align.RIGHT -> {
                     rule("margin-left", "auto")
                     rule("text-align", "right")
                 }
+
                 else -> {}
             }
         }
     }
 
-    private fun emitTypographyCss(css: CssRegistry, cssId: String, typography: TypographyConfig?) {
+    private fun emitTypographyCss(
+        css: CssRegistry,
+        cssId: String,
+        typography: TypographyConfig?,
+    ) {
         val rules = typographyRules(typography)
         css.css(".$cssId") {
             rules.forEach { rule(it.property, it.value) }
@@ -134,7 +149,10 @@ object TemplateRenderer {
         }
     }
 
-    private fun emitFontFaceCss(css: CssRegistry, fonts: Map<String, FontFace>) {
+    private fun emitFontFaceCss(
+        css: CssRegistry,
+        fonts: Map<String, FontFace>,
+    ) {
         fonts.entries.forEach { (family, face) ->
             face.weight.trim().split(Regex("\\s+")).forEach { weight ->
                 css.fontFace {
@@ -224,7 +242,10 @@ object TemplateRenderer {
         }
     }
 
-    private fun emitPageCss(css: CssRegistry, page: PageConfig) {
+    private fun emitPageCss(
+        css: CssRegistry,
+        page: PageConfig,
+    ) {
         val hasRepeatedFooter = page.footer.hasRepeatedRows()
         val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
         css.css("@page") {
@@ -266,7 +287,9 @@ object TemplateRenderer {
                     rule("content", """counter(page) " / " counter(pages)""")
                 }
             } else {
-                val position = page.pageNumbers.position.name.lowercase()
+                val position =
+                    page.pageNumbers.position.name
+                        .lowercase()
                 css.nestedCss("@page", "@bottom-$position") {
                     rule("content", """counter(page) " / " counter(pages)""")
                     rule("font-size", "8pt")
@@ -276,7 +299,10 @@ object TemplateRenderer {
         }
     }
 
-    private fun marginShorthand(margins: SpacingConfig, bottomReserve: Int = 0): String {
+    private fun marginShorthand(
+        margins: SpacingConfig,
+        bottomReserve: Int = 0,
+    ): String {
         val top = margins.top ?: 0
         val right = margins.right ?: 0
         val bottom = (margins.bottom ?: 0) + bottomReserve
@@ -302,17 +328,18 @@ object TemplateRenderer {
         }
     }
 
-    private fun backgroundObjectHtml(background: PageBackgroundConfig): Html = html {
-        tag("div", "class" to "pagebg") {
-            tag(
-                "object",
-                "type" to BackgroundObjectDrawer.OBJECT_TYPE,
-                "data-src" to background.src,
-                "data-kind" to background.type.name.lowercase(),
-                "style" to "width:1px;height:1px",
-            )
+    private fun backgroundObjectHtml(background: PageBackgroundConfig): Html =
+        html {
+            tag("div", "class" to "pagebg") {
+                tag(
+                    "object",
+                    "type" to BackgroundObjectDrawer.OBJECT_TYPE,
+                    "data-src" to background.src,
+                    "data-kind" to background.type.name.lowercase(),
+                    "style" to "width:1px;height:1px",
+                )
+            }
         }
-    }
 
     private fun emitBaseCss(css: CssRegistry) {
         css.css("body") {

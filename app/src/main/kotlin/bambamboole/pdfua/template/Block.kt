@@ -28,13 +28,15 @@ sealed interface Block {
     fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
 
     /** Runtime data-shape contract; called only when [data] for this block id is present. */
-    fun validateData(value: JsonElement, path: ValidationPath): List<ValidationIssue> = emptyList()
+    fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> = emptyList()
 }
 
 internal val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 
-internal fun JsonElement.string(key: String): String? =
-    (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
+internal fun JsonElement.string(key: String): String? = (this as? JsonObject)?.get(key)?.let { it as? JsonPrimitive }?.contentOrNull
 
 internal fun JsonObject.stringValues(): Map<String, String?> =
     mapValues { (_, value) ->

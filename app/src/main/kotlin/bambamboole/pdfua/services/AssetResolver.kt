@@ -18,13 +18,12 @@ class AssetResolver(
     private val httpClient: HttpClient,
     private val timeoutMs: Long = 5000,
     private val maxSizeBytes: Long = 5 * 1024 * 1024,
-    private val allowedDomains: Set<String> = emptySet()
+    private val allowedDomains: Set<String> = emptySet(),
 ) : FSStreamFactory {
-
     private val logger = LoggerFactory.getLogger(AssetResolver::class.java)
 
-    override fun getUrl(url: String): FSStream {
-        return try {
+    override fun getUrl(url: String): FSStream =
+        try {
             val uri = URI.create(url)
             validateUrl(uri)
             fetchUrl(uri)
@@ -32,16 +31,17 @@ class AssetResolver(
             logger.warn("Failed to fetch asset: {} - {}", url, e.message)
             EmptyStream
         }
-    }
 
     internal fun validateUrl(uri: URI) = validatePublicHttpUrl(uri, allowedDomains)
 
     private fun fetchUrl(uri: URI): FSStream {
-        val request = HttpRequest.newBuilder()
-            .uri(uri)
-            .timeout(Duration.ofMillis(timeoutMs))
-            .GET()
-            .build()
+        val request =
+            HttpRequest
+                .newBuilder()
+                .uri(uri)
+                .timeout(Duration.ofMillis(timeoutMs))
+                .GET()
+                .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
@@ -64,20 +64,26 @@ class AssetResolver(
         return AssetStream(optimized)
     }
 
-    private class AssetStream(private val bytes: ByteArray) : FSStream {
+    private class AssetStream(
+        private val bytes: ByteArray,
+    ) : FSStream {
         override fun getStream(): InputStream = ByteArrayInputStream(bytes)
+
         override fun getReader(): Reader = InputStreamReader(getStream())
     }
 
     private object EmptyStream : FSStream {
         private val empty = ByteArray(0)
+
         override fun getStream(): InputStream = ByteArrayInputStream(empty)
+
         override fun getReader(): Reader = InputStreamReader(getStream())
     }
 
     companion object {
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
-            HttpClient.newBuilder()
+            HttpClient
+                .newBuilder()
                 .connectTimeout(Duration.ofMillis(connectTimeoutMs))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build()

@@ -31,6 +31,7 @@ object BackgroundObjectDrawer : FSObjectDrawer {
     const val OBJECT_TYPE = "x-page-background"
 
     private val logger = LoggerFactory.getLogger(BackgroundObjectDrawer::class.java)
+
     // Per-document XObject memo. Guarded for concurrent renders of different documents; a single document is rendered on one thread, so check-then-put need not be atomic.
     private val cache = WeakHashMap<PDDocument, MutableMap<String, PDXObject>>()
 
@@ -56,29 +57,48 @@ object BackgroundObjectDrawer : FSObjectDrawer {
         return null
     }
 
-    private fun resolveXObject(src: String, kind: String, ctx: RenderingContext, doc: PDDocument): PDXObject? {
+    private fun resolveXObject(
+        src: String,
+        kind: String,
+        ctx: RenderingContext,
+        doc: PDDocument,
+    ): PDXObject? {
         synchronized(cache) { cache[doc]?.get(src)?.let { return it } }
 
         val bytes = loadBytes(src, kind, ctx) ?: return null
-        val isPdf = when (kind) {
-            "pdf" -> true
-            "image" -> false
-            else -> bytes.size >= 4 && bytes[0] == 0x25.toByte() && bytes[1] == 0x50.toByte() &&
-                bytes[2] == 0x44.toByte() && bytes[3] == 0x46.toByte()
-        }
-        val xobject: PDXObject = if (isPdf) {
-            Loader.loadPDF(bytes).use { source ->
-                if (source.numberOfPages < 1) return null
-                LayerUtility(doc).importPageAsForm(source, source.getPage(0))
+        val isPdf =
+            when (kind) {
+                "pdf" -> {
+                    true
+                }
+
+                "image" -> {
+                    false
+                }
+
+                else -> {
+                    bytes.size >= 4 && bytes[0] == 0x25.toByte() && bytes[1] == 0x50.toByte() &&
+                        bytes[2] == 0x44.toByte() && bytes[3] == 0x46.toByte()
+                }
             }
-        } else {
-            PDImageXObject.createFromByteArray(doc, bytes, "PageBackground")
-        }
+        val xobject: PDXObject =
+            if (isPdf) {
+                Loader.loadPDF(bytes).use { source ->
+                    if (source.numberOfPages < 1) return null
+                    LayerUtility(doc).importPageAsForm(source, source.getPage(0))
+                }
+            } else {
+                PDImageXObject.createFromByteArray(doc, bytes, "PageBackground")
+            }
         synchronized(cache) { cache.getOrPut(doc) { mutableMapOf() }[src] = xobject }
         return xobject
     }
 
-    private fun loadBytes(src: String, kind: String, ctx: RenderingContext): ByteArray? {
+    private fun loadBytes(
+        src: String,
+        kind: String,
+        ctx: RenderingContext,
+    ): ByteArray? {
         if (src.startsWith("data:")) {
             val comma = src.indexOf(',')
             if (comma < 0) return null
@@ -89,15 +109,21 @@ object BackgroundObjectDrawer : FSObjectDrawer {
         return ctx.uac.getBinaryResource(src, type)
     }
 
-    private fun stamp(page: PDPage, xobject: PDXObject, doc: PDDocument) {
+    private fun stamp(
+        page: PDPage,
+        xobject: PDXObject,
+        doc: PDDocument,
+    ) {
         val box = page.mediaBox
-        val ctm = ctm(xobject, box.lowerLeftX.toDouble(), box.lowerLeftY.toDouble(), box.width.toDouble(), box.height.toDouble())
-            ?: return
-        val name = when (xobject) {
-            is PDFormXObject -> page.resources.add(xobject)
-            is PDImageXObject -> page.resources.add(xobject)
-            else -> return
-        }
+        val ctm =
+            ctm(xobject, box.lowerLeftX.toDouble(), box.lowerLeftY.toDouble(), box.width.toDouble(), box.height.toDouble())
+                ?: return
+        val name =
+            when (xobject) {
+                is PDFormXObject -> page.resources.add(xobject)
+                is PDImageXObject -> page.resources.add(xobject)
+                else -> return
+            }
 
         LayerUtility(doc).wrapInSaveRestore(page)
         val contents = page.cosObject.getDictionaryObject(COSName.CONTENTS) as? COSArray ?: return
@@ -108,17 +134,34 @@ object BackgroundObjectDrawer : FSObjectDrawer {
         }
     }
 
-    private data class Ctm(val a: Double, val d: Double, val e: Double, val f: Double)
+    private data class Ctm(
+        val a: Double,
+        val d: Double,
+        val e: Double,
+        val f: Double,
+    )
 
-    private fun ctm(xobject: PDXObject, mbX: Double, mbY: Double, mbW: Double, mbH: Double): Ctm? =
+    private fun ctm(
+        xobject: PDXObject,
+        mbX: Double,
+        mbY: Double,
+        mbW: Double,
+        mbH: Double,
+    ): Ctm? =
         when (xobject) {
-            is PDImageXObject -> Ctm(mbW, mbH, mbX, mbY)
+            is PDImageXObject -> {
+                Ctm(mbW, mbH, mbX, mbY)
+            }
+
             is PDFormXObject -> {
                 val bb = xobject.bBox
                 val sx = mbW / bb.width
                 val sy = mbH / bb.height
                 Ctm(sx, sy, mbX - bb.lowerLeftX * sx, mbY - bb.lowerLeftY * sy)
             }
-            else -> null
+
+            else -> {
+                null
+            }
         }
 }

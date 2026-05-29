@@ -11,43 +11,45 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class HealthRoutesTest {
+    @Test
+    fun testHealthEndpoint() =
+        testApplication {
+            application {
+                module()
+            }
+
+            client.get("/health").apply {
+                assertEquals(HttpStatusCode.OK, status)
+                assertTrue(bodyAsText().contains("\"status\""))
+                assertTrue(bodyAsText().contains("\"ok\""))
+            }
+        }
 
     @Test
-    fun testHealthEndpoint() = testApplication {
-        application {
-            module()
-        }
+    fun testHealthEndpointReturnType() =
+        testApplication {
+            application {
+                module()
+            }
 
-        client.get("/health").apply {
-            assertEquals(HttpStatusCode.OK, status)
-            assertTrue(bodyAsText().contains("\"status\""))
-            assertTrue(bodyAsText().contains("\"ok\""))
+            val response = client.get("/health")
+            assertEquals(ContentType.Application.Json, response.contentType()?.withoutParameters())
         }
-    }
 
     @Test
-    fun testHealthEndpointReturnType() = testApplication {
-        application {
-            module()
-        }
+    fun testHealthEndpointWorksWithoutAuthenticationEvenWhenAuthEnabled() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("api.key" to "test-api-key")
+            }
+            application {
+                module()
+            }
 
-        val response = client.get("/health")
-        assertEquals(ContentType.Application.Json, response.contentType()?.withoutParameters())
-    }
-
-    @Test
-    fun testHealthEndpointWorksWithoutAuthenticationEvenWhenAuthEnabled() = testApplication {
-        environment {
-            config = MapApplicationConfig("api.key" to "test-api-key")
+            // Health endpoint should work without authentication
+            val response = client.get("/health")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertTrue(response.bodyAsText().contains("\"status\""))
+            assertTrue(response.bodyAsText().contains("\"ok\""))
         }
-        application {
-            module()
-        }
-
-        // Health endpoint should work without authentication
-        val response = client.get("/health")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("\"status\""))
-        assertTrue(response.bodyAsText().contains("\"ok\""))
-    }
 }

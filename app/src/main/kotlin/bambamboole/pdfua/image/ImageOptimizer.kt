@@ -10,7 +10,6 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 
 object ImageOptimizer {
-
     private val logger = LoggerFactory.getLogger(ImageOptimizer::class.java)
 
     private const val MAX_WIDTH_PX = 1240
@@ -28,8 +27,13 @@ object ImageOptimizer {
 
             logger.debug(
                 "Optimized {} image: {}x{} -> {}x{}, {} -> {} bytes",
-                format, image.width, image.height, resized.width, resized.height,
-                bytes.size, encoded.size
+                format,
+                image.width,
+                image.height,
+                resized.width,
+                resized.height,
+                bytes.size,
+                encoded.size,
             )
             encoded
         } catch (e: Exception) {
@@ -47,7 +51,10 @@ object ImageOptimizer {
         }
     }
 
-    private fun resize(image: BufferedImage, maxWidth: Int): BufferedImage {
+    private fun resize(
+        image: BufferedImage,
+        maxWidth: Int,
+    ): BufferedImage {
         val ratio = maxWidth.toDouble() / image.width
         val newHeight = (image.height * ratio).toInt()
 
@@ -61,15 +68,19 @@ object ImageOptimizer {
         return result
     }
 
-    private fun encode(image: BufferedImage, format: String): ByteArray {
+    private fun encode(
+        image: BufferedImage,
+        format: String,
+    ): ByteArray {
         val output = ByteArrayOutputStream(64 * 1024)
 
         if (format == "jpg") {
             val writer = ImageIO.getImageWritersByFormatName("jpg").next()
-            val param = writer.defaultWriteParam.apply {
-                compressionMode = ImageWriteParam.MODE_EXPLICIT
-                compressionQuality = JPEG_QUALITY
-            }
+            val param =
+                writer.defaultWriteParam.apply {
+                    compressionMode = ImageWriteParam.MODE_EXPLICIT
+                    compressionQuality = JPEG_QUALITY
+                }
             writer.output = ImageIO.createImageOutputStream(output)
             writer.write(null, IIOImage(image, null, null), param)
             writer.dispose()

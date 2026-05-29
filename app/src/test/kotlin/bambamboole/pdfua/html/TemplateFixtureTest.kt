@@ -9,13 +9,13 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class TemplateFixtureTest {
-
     companion object {
         private val json = Json
 
         private fun sourceFixturesDir(): File {
-            val url = TemplateFixtureTest::class.java.classLoader.getResource("fixtures/template")
-                ?: fail("fixtures/template directory not found in classpath")
+            val url =
+                TemplateFixtureTest::class.java.classLoader.getResource("fixtures/template")
+                    ?: fail("fixtures/template directory not found in classpath")
             val buildDir = File(url.toURI())
             val projectRoot = buildDir.absolutePath.substringBefore("/app/build/")
             return File(projectRoot, "app/src/test/resources/fixtures/template")

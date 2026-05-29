@@ -12,16 +12,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TemplateValidationTest {
-
     @Test
     fun validTemplateAndDataReturnNoIssues() {
-        val template = Template(
-            version = 1,
-            rows = listOf(Row(listOf(TextBlock(id = "intro", text = "Hello")))),
-        )
-        val data = mapOf<String, JsonElement>(
-            "intro" to buildJsonObject { put("text", "Hi") },
-        )
+        val template =
+            Template(
+                version = 1,
+                rows = listOf(Row(listOf(TextBlock(id = "intro", text = "Hello")))),
+            )
+        val data =
+            mapOf<String, JsonElement>(
+                "intro" to buildJsonObject { put("text", "Hi") },
+            )
 
         assertTrue(template.validate(data).isEmpty())
     }
@@ -37,17 +38,19 @@ class TemplateValidationTest {
 
     @Test
     fun headingLevelOutOfRangeFlaggedAtBlockPath() {
-        val template = Template(
-            version = 1,
-            rows = listOf(
-                Row(
+        val template =
+            Template(
+                version = 1,
+                rows =
                     listOf(
-                        TextBlock(text = "x"),
-                        HeadingBlock(text = "y", config = HeadingConfig(level = 9)),
+                        Row(
+                            listOf(
+                                TextBlock(text = "x"),
+                                HeadingBlock(text = "y", config = HeadingConfig(level = 9)),
+                            ),
+                        ),
                     ),
-                ),
-            ),
-        )
+            )
         val errs = template.validate(emptyMap())
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.OUT_OF_RANGE, errs[0].code)
@@ -56,17 +59,21 @@ class TemplateValidationTest {
 
     @Test
     fun duplicateBlockIdAcrossBodyAndFooterFlagged() {
-        val template = Template(
-            version = 1,
-            rows = listOf(Row(listOf(TextBlock(id = "shared", text = "a")))),
-            config = TemplateConfig(
-                page = PageConfig(
-                    footer = PageFooterConfig(
-                        rows = listOf(Row(listOf(TextBlock(id = "shared", text = "b")))),
+        val template =
+            Template(
+                version = 1,
+                rows = listOf(Row(listOf(TextBlock(id = "shared", text = "a")))),
+                config =
+                    TemplateConfig(
+                        page =
+                            PageConfig(
+                                footer =
+                                    PageFooterConfig(
+                                        rows = listOf(Row(listOf(TextBlock(id = "shared", text = "b")))),
+                                    ),
+                            ),
                     ),
-                ),
-            ),
-        )
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.DUPLICATE_BLOCK_ID }
 
@@ -79,27 +86,31 @@ class TemplateValidationTest {
 
     @Test
     fun blocksWithNullIdsDoNotConflict() {
-        val template = Template(
-            version = 1,
-            rows = listOf(
-                Row(listOf(TextBlock(text = "a"))),
-                Row(listOf(TextBlock(text = "b"))),
-            ),
-        )
+        val template =
+            Template(
+                version = 1,
+                rows =
+                    listOf(
+                        Row(listOf(TextBlock(text = "a"))),
+                        Row(listOf(TextBlock(text = "b"))),
+                    ),
+            )
 
         assertTrue(template.validate(emptyMap()).isEmpty())
     }
 
     @Test
     fun orphanDataIdsFlagged() {
-        val template = Template(
-            version = 1,
-            rows = listOf(Row(listOf(TextBlock(id = "intro", text = "x")))),
-        )
-        val data = mapOf<String, JsonElement>(
-            "intro" to buildJsonObject { put("text", "ok") },
-            "nope" to buildJsonObject { put("text", "x") },
-        )
+        val template =
+            Template(
+                version = 1,
+                rows = listOf(Row(listOf(TextBlock(id = "intro", text = "x")))),
+            )
+        val data =
+            mapOf<String, JsonElement>(
+                "intro" to buildJsonObject { put("text", "ok") },
+                "nope" to buildJsonObject { put("text", "x") },
+            )
 
         val errs = template.validate(data)
 
@@ -110,22 +121,25 @@ class TemplateValidationTest {
 
     @Test
     fun blockValidateDataIsCalledAtDataPath() {
-        val template = Template(
-            version = 1,
-            rows = listOf(
-                Row(
+        val template =
+            Template(
+                version = 1,
+                rows =
                     listOf(
-                        TableBlock(
-                            id = "items",
-                            config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))),
+                        Row(
+                            listOf(
+                                TableBlock(
+                                    id = "items",
+                                    config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))),
+                                ),
+                            ),
                         ),
                     ),
-                ),
-            ),
-        )
-        val data = mapOf<String, JsonElement>(
-            "items" to JsonObject(emptyMap()),
-        )
+            )
+        val data =
+            mapOf<String, JsonElement>(
+                "items" to JsonObject(emptyMap()),
+            )
 
         val errs = template.validate(data)
 
@@ -136,10 +150,11 @@ class TemplateValidationTest {
 
     @Test
     fun customPageSizeWithZeroDimensionFlagged() {
-        val template = Template(
-            version = 1,
-            config = TemplateConfig(page = PageConfig(size = CustomPageSize(0, 297))),
-        )
+        val template =
+            Template(
+                version = 1,
+                config = TemplateConfig(page = PageConfig(size = CustomPageSize(0, 297))),
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.OUT_OF_RANGE }
 
@@ -149,10 +164,11 @@ class TemplateValidationTest {
 
     @Test
     fun pageBackgroundBlankSrcFlagged() {
-        val template = Template(
-            version = 1,
-            config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = ""))),
-        )
+        val template =
+            Template(
+                version = 1,
+                config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = ""))),
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_URI }
 
@@ -162,10 +178,11 @@ class TemplateValidationTest {
 
     @Test
     fun pageBackgroundUnsupportedSchemeFlagged() {
-        val template = Template(
-            version = 1,
-            config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "ftp://x"))),
-        )
+        val template =
+            Template(
+                version = 1,
+                config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "ftp://x"))),
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_URI }
 
@@ -175,24 +192,28 @@ class TemplateValidationTest {
 
     @Test
     fun fontsWithValidWeightsValidate() {
-        val template = Template(
-            version = 1,
-            fonts = mapOf(
-                "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400"),
-                "Heavy" to FontFace(src = "https://cdn.example.com/heavy.ttf", weight = "400 700"),
-            ),
-        )
+        val template =
+            Template(
+                version = 1,
+                fonts =
+                    mapOf(
+                        "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400"),
+                        "Heavy" to FontFace(src = "https://cdn.example.com/heavy.ttf", weight = "400 700"),
+                    ),
+            )
         assertTrue(template.validate(emptyMap()).isEmpty())
     }
 
     @Test
     fun fontWithUnknownWeightTokenIsFlagged() {
-        val template = Template(
-            version = 1,
-            fonts = mapOf(
-                "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 999"),
-            ),
-        )
+        val template =
+            Template(
+                version = 1,
+                fonts =
+                    mapOf(
+                        "Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 999"),
+                    ),
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_VALUE }
 
@@ -202,10 +223,11 @@ class TemplateValidationTest {
 
     @Test
     fun fontWithBlankWeightIsFlagged() {
-        val template = Template(
-            version = 1,
-            fonts = mapOf("X" to FontFace(src = "https://cdn.example.com/x.ttf", weight = "")),
-        )
+        val template =
+            Template(
+                version = 1,
+                fonts = mapOf("X" to FontFace(src = "https://cdn.example.com/x.ttf", weight = "")),
+            )
 
         val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.INVALID_VALUE }
 
@@ -215,23 +237,26 @@ class TemplateValidationTest {
 
     @Test
     fun multipleIndependentIssuesAreCollected() {
-        val template = Template(
-            version = 1,
-            rows = listOf(
-                Row(
+        val template =
+            Template(
+                version = 1,
+                rows =
                     listOf(
-                        HeadingBlock(id = "h", text = "x", config = HeadingConfig(level = 0)),
-                        TableBlock(
-                            id = "t",
-                            config = TableConfig(columns = listOf(TableColumn("1bad", "X"))),
+                        Row(
+                            listOf(
+                                HeadingBlock(id = "h", text = "x", config = HeadingConfig(level = 0)),
+                                TableBlock(
+                                    id = "t",
+                                    config = TableConfig(columns = listOf(TableColumn("1bad", "X"))),
+                                ),
+                            ),
                         ),
                     ),
-                ),
-            ),
-        )
-        val data = mapOf<String, JsonElement>(
-            "orphan" to JsonPrimitive("x"),
-        )
+            )
+        val data =
+            mapOf<String, JsonElement>(
+                "orphan" to JsonPrimitive("x"),
+            )
 
         val codes = template.validate(data).map { it.code }.toSet()
 

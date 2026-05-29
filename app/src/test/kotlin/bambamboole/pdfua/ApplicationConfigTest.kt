@@ -13,93 +13,99 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ApplicationConfigTest {
+    @Test
+    fun testUIEnabledByDefault() =
+        testApplication {
+            application {
+                module()
+            }
+
+            val response = client.get("/")
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
 
     @Test
-    fun testUIEnabledByDefault() = testApplication {
-        application {
-            module()
-        }
+    fun testUIDisabledReturns404() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("ui.enabled" to "false")
+            }
+            application {
+                module()
+            }
 
-        val response = client.get("/")
-        assertEquals(HttpStatusCode.OK, response.status)
-    }
+            val response = client.get("/")
+            assertEquals(HttpStatusCode.NotFound, response.status)
+        }
 
     @Test
-    fun testUIDisabledReturns404() = testApplication {
-        environment {
-            config = MapApplicationConfig("ui.enabled" to "false")
-        }
-        application {
-            module()
-        }
+    fun testTemplateBuilderUIEnabledByDefault() =
+        testApplication {
+            application {
+                module()
+            }
 
-        val response = client.get("/")
-        assertEquals(HttpStatusCode.NotFound, response.status)
-    }
+            val response = client.get("/template-builder")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Text.Html, response.contentType()?.withoutParameters())
+            assertTrue(response.bodyAsText().contains("template-builder-root"))
+        }
 
     @Test
-    fun testTemplateBuilderUIEnabledByDefault() = testApplication {
-        application {
-            module()
-        }
+    fun testTemplateBuilderUIDisabledReturns404() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("ui.enabled" to "false")
+            }
+            application {
+                module()
+            }
 
-        val response = client.get("/template-builder")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Text.Html, response.contentType()?.withoutParameters())
-        assertTrue(response.bodyAsText().contains("template-builder-root"))
-    }
+            val response = client.get("/template-builder")
+            assertEquals(HttpStatusCode.NotFound, response.status)
+        }
 
     @Test
-    fun testTemplateBuilderUIDisabledReturns404() = testApplication {
-        environment {
-            config = MapApplicationConfig("ui.enabled" to "false")
-        }
-        application {
-            module()
-        }
+    fun testTemplateBuilderAssetIsServed() =
+        testApplication {
+            application {
+                module()
+            }
 
-        val response = client.get("/template-builder")
-        assertEquals(HttpStatusCode.NotFound, response.status)
-    }
+            val response = client.get("/template-builder/assets/app.js")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Text.JavaScript, response.contentType()?.withoutParameters())
+            val body = response.bodyAsText()
+            assertTrue(body.contains("/schema"))
+            assertTrue(body.contains("render/template"))
+        }
 
     @Test
-    fun testTemplateBuilderAssetIsServed() = testApplication {
-        application {
-            module()
+    fun testCustomPdfProducer() =
+        testApplication {
+            environment {
+                config = MapApplicationConfig("pdf.producer" to "custom-producer-v1.0")
+            }
+            application {
+                module()
+            }
+
+            val html =
+                """<!DOCTYPE html><html lang="en"><head><title>Test</title><meta name="subject" content="Test"/></head><body><h1>Test</h1></body></html>"""
+
+            val requestBody = Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html))
+
+            val response =
+                client.post("/convert") {
+                    contentType(ContentType.Application.Json)
+                    setBody(requestBody)
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Application.Pdf, response.contentType())
+
+            Loader.loadPDF(response.bodyAsBytes()).use { document ->
+                assertEquals("custom-producer-v1.0", document.documentInformation.producer)
+            }
         }
-
-        val response = client.get("/template-builder/assets/app.js")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Text.JavaScript, response.contentType()?.withoutParameters())
-        val body = response.bodyAsText()
-        assertTrue(body.contains("/schema"))
-        assertTrue(body.contains("render/template"))
-    }
-
-    @Test
-    fun testCustomPdfProducer() = testApplication {
-        environment {
-            config = MapApplicationConfig("pdf.producer" to "custom-producer-v1.0")
-        }
-        application {
-            module()
-        }
-
-        val html =
-            """<!DOCTYPE html><html lang="en"><head><title>Test</title><meta name="subject" content="Test"/></head><body><h1>Test</h1></body></html>"""
-
-        val requestBody = Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html))
-
-        val response = client.post("/convert") {
-            contentType(ContentType.Application.Json)
-            setBody(requestBody)
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Application.Pdf, response.contentType())
-
-        Loader.loadPDF(response.bodyAsBytes()).use { document ->
-            assertEquals("custom-producer-v1.0", document.documentInformation.producer)
-        }
-    }
 }

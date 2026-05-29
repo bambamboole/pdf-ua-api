@@ -12,17 +12,16 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class DocumentUploaderTest {
-
     private fun client() =
-        HttpClient.newBuilder()
+        HttpClient
+            .newBuilder()
             .connectTimeout(Duration.ofSeconds(1))
             .followRedirects(HttpClient.Redirect.NEVER)
             .build()
 
     // The SSRF guard blocks loopback, so the round-trip tests use a no-op validator
     // to reach the embedded test server; the guard itself is covered separately below.
-    private fun permissiveUploader() =
-        DocumentUploader(httpClient = client(), timeoutMs = 2000, validateUrl = { _, _ -> })
+    private fun permissiveUploader() = DocumentUploader(httpClient = client(), timeoutMs = 2000, validateUrl = { _, _ -> })
 
     @Test
     fun uploadPutsBytesAndReturnsSuccess() {
@@ -42,8 +41,9 @@ class DocumentUploaderTest {
             val port = server.address.port
             val body = byteArrayOf(1, 2, 3, 4)
 
-            val result = permissiveUploader()
-                .upload("http://127.0.0.1:$port/upload", body, "application/pdf")
+            val result =
+                permissiveUploader()
+                    .upload("http://127.0.0.1:$port/upload", body, "application/pdf")
 
             assertEquals(UploadResult.Success, result)
             assertEquals("PUT", method)
@@ -64,8 +64,9 @@ class DocumentUploaderTest {
         server.start()
         try {
             val port = server.address.port
-            val result = permissiveUploader()
-                .upload("http://127.0.0.1:$port/upload", byteArrayOf(1), "application/pdf")
+            val result =
+                permissiveUploader()
+                    .upload("http://127.0.0.1:$port/upload", byteArrayOf(1), "application/pdf")
 
             val failed = assertIs<UploadResult.Failed>(result)
             assertTrue(failed.message.contains("500"))

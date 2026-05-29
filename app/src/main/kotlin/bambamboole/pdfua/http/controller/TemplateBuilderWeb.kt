@@ -9,12 +9,15 @@ private const val TemplateBuilderResourceRoot = "webui/template-builder"
 
 fun Route.templateBuilderWebRoutes() {
     get("/template-builder") {
-        val indexHtml = requireNotNull(
-            Thread.currentThread().contextClassLoader
-                .getResourceAsStream("$TemplateBuilderResourceRoot/index.html"),
-        ) {
-            "Template builder web UI resources are missing. Run the frontend build before starting the API."
-        }.bufferedReader().use { it.readText() }
+        val indexHtml =
+            requireNotNull(
+                Thread
+                    .currentThread()
+                    .contextClassLoader
+                    .getResourceAsStream("$TemplateBuilderResourceRoot/index.html"),
+            ) {
+                "Template builder web UI resources are missing. Run the frontend build before starting the API."
+            }.bufferedReader().use { it.readText() }
 
         call.respondText(indexHtml, ContentType.Text.Html)
     }
