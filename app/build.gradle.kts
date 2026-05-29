@@ -154,17 +154,24 @@ val patchOpenApi by tasks.registering {
     outputs.file(docsCopy)
     doLast {
         val file = openApiFile.get().asFile
+
         @Suppress("UNCHECKED_CAST")
         val spec = JsonSlurper().parseText(file.readText()) as MutableMap<String, Any?>
+
         @Suppress("UNCHECKED_CAST")
         val paths = spec["paths"] as MutableMap<String, MutableMap<String, MutableMap<String, Any?>>>
 
         fun binarySchema() = mapOf("type" to "string", "format" to "binary")
 
-        fun setBinaryResponse(path: String, method: String, contentTypes: List<String>) {
+        fun setBinaryResponse(
+            path: String,
+            method: String,
+            contentTypes: List<String>,
+        ) {
             @Suppress("UNCHECKED_CAST")
-            val response = (paths[path]?.get(method)?.get("responses") as? MutableMap<String, Any?>)
-                ?.get("200") as? MutableMap<String, Any?> ?: return
+            val response =
+                (paths[path]?.get(method)?.get("responses") as? MutableMap<String, Any?>)
+                    ?.get("200") as? MutableMap<String, Any?> ?: return
             response["content"] = contentTypes.associateWith { mapOf("schema" to binarySchema()) }
         }
 
@@ -177,8 +184,8 @@ val patchOpenApi by tasks.registering {
         if (schemaGet != null) {
             schemaGet["description"] =
                 "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. " +
-                    "The response is a JSON Schema document describing the Template type accepted " +
-                    "by /render/template, with builder metadata under x-pdfUa."
+                "The response is a JSON Schema document describing the Template type accepted " +
+                "by /render/template, with builder metadata under x-pdfUa."
             @Suppress("UNCHECKED_CAST")
             val schemaResponse =
                 (schemaGet["responses"] as? MutableMap<String, Any?>)?.get("200") as? MutableMap<String, Any?>
