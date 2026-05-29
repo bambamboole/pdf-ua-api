@@ -18,5 +18,5 @@ curl -X POST http://localhost:8080/convert \
   --output output.pdf
 ```
 
-The response body is the binary PDF. See [Converting HTML to PDF](/guides/converting-html-to-pdf/)
-for details, or try it in the [playground](/playground/).
+The response body is the binary PDF. See [Converting HTML to PDF](/html-to-pdf/)
+for details, or try it live in the browser.
