@@ -1,6 +1,9 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.image.ImageRenderer
+import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
@@ -9,6 +12,8 @@ import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,6 +26,17 @@ data class RenderImageRequest(
     val format: String = "png",
     val width: Int = 800,
 )
+
+fun Application.renderImage() {
+    val config: AppConfig by dependencies
+    val assetResolver: AssetResolver by dependencies
+    val uploader: DocumentUploader? by dependencies
+    routing {
+        expensiveRoute(config) {
+            renderImageRoutes(assetResolver, uploader)
+        }
+    }
+}
 
 @GenerateOpenApi
 @Tag(["Rendering"])

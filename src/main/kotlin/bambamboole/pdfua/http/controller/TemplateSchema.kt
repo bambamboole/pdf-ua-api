@@ -6,9 +6,14 @@ import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
+import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.JsonObject
+
+fun Application.templateSchema() {
+    routing { templateSchemaRoutes() }
+}
 
 @GenerateOpenApi
 @Tag(["Rendering"])

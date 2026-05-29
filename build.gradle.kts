@@ -89,6 +89,8 @@ dependencies {
     implementation(ktorLibs.server.swagger)
     implementation(ktorLibs.server.forwardedHeader)
     implementation(ktorLibs.server.rateLimit)
+    implementation(ktorLibs.server.di)
+    implementation(ktorLibs.server.config.yaml)
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)

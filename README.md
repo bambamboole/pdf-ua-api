@@ -90,7 +90,7 @@ For full compliance, include these meta tags:
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
 
-Additional knobs (JWT, [rate limiting](https://pdf-ua-api.bambamboole.com/rate-limiting), CORS, asset/upload allow-lists, OpenTelemetry) are configurable via environment variables — see `src/main/resources/application.conf` for the full list.
+Additional knobs (JWT, [rate limiting](https://pdf-ua-api.bambamboole.com/rate-limiting), CORS, asset/upload allow-lists, OpenTelemetry) are configurable via environment variables — see `src/main/resources/application.yaml` for the full list.
 
 ### Configuration Examples
 

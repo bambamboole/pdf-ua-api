@@ -1,5 +1,7 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.pdf.PdfValidator
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
@@ -8,9 +10,18 @@ import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+
+fun Application.validation() {
+    val config: AppConfig by dependencies
+    routing {
+        expensiveRoute(config) { validationRoutes() }
+    }
+}
 
 @GenerateOpenApi
 @Tag(["Validation"])

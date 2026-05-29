@@ -1,14 +1,14 @@
 package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.http.controller.convertAndValidateRoutes
-import bambamboole.pdfua.http.controller.convertRoutes
-import bambamboole.pdfua.http.controller.healthRoutes
-import bambamboole.pdfua.http.controller.identifyRoutes
-import bambamboole.pdfua.http.controller.renderImageRoutes
-import bambamboole.pdfua.http.controller.renderRoutes
-import bambamboole.pdfua.http.controller.templateSchemaRoutes
-import bambamboole.pdfua.http.controller.validationRoutes
+import bambamboole.pdfua.http.controller.convert
+import bambamboole.pdfua.http.controller.convertAndValidate
+import bambamboole.pdfua.http.controller.health
+import bambamboole.pdfua.http.controller.identify
+import bambamboole.pdfua.http.controller.render
+import bambamboole.pdfua.http.controller.renderImage
+import bambamboole.pdfua.http.controller.templateSchema
+import bambamboole.pdfua.http.controller.validation
 import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
@@ -16,26 +16,15 @@ import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.calllogging.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.forwardedheaders.*
-import io.ktor.server.plugins.origin
+import io.ktor.server.plugins.di.*
 import io.ktor.server.plugins.ratelimit.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.plugins.swagger.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.Properties
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain
@@ -52,7 +41,7 @@ private fun loadVersion(): String {
     return props.getProperty("version", "dev")
 }
 
-fun Application.module(jwkProvider: JwkProvider? = null) {
+fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
     val config = AppConfig.load(environment)
     val version = loadVersion()
     LoggerFactory
@@ -72,7 +61,7 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
             allowedDomains = config.assetAllowedDomains,
         )
 
-    val documentUploader =
+    val documentUploader: DocumentUploader? =
         if (config.uploadEnabled) {
             DocumentUploader(
                 httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
@@ -83,146 +72,73 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
             null
         }
 
-    install(ContentNegotiation) {
-        json(
-            Json {
-                prettyPrint = true
-                isLenient = true
-            },
-        )
-    }
+    val resolvedJwkProvider: JwkProvider? =
+        config.jwt?.let { jwkProvider ?: buildJwkProvider(it.jwksUrl) }
 
-    install(CallLogging) {
-        level = config.logLevel.slf4jLevel
-    }
-
-    install(StatusPages) {
-        exception<Throwable> { call, cause ->
-            call.respond(
-                io.ktor.http.HttpStatusCode.InternalServerError,
-                mapOf("error" to (cause.message ?: "Unknown error")),
-            )
-        }
-    }
-
-    if (config.corsAllowedOrigins.isNotEmpty()) {
-        install(CORS) {
-            config.corsAllowedOrigins.forEach { host ->
-                allowHost(host, schemes = listOf("http", "https"))
-            }
-            allowMethod(io.ktor.http.HttpMethod.Options)
-            allowMethod(io.ktor.http.HttpMethod.Post)
-            allowHeader(io.ktor.http.HttpHeaders.ContentType)
-            allowHeader(io.ktor.http.HttpHeaders.Authorization)
-            allowHeader("X-Upload-Url")
-        }
-    }
-
-    if (config.rateLimitTrustForwardedFor) {
-        install(XForwardedHeaders)
-    }
-
-    if (config.rateLimitEnabled) {
-        install(RateLimit) {
-            register(RateLimitName("perIp")) {
-                rateLimiter(limit = config.rateLimitPerIp, refillPeriod = config.rateLimitWindowSeconds.seconds)
-                requestKey { call -> call.request.origin.remoteHost }
-            }
-            register(RateLimitName("global")) {
-                rateLimiter(limit = config.rateLimitGlobal, refillPeriod = config.rateLimitWindowSeconds.seconds)
-            }
-        }
-    }
-
-    installAuthentication(config, jwkProvider)
-
-    routing {
-        swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.json")
-        healthRoutes()
-        templateSchemaRoutes()
-
-        val providerName = authProviderName(config)
-        if (providerName != null) {
-            authenticate(providerName) {
-                rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
-            }
-        } else {
-            rateLimited(config) { expensiveRoutes(config, assetResolver, documentUploader) }
-        }
+    dependencies {
+        provide<AppConfig> { config }
+        provide<AssetResolver> { assetResolver }
+        provide<DocumentUploader?> { documentUploader }
+        provide<JwkProvider?> { resolvedJwkProvider }
     }
 }
 
-private fun Route.expensiveRoutes(
-    config: AppConfig,
-    assetResolver: AssetResolver,
-    uploader: DocumentUploader?,
-) {
-    convertRoutes(config.pdfProducer, assetResolver, uploader)
-    renderRoutes(config.pdfProducer, assetResolver, uploader)
-    validationRoutes()
-    convertAndValidateRoutes(config.pdfProducer, assetResolver)
-    renderImageRoutes(assetResolver, uploader)
-    identifyRoutes()
-}
+fun authProviderName(config: AppConfig): String? =
+    when {
+        config.jwt != null -> "jwt-auth"
+        config.apiKey != null -> "api-key-auth"
+        else -> null
+    }
 
-private fun Route.rateLimited(
+fun Route.expensiveRoute(
     config: AppConfig,
     block: Route.() -> Unit,
 ) {
-    if (config.rateLimitEnabled) {
-        rateLimit(RateLimitName("perIp")) {
-            rateLimit(RateLimitName("global")) { block() }
+    val provider = authProviderName(config)
+    val rateLimited: Route.(Route.() -> Unit) -> Unit = { inner ->
+        if (config.rateLimitEnabled) {
+            rateLimit(RateLimitName("perIp")) {
+                rateLimit(RateLimitName("global")) { inner() }
+            }
+        } else {
+            inner()
         }
-    } else {
-        block()
     }
+    if (provider != null) {
+        authenticate(provider) { rateLimited { block() } }
+    } else {
+        rateLimited { block() }
+    }
+}
+
+/**
+ * Test-friendly aggregator: installs every per-feature module in the same order
+ * production reads from `application.yaml`. Production never calls this — Ktor
+ * loads each module individually from the YAML modules list.
+ */
+fun Application.module(jwkProvider: JwkProvider? = null) {
+    bootstrap(jwkProvider)
+    logging()
+    serialization()
+    statusPages()
+    cors()
+    rateLimit()
+    auth()
+    swagger()
+    health()
+    templateSchema()
+    convert()
+    render()
+    validation()
+    convertAndValidate()
+    renderImage()
+    identify()
 }
 
 private const val JWKS_CACHE_SIZE = 10L
 private const val JWKS_CACHE_EXPIRES_HOURS = 24L
 private const val JWKS_RATE_LIMIT_BUCKET_SIZE = 10L
 private const val JWKS_RATE_LIMIT_REFILL_MINUTES = 1L
-
-private fun Application.installAuthentication(
-    config: AppConfig,
-    jwkProvider: JwkProvider?,
-) {
-    val jwtConfig = config.jwt
-    when {
-        jwtConfig != null -> {
-            val resolvedJwkProvider = jwkProvider ?: buildJwkProvider(jwtConfig.jwksUrl)
-            install(Authentication) {
-                jwt("jwt-auth") {
-                    verifier(resolvedJwkProvider, jwtConfig.issuer) {
-                        jwtConfig.audience?.let { withAudience(it) }
-                    }
-                    validate { credential -> JWTPrincipal(credential.payload) }
-                }
-            }
-        }
-
-        config.apiKey != null -> {
-            install(Authentication) {
-                bearer("api-key-auth") {
-                    authenticate { credential ->
-                        if (credential.token == config.apiKey) {
-                            UserIdPrincipal("api-user")
-                        } else {
-                            null
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun authProviderName(config: AppConfig): String? =
-    when {
-        config.jwt != null -> "jwt-auth"
-        config.apiKey != null -> "api-key-auth"
-        else -> null
-    }
 
 private fun buildJwkProvider(jwksUrl: String): JwkProvider =
     JwkProviderBuilder(URI(jwksUrl).toURL())

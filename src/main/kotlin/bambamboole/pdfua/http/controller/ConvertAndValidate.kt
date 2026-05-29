@@ -1,9 +1,12 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
+import bambamboole.pdfua.services.AssetResolver
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
@@ -11,6 +14,8 @@ import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -22,6 +27,16 @@ data class ConvertAndValidateResponse(
     val validation: ValidationResponse,
     val pdf: String,
 )
+
+fun Application.convertAndValidate() {
+    val config: AppConfig by dependencies
+    val assetResolver: AssetResolver by dependencies
+    routing {
+        expensiveRoute(config) {
+            convertAndValidateRoutes(config.pdfProducer, assetResolver)
+        }
+    }
+}
 
 @GenerateOpenApi
 @Tag(["Conversion"])

@@ -30,7 +30,11 @@ data class AppConfig(
 ) {
     companion object {
         fun load(environment: ApplicationEnvironment): AppConfig {
-            fun getOptional(key: String): String? = environment.config.propertyOrNull(key)?.getString()
+            fun getOptional(key: String): String? =
+                environment.config
+                    .propertyOrNull(key)
+                    ?.getString()
+                    ?.takeIf { it.isNotBlank() }
 
             fun getRequired(
                 key: String,

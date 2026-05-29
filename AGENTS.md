@@ -64,7 +64,9 @@ Instructions for coding agents working in this repository.
 
 ## Operational Notes
 
-- Environment variables are defined through `src/main/resources/application.conf`: `PORT`, `API_KEY`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`.
+- Environment variables are defined through `src/main/resources/application.yaml` using Ktor's `$ENV_VAR:default` interpolation: `PORT`, `API_KEY`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`.
+- Wiring is split into per-feature `Application.<feature>()` modules listed in `ktor.application.modules` in the YAML. `Application.kt` holds the entry point, `bootstrap()` (loads `AppConfig`, runs renderer warmups, registers DI bindings), the `module()` test aggregator, and the `Route.expensiveRoute` helper. `Plugins.kt` holds the cross-cutting plugin installers (`logging`, `serialization`, `statusPages`, `cors`, `rateLimit`, `auth`, `swagger`). Each route file under `http/controller/` exposes both `Route.<feature>Routes()` (Inspektor-annotated) and `Application.<feature>()` (DI-resolving module).
+- Services are injected via `ktor-server-di`: `val assetResolver: AssetResolver by dependencies`. Nullable bindings (`DocumentUploader?`, `JwkProvider?`) follow the same pattern.
 - Docker uses a Gradle build stage and an Eclipse Temurin 24 Alpine runtime image. `entrypoint.sh` attaches the OpenTelemetry Java agent when `OTEL_ENABLED=true`.
 - Do not revert unrelated worktree changes. Report them only if they affect the requested task.
 - Only create new documentation files when explicitly requested.

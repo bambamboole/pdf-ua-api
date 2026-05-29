@@ -1,11 +1,15 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.expensiveRoute
 import io.github.tabilzad.ktor.annotations.GenerateOpenApi
 import io.github.tabilzad.ktor.annotations.KtorDescription
 import io.github.tabilzad.ktor.annotations.KtorResponds
 import io.github.tabilzad.ktor.annotations.ResponseEntry
 import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,6 +20,13 @@ import org.apache.pdfbox.Loader
 data class IdentifyResponse(
     val documentId: String?,
 )
+
+fun Application.identify() {
+    val config: AppConfig by dependencies
+    routing {
+        expensiveRoute(config) { identifyRoutes() }
+    }
+}
 
 @GenerateOpenApi
 @Tag(["Identification"])

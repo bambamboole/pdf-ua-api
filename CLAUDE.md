@@ -11,7 +11,9 @@ Guidance for Claude Code when working in this repository.
 
 ## Important Paths
 
-- `src/main/kotlin/bambamboole/pdfua/Application.kt` wires Ktor plugins, auth, services, and routes.
+- `src/main/kotlin/bambamboole/pdfua/Application.kt` defines `main()`, `bootstrap()` (config + DI bindings), the `module()` test aggregator, and the `Route.expensiveRoute` helper (auth + rate-limit envelope).
+- `src/main/kotlin/bambamboole/pdfua/Plugins.kt` exposes `Application.<feature>()` installers for cross-cutting plugins (`logging`, `serialization`, `statusPages`, `cors`, `rateLimit`, `auth`, `swagger`).
+- Each `http/controller/<Feature>.kt` exports both `Route.<feature>Routes()` (Inspektor-annotated, drives the OpenAPI spec) and `Application.<feature>()` (the Ktor module that resolves DI bindings and wires the routes).
 - `src/main/kotlin/bambamboole/pdfua/routes/` contains one route extension per endpoint.
 - `src/main/kotlin/bambamboole/pdfua/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
 - `src/main/kotlin/bambamboole/pdfua/models/` contains kotlinx-serializable request/response DTOs.
@@ -30,7 +32,9 @@ Guidance for Claude Code when working in this repository.
 
 ## Runtime Configuration
 
-- Config lives in `src/main/resources/application.conf` and is environment-variable driven.
+- Config lives in `src/main/resources/application.yaml`; env-var interpolation uses Ktor's `$ENV_VAR:default` syntax (empty default means "treat as missing"; `AppConfig.getOptional` filters blanks).
+- The YAML's `ktor.application.modules` list is the production wiring — Ktor loads each per-feature `Application.<feature>()` in order. Tests call the `Application.module()` aggregator in `Application.kt` which runs the same sequence.
+- Services are injected via `ktor-server-di`: `bootstrap()` registers `AppConfig`, `AssetResolver`, `DocumentUploader?`, `JwkProvider?`; later modules consume them with `val foo: T by dependencies`.
 - Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `CORS_ALLOWED_ORIGINS`.
 - Docker builds a Gradle install distribution, runs on Eclipse Temurin 24 Alpine, and optionally attaches the OpenTelemetry Java agent from `entrypoint.sh`.
 
