@@ -26,12 +26,12 @@ Guidance for Claude Code when working in this repository.
 - Suppress native-access warnings when needed: `export JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"`
 - Tests use JUnit Platform through `kotlin.test`; route tests use Ktor `testApplication`.
 - Some conversion tests write generated PDFs or diff images beside fixtures when baselines differ. Review these files before keeping or deleting them.
-- `./gradlew check` is currently broken (Gradle 9.2 strict implicit-dependency validation between `spotlessKotlin` and `installTemplateBuilderWebUi`). Verify with `./gradlew test`, `./gradlew detekt`, and `./gradlew spotlessCheck` invoked separately. CI runs `spotlessCheck` directly, so do not skip it locally before pushing.
+- CI runs `./gradlew spotlessCheck detekt --no-daemon` then `./gradlew test --no-daemon`. Run `spotlessCheck` locally before pushing — it's not part of `test`, so it's easy to miss formatting drift otherwise.
 
 ## Runtime Configuration
 
 - Config lives in `src/main/resources/application.conf` and is environment-variable driven.
-- Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `WEB_UI_ENABLED`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `CORS_ALLOWED_ORIGINS`.
+- Important variables: `PORT`, `API_KEY`, `JWT_ISSUER`, `JWT_JWKS_URL`, `JWT_AUDIENCE`, `PDF_PRODUCER`, `MAX_REQUEST_SIZE`, `LOG_LEVEL`, `LOG_FORMAT`, `ASSET_TIMEOUT`, `ASSET_MAX_SIZE`, `ASSET_ALLOWED_DOMAINS`, `UPLOAD_ENABLED`, `UPLOAD_TIMEOUT`, `UPLOAD_ALLOWED_DOMAINS`, `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_IP`, `RATE_LIMIT_GLOBAL`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `CORS_ALLOWED_ORIGINS`.
 - Docker builds a Gradle install distribution, runs on Eclipse Temurin 24 Alpine, and optionally attaches the OpenTelemetry Java agent from `entrypoint.sh`.
 
 ## Coding Conventions

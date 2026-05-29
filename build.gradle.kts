@@ -73,13 +73,6 @@ spotless {
 }
 
 val appVersion = project.findProperty("app.version")?.toString() ?: "dev"
-val skipTemplateBuilderWebUiBuild =
-    providers
-        .gradleProperty("skipTemplateBuilderWebUiBuild")
-        .map(String::toBoolean)
-        .orElse(false)
-val templateBuilderWebUiDir = layout.projectDirectory.dir("src/webui/template-builder")
-val templateBuilderWebUiOutput = layout.buildDirectory.dir("generated-resources/webui/template-builder")
 val openApiOutputDir = layout.buildDirectory.dir("resources/main/openapi")
 
 dependencies {
@@ -92,7 +85,6 @@ dependencies {
     implementation(ktorLibs.server.auth)
     implementation(ktorLibs.server.auth.jwt)
     implementation(ktorLibs.server.cors)
-    implementation(ktorLibs.server.mustache)
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.swagger)
     implementation(ktorLibs.server.forwardedHeader)
@@ -154,36 +146,8 @@ val generateVersionProperties by tasks.registering {
     }
 }
 
-val installTemplateBuilderWebUi by tasks.registering(Exec::class) {
-    workingDir = templateBuilderWebUiDir.asFile
-    commandLine("npm", "ci")
-    inputs.file(templateBuilderWebUiDir.file("package.json"))
-    inputs.file(templateBuilderWebUiDir.file("package-lock.json"))
-    outputs.dir(templateBuilderWebUiDir.dir("node_modules"))
-}
-
-val buildTemplateBuilderWebUi by tasks.registering(Exec::class) {
-    dependsOn(installTemplateBuilderWebUi)
-    workingDir = templateBuilderWebUiDir.asFile
-    commandLine("npm", "run", "build")
-    environment("PDF_UA_TEMPLATE_BUILDER_OUT_DIR", templateBuilderWebUiOutput.get().asFile.absolutePath)
-    inputs.file(templateBuilderWebUiDir.file("package.json"))
-    inputs.file(templateBuilderWebUiDir.file("package-lock.json"))
-    inputs.file(templateBuilderWebUiDir.file("tsconfig.json"))
-    inputs.file(templateBuilderWebUiDir.file("vite.config.ts"))
-    inputs.file(templateBuilderWebUiDir.file("index.html"))
-    inputs.dir(templateBuilderWebUiDir.dir("src"))
-    outputs.dir(templateBuilderWebUiOutput)
-}
-
 sourceSets.main {
     resources.srcDir(generateVersionProperties.map { layout.buildDirectory.dir("generated-resources") })
-}
-
-tasks.processResources {
-    if (!skipTemplateBuilderWebUiBuild.get()) {
-        dependsOn(buildTemplateBuilderWebUi)
-    }
 }
 
 val prepareOpenApiOutputDirectory by tasks.registering {

@@ -11,7 +11,6 @@ data class JwtConfig(
 data class AppConfig(
     val apiKey: String?,
     val jwt: JwtConfig?,
-    val webUIEnabled: Boolean,
     val pdfProducer: String,
     val maxRequestSizeBytes: Long,
     val logLevel: LogLevel,
@@ -82,7 +81,6 @@ data class AppConfig(
             return AppConfig(
                 apiKey = getOptional("api.key"),
                 jwt = jwt,
-                webUIEnabled = getBoolean("ui.enabled", true),
                 pdfProducer = getRequired("pdf.producer", "pdf-ua-api.com"),
                 maxRequestSizeBytes = getLong("pdf.maxRequestSize", 10 * 1024 * 1024),
                 logLevel = getLogLevel("logging.level", LogLevel.INFO),

@@ -5,10 +5,8 @@ import bambamboole.pdfua.http.controller.convertAndValidateRoutes
 import bambamboole.pdfua.http.controller.convertRoutes
 import bambamboole.pdfua.http.controller.healthRoutes
 import bambamboole.pdfua.http.controller.identifyRoutes
-import bambamboole.pdfua.http.controller.indexRoutes
 import bambamboole.pdfua.http.controller.renderImageRoutes
 import bambamboole.pdfua.http.controller.renderRoutes
-import bambamboole.pdfua.http.controller.templateBuilderWebRoutes
 import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
 import bambamboole.pdfua.image.ImageRenderer
@@ -18,12 +16,10 @@ import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.mustache.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
@@ -96,12 +92,6 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
         )
     }
 
-    if (config.webUIEnabled) {
-        install(Mustache) {
-            mustacheFactory = DefaultMustacheFactory("templates")
-        }
-    }
-
     install(CallLogging) {
         level = config.logLevel.slf4jLevel
     }
@@ -148,10 +138,6 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
 
     routing {
         swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.json")
-        if (config.webUIEnabled) {
-            indexRoutes()
-            templateBuilderWebRoutes()
-        }
         healthRoutes()
         templateSchemaRoutes()
 

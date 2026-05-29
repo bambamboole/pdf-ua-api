@@ -30,7 +30,6 @@ open http://localhost:8080/api-docs
 - **Validation** - Built-in PDF/A compliance validation with veraPDF
 - **Flexible Configuration** - Environment variable-based configuration
 - **Optional Authentication** - API key (Bearer token) or JWT (RS256 via JWKS)
-- **API-Only Mode** - Can run without web UI for production deployments
 
 ## API Endpoints
 
@@ -87,7 +86,6 @@ For full compliance, include these meta tags:
 |--------------------|------------------|-----------------------------------------------------------------------------------------------------------------|
 | `PORT`             | `8080`           | HTTP server port                                                                                                |
 | `API_KEY`          | (none)           | Optional API key (Bearer token). When set, all conversion and validation endpoints require authentication       |
-| `WEB_UI_ENABLED`   | `true`           | Enable web UI at `/`. Set to `false` for API-only mode                                                          |
 | `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
@@ -96,18 +94,11 @@ Additional knobs (JWT, [rate limiting](https://pdf-ua-api.bambamboole.com/rate-l
 
 ### Configuration Examples
 
-**API-only mode (no web UI)**:
-
-```bash
-docker run -p 8080:8080 -e WEB_UI_ENABLED=false bambamboole/pdf-ua-api:latest
-```
-
 **Production configuration**:
 
 ```bash
 docker run -p 8080:8080 \
   -e API_KEY=your-secret-key \
-  -e WEB_UI_ENABLED=false \
   -e PDF_PRODUCER=my-company-v1.0 \
   -e LOG_LEVEL=WARN \
   bambamboole/pdf-ua-api:latest
@@ -230,7 +221,6 @@ export JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"
 ./gradlew run
 
 # Run with custom configuration
-WEB_UI_ENABLED=false \
 LOG_LEVEL=DEBUG \
 PDF_PRODUCER=dev-build \
 ./gradlew run

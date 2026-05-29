@@ -1,13 +1,3 @@
-FROM node:24-alpine AS webui-build
-
-WORKDIR /webui
-
-COPY src/webui/template-builder/package*.json ./
-RUN npm ci
-
-COPY src/webui/template-builder/ ./
-RUN npm run build
-
 FROM gradle:9-jdk24-alpine AS build
 
 ARG APP_VERSION=dev
@@ -15,9 +5,8 @@ ARG APP_VERSION=dev
 WORKDIR /app
 
 COPY . .
-COPY --from=webui-build /webui/dist/ /app/build/generated-resources/webui/template-builder/
 
-RUN ./gradlew installDist -x test --no-daemon -Papp.version=${APP_VERSION} -PskipTemplateBuilderWebUiBuild=true
+RUN ./gradlew installDist -x test --no-daemon -Papp.version=${APP_VERSION}
 
 FROM alpine:3.21 AS otel-agent
 ARG OTEL_AGENT_VERSION=2.14.0
