@@ -2,6 +2,8 @@
 
 A simple HTTP API for converting HTML to PDF with PDF/A-3a accessibility compliance. Built with Ktor and openhtmltopdf.
 
+**Documentation:** [pdf-ua-api.bambamboole.com](https://pdf-ua-api.bambamboole.com) — guides, examples, and the full [API reference](https://pdf-ua-api.bambamboole.com/api).
+
 ## Quick Start
 
 ```bash
@@ -13,6 +15,9 @@ docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
 
 # Open the Web UI
 open http://localhost:8080
+
+# Or use the in-app Swagger UI
+open http://localhost:8080/api-docs
 ```
 
 ## Features
@@ -24,67 +29,31 @@ open http://localhost:8080
 - **CSS Support** - Full CSS 2.1 styling with automatic table pagination
 - **Validation** - Built-in PDF/A compliance validation with veraPDF
 - **Flexible Configuration** - Environment variable-based configuration
-- **Optional Authentication** - API key support via Bearer token
+- **Optional Authentication** - API key (Bearer token) or JWT (RS256 via JWKS)
 - **API-Only Mode** - Can run without web UI for production deployments
 
 ## API Endpoints
 
-### Health Check
+Full schemas and examples live in the [API reference](https://pdf-ua-api.bambamboole.com/api). A short tour:
 
-```bash
-GET /health
-```
+| Endpoint              | Purpose                                                      |
+|-----------------------|--------------------------------------------------------------|
+| `POST /convert`              | HTML → PDF/A-3a (binary PDF)                          |
+| `POST /convert-and-validate` | HTML → PDF/A-3a + veraPDF validation in one call      |
+| `POST /render/template`      | JSON template → PDF/A-3a (binary PDF)                 |
+| `POST /render`               | HTML → PNG/JPEG image                                 |
+| `POST /validate`             | Validate an existing PDF against PDF/A-3a + PDF/UA-1  |
+| `POST /identify`             | Check whether a PDF was produced by this API          |
+| `GET  /schema`               | JSON Schema (Draft 2020-12) for `/render/template`    |
+| `GET  /health`               | Liveness probe                                        |
 
-**Response:**
-
-```json
-{
-  "status": "ok"
-}
-```
-
-### Convert HTML to PDF
-
-```bash
-POST /convert
-Content-Type: application/json
-
-{
-  "html": "<html>...</html>"
-}
-```
-
-**Response:** Binary PDF data
-
-**Example:**
+### Quick example
 
 ```bash
 curl -X POST http://localhost:8080/convert \
   -H "Content-Type: application/json" \
-  -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1><p>This is a test PDF.</p></body></html>"}' \
+  -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"}' \
   --output output.pdf
-```
-
-### Validate PDF
-
-```bash
-POST /validate
-Content-Type: application/pdf
-
-<PDF binary data>
-```
-
-**Response:**
-
-```json
-{
-  "isCompliant": true,
-  "flavour": "3a",
-  "totalChecks": 0,
-  "failedChecks": 0,
-  "passedChecks": 0,
-  "failures": []
-}
 ```
 
 ## PDF/UA Compliance
@@ -117,11 +86,13 @@ For full compliance, include these meta tags:
 | Variable           | Default          | Description                                                                                                     |
 |--------------------|------------------|-----------------------------------------------------------------------------------------------------------------|
 | `PORT`             | `8080`           | HTTP server port                                                                                                |
-| `API_KEY`          | (none)           | Optional API key for authentication (Bearer token). When set, `/convert` and `/validate` require authentication |
+| `API_KEY`          | (none)           | Optional API key (Bearer token). When set, all conversion and validation endpoints require authentication       |
 | `WEB_UI_ENABLED`   | `true`           | Enable web UI at `/`. Set to `false` for API-only mode                                                          |
 | `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
+
+Additional knobs (JWT, [rate limiting](https://pdf-ua-api.bambamboole.com/rate-limiting), CORS, asset/upload allow-lists, OpenTelemetry) are configurable via environment variables — see `app/src/main/resources/application.conf` for the full list.
 
 ### Configuration Examples
 
@@ -153,8 +124,7 @@ docker run -p 8080:8080 \
 
 ## Authentication
 
-The API supports optional API key authentication. When configured, the `/convert` and `/validate` endpoints require a
-valid API key, while `/health` remains public.
+The API supports two optional authentication modes — API key (Bearer token) and JWT (RS256 via JWKS). When either is configured, the conversion and validation endpoints require auth; `/health` remains public. See the [Authentication guide](https://pdf-ua-api.bambamboole.com/authentication) for JWT setup.
 
 ### Running with Authentication
 
@@ -181,18 +151,18 @@ curl -X POST http://localhost:8080/validate \
   --data-binary @output.pdf
 ```
 
-**Note:** If `API_KEY` is not set, the API runs in public mode without authentication.
+**Note:** If neither `API_KEY` nor `JWT_JWKS_URL` is set, the API runs in public mode without authentication.
 
 ## HTML Requirements
 
-### ✅ Supported
+### Supported
 
 - HTML 4/5 standard tags
 - CSS 2.1 (inline and `<style>` tags)
 - Tables, lists, basic layout
 - Base64 encoded images
 
-### ⚠️ Limitations
+### Limitations
 
 - HTML must be well-formed (XHTML-style)
 - No external resources (images must be base64)
