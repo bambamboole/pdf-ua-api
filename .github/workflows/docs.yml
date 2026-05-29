@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "astro.config.mjs"
+      - "package-lock.json"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -26,8 +28,7 @@ jobs:
         id: pages
       - uses: withastro/action@v3
         with:
-          path: ./docs
-          node-version: 22
+          node-version: 24
         env:
           PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
