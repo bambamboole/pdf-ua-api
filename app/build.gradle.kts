@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.ktorServerCallLogging)
     implementation(libs.ktorServerStatusPages)
     implementation(libs.ktorServerAuth)
+    implementation(libs.ktorServerAuthJwt)
     implementation(libs.ktorServerMustache)
     implementation(libs.ktorSerializationJson)
     implementation(libs.ktorServerSwagger)
