@@ -28,6 +28,7 @@ export default defineConfig({
         },
         { label: "Template Builder", link: "/template-builder/" },
         { label: "Playground", link: "/playground/" },
+        { label: "Examples", link: "/examples/" },
       ],
     }),
     react(),
