@@ -1,19 +1,45 @@
+import dev.detekt.gradle.Detekt
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.github.tabilzad.ktor.model.SecurityScheme
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    // Apply the shared build logic from a convention plugin.
-    // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
-    id("buildsrc.convention.kotlin-jvm")
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.detekt)
 
-    // Apply the Application plugin to add support for building an executable JVM application.
     application
 
-    // Apply the Kotlin serialization plugin
-    alias(libs.plugins.kotlinPluginSerialization)
-
     id("io.github.tabilzad.inspektor") version "0.10.0-alpha"
+}
+
+kotlin {
+    jvmToolchain(24)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED)
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom(rootProject.layout.projectDirectory.file("config/detekt/detekt.yml"))
+    baseline = rootProject.layout.projectDirectory.file("config/detekt/baseline.xml").asFile
+}
+
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = "24"
+    reports {
+        html.required = true
+        checkstyle.required = true
+        sarif.required = true
+        markdown.required = false
+    }
 }
 
 val appVersion = project.findProperty("app.version")?.toString() ?: "dev"
@@ -28,19 +54,19 @@ val openApiOutputDir = layout.buildDirectory.dir("resources/main/openapi")
 
 dependencies {
     // Ktor Server
-    implementation(libs.ktorServerCore)
-    implementation(libs.ktorServerNetty)
-    implementation(libs.ktorServerContentNegotiation)
-    implementation(libs.ktorServerCallLogging)
-    implementation(libs.ktorServerStatusPages)
-    implementation(libs.ktorServerAuth)
-    implementation(libs.ktorServerAuthJwt)
-    implementation(libs.ktorServerCors)
-    implementation(libs.ktorServerMustache)
-    implementation(libs.ktorSerializationJson)
-    implementation(libs.ktorServerSwagger)
-    implementation(libs.ktorServerForwardedHeader)
-    implementation(libs.ktorServerRateLimit)
+    implementation(ktorLibs.server.core)
+    implementation(ktorLibs.server.netty)
+    implementation(ktorLibs.server.contentNegotiation)
+    implementation(ktorLibs.server.callLogging)
+    implementation(ktorLibs.server.statusPages)
+    implementation(ktorLibs.server.auth)
+    implementation(ktorLibs.server.auth.jwt)
+    implementation(ktorLibs.server.cors)
+    implementation(ktorLibs.server.mustache)
+    implementation(ktorLibs.serialization.kotlinx.json)
+    implementation(ktorLibs.server.swagger)
+    implementation(ktorLibs.server.forwardedHeader)
+    implementation(ktorLibs.server.rateLimit)
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)
@@ -66,7 +92,7 @@ dependencies {
     implementation("io.github.tabilzad.inspektor:annotations:0.10.0-alpha")
 
     // Testing
-    testImplementation(libs.ktorServerTestHost)
+    testImplementation(ktorLibs.server.testHost)
     testImplementation(libs.kotlinTest)
 }
 

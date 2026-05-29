@@ -199,7 +199,7 @@ All other [OTel Java agent configuration](https://opentelemetry.io/docs/zero-cod
 # Start Jaeger
 docker run -d --name jaeger -p 16686:16686 -p 4318:4318 jaegertracing/all-in-one:latest
 
-# Start pdf-api with OTel pointing to Jaeger
+# Start pdf-ua-api with OTel pointing to Jaeger
 docker run -p 8080:8080 \
   -e OTEL_ENABLED=true \
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318 \
