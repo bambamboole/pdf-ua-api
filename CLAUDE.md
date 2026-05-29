@@ -26,6 +26,7 @@ Guidance for Claude Code when working in this repository.
 - Suppress native-access warnings when needed: `export JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"`
 - Tests use JUnit Platform through `kotlin.test`; route tests use Ktor `testApplication`.
 - Some conversion tests write generated PDFs or diff images beside fixtures when baselines differ. Review these files before keeping or deleting them.
+- `./gradlew check` is currently broken (Gradle 9.2 strict implicit-dependency validation between `spotlessKotlin` and `installTemplateBuilderWebUi`). Verify with `./gradlew test`, `./gradlew detekt`, and `./gradlew spotlessCheck` invoked separately. CI runs `spotlessCheck` directly, so do not skip it locally before pushing.
 
 ## Runtime Configuration
 

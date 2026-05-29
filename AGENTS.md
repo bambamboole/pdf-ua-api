@@ -25,6 +25,7 @@ Instructions for coding agents working in this repository.
 - `./gradlew run` starts the API locally.
 - `./gradlew installDist` builds the install distribution used by Docker.
 - `JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED" ./gradlew test` suppresses native-access warnings from PDF tooling.
+- `./gradlew check` is currently broken (Gradle 9.2 strict implicit-dependency validation between `spotlessKotlin` and `installTemplateBuilderWebUi`). Verify with `./gradlew test`, `./gradlew detekt`, and `./gradlew spotlessCheck` invoked separately. CI runs `spotlessCheck` directly, so do not skip it locally before pushing.
 
 ## Development Rules
 
