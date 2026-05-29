@@ -27,6 +27,7 @@ export default defineConfig({
           autogenerate: { directory: "guides" },
         },
         { label: "Template Builder", link: "/template-builder/" },
+        { label: "Playground", link: "/playground/" },
       ],
     }),
     react(),
