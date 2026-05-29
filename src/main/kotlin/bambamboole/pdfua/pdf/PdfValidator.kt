@@ -91,7 +91,7 @@ object PdfValidator {
                         totalFailed += failed
                     }
 
-                    val categories = buildCategorySummary(allFailures, totalPassed, results)
+                    val categories = buildCategorySummary(allFailures)
                     val (metadata, documentInfo) = extractDocumentDetails(pdfBytes)
                     val overallCompliant = profileResults.all { it.isCompliant }
 
@@ -171,11 +171,7 @@ object PdfValidator {
         return parts.joinToString("; ").ifBlank { null }
     }
 
-    private fun buildCategorySummary(
-        failures: List<ValidationFailure>,
-        totalPassed: Int,
-        results: List<ValidationResult>,
-    ): List<CategoryResult> {
+    private fun buildCategorySummary(failures: List<ValidationFailure>): List<CategoryResult> {
         val failedByCategory =
             failures
                 .groupBy { it.category }

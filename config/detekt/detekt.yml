@@ -1,5 +1,43 @@
 style:
   MaxLineLength:
     maxLineLength: 140
+    excludes: ['**/test/**']
   WildcardImport:
     active: false
+  MagicNumber:
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '100'
+      - '1000'
+      - '1024'
+    ignoreEnums: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreNamedArgument: true
+    ignoreAnnotation: true
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+  ReturnCount:
+    max: 5
+
+naming:
+  MatchingDeclarationName:
+    active: false
+
+complexity:
+  TooManyFunctions:
+    allowedFunctionsPerFile: 20
+    allowedFunctionsPerClass: 20
+    allowedFunctionsPerObject: 20
+    allowedFunctionsPerInterface: 20
+  LongMethod:
+    allowedLines: 80
+    excludes: ['**/test/**']
+  CyclomaticComplexMethod:
+    allowedComplexity: 20
+  NestedBlockDepth:
+    allowedDepth: 5
+  ComplexCondition:
+    allowedConditions: 5

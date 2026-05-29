@@ -46,12 +46,12 @@ class AssetResolver(
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
         if (response.statusCode() !in 200..299) {
-            throw RuntimeException("HTTP ${response.statusCode()} for $uri")
+            throw java.io.IOException("HTTP ${response.statusCode()} for $uri")
         }
 
         val contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1)
         if (contentLength > maxSizeBytes) {
-            throw RuntimeException("Content-Length $contentLength exceeds max size $maxSizeBytes")
+            throw java.io.IOException("Content-Length $contentLength exceeds max size $maxSizeBytes")
         }
 
         val bytes = response.body().use { it.readNBytes(maxSizeBytes.toInt()) }

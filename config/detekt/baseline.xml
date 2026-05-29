@@ -2,99 +2,41 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ComplexCondition:ImageBlock.kt:name !in SAFE_SVG_ATTRIBUTES || name == "href" || name == "xlink:href" || value.contains("url(") || value.contains("javascript:")</ID>
     <ID>CyclomaticComplexMethod:AppConfig.kt:AppConfig.Companion$fun load: AppConfig</ID>
     <ID>CyclomaticComplexMethod:PdfValidator.kt:PdfValidator$private fun categorizePdfUaClause: String</ID>
-    <ID>LongMethod:Application.kt:fun Application.module</ID>
-    <ID>LongMethod:ConvertRoutesTest.kt:ConvertRoutesTest.Companion$private suspend fun ApplicationTestBuilder.testFixtureConversion</ID>
-    <ID>LongMethod:PdfValidator.kt:PdfValidator$fun validatePdf: ValidationResponse</ID>
-    <ID>LongMethod:RenderImage.kt:@GenerateOpenApi @Tag(["Rendering"]) fun Route.renderImageRoutes</ID>
     <ID>LongMethod:TemplateJsonSchema.kt:TemplateJsonSchema$private fun definitions: Map&lt;String, PropertyDefinition&gt;</ID>
-    <ID>LongMethod:TemplateRenderer.kt:TemplateRenderer$private fun emitBaseCss</ID>
-    <ID>LongMethod:TemplateSchemaRoutesTest.kt:TemplateSchemaRoutesTest$@Test fun returnsTemplateSchema</ID>
-    <ID>LongMethod:ValidationRoutesTest.kt:ValidationRoutesTest.Companion$private suspend fun ApplicationTestBuilder.testFixtureValidation</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$10</ID>
-    <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$1024</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$20</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$200</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$30_000</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$5</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$5000</ID>
     <ID>MagicNumber:AppConfig.kt:AppConfig.Companion$60</ID>
-    <ID>MagicNumber:AssetResolver.kt:AssetResolver$1024</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$200</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$299</ID>
     <ID>MagicNumber:AssetResolver.kt:AssetResolver$5</ID>
     <ID>MagicNumber:DocumentUploader.kt:DocumentUploader$200</ID>
     <ID>MagicNumber:DocumentUploader.kt:DocumentUploader$299</ID>
-    <ID>MagicNumber:Font.kt:FontWeight.BOLD$700</ID>
-    <ID>MagicNumber:Font.kt:FontWeight.LIGHT$300</ID>
-    <ID>MagicNumber:Font.kt:FontWeight.MEDIUM$500</ID>
-    <ID>MagicNumber:Font.kt:FontWeight.REGULAR$400</ID>
-    <ID>MagicNumber:Font.kt:FontWeight.SEMI_BOLD$600</ID>
     <ID>MagicNumber:HeadingBlock.kt:HeadingBlock$6</ID>
     <ID>MagicNumber:ImageOptimizer.kt:ImageOptimizer$3</ID>
     <ID>MagicNumber:ImageOptimizer.kt:ImageOptimizer$4</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A3$297.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A3$420.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A4$210.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A4$297.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A5$148.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A5$210.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A6$105.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.A6$148.0</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.LEGAL$215.9</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.LEGAL$355.6</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.LETTER$215.9</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.LETTER$279.4</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.TABLOID$279.4</ID>
-    <ID>MagicNumber:Page.kt:PageFormat.TABLOID$431.8</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$10</ID>
-    <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$1024</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$255</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$256</ID>
     <ID>MagicNumber:PdfRenderer.kt:PdfRenderer$4</ID>
-    <ID>MagicNumber:PdfValidator.kt:PdfValidator$100</ID>
     <ID>MagicNumber:Render.kt:4</ID>
     <ID>MagicNumber:RenderImage.kt:4096</ID>
     <ID>MagicNumber:Template.kt:PageConfig$20</ID>
     <ID>MagicNumber:Template.kt:PageConfig$25</ID>
-    <ID>MatchingDeclarationName:ConvertAndValidate.kt:ConvertAndValidateResponse</ID>
-    <ID>MatchingDeclarationName:Identify.kt:IdentifyResponse</ID>
-    <ID>MatchingDeclarationName:Render.kt:RenderRequest</ID>
-    <ID>MatchingDeclarationName:RenderImage.kt:RenderImageRequest</ID>
     <ID>MaxLineLength:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$// Per-document XObject memo. Guarded for concurrent renders of different documents; a single document is rendered on one thread, so check-then-put need not be atomic.</ID>
     <ID>MaxLineLength:ConvertAndValidate.kt:ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF")</ID>
-    <ID>MaxLineLength:RenderRoutesTest.kt:RenderRoutesTest$val svg = """&lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"&gt;&lt;rect width="24" height="24" fill="#2563eb"/&gt;&lt;/svg&gt;"""</ID>
     <ID>MaxLineLength:TableBlock.kt:TableBlock$override fun applyData: Block</ID>
     <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$private fun constInteger: PropertyDefinition</ID>
     <ID>MaxLineLength:TemplateJsonSchema.kt:TemplateJsonSchema$private fun nullableString: PropertyDefinition</ID>
     <ID>MaxLineLength:TemplateRenderer.kt:private fun pageDimensionCss: String</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$assertTrue(html.contains("""&lt;footer class="page-footer page-footer-repeated" role="contentinfo"&gt;&lt;table class="row" role="presentation"&gt;&lt;tr&gt;&lt;td&gt;&lt;div class="block-1"&gt;&lt;p&gt;Repeated footer&lt;/p&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/footer&gt;"""))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$assertTrue(html.contains("""&lt;object type="x-page-background" data-src="https://cdn.example.com/bg.png" data-kind="image" style="width:1px;height:1px"&gt;"""))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 400; font-style: normal; }")</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$html.contains("@font-face { font-family: 'Lobster'; src: url(\"https://cdn.example.com/lobster.ttf\") format(\"truetype\"); font-weight: 700; font-style: normal; }")</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster"))))))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val auto = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf")))))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val block = DividerBlock(config = DividerConfig(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val cfg = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/bg.png", type = PageBackgroundType.IMAGE)))</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)</ID>
-    <ID>MaxLineLength:TemplateRendererTest.kt:TemplateRendererTest$val pdf = TemplateRenderer.render(template(TextBlock(text = "x"), config = TemplateConfig(page = PageConfig(background = PageBackgroundConfig(src = "https://cdn.example.com/s.pdf", type = PageBackgroundType.PDF)))))</ID>
-    <ID>MaxLineLength:ValidationRoutesTest.kt:ValidationRoutesTest$println("PDF validation with incomplete metadata: compliant=${validationResult.isCompliant}, profiles=${validationResult.profiles.map { it.profile }}")</ID>
-    <ID>NestedBlockDepth:ConvertRoutesTest.kt:ConvertRoutesTest.Companion$private suspend fun ApplicationTestBuilder.testFixtureConversion</ID>
     <ID>NestedBlockDepth:PdfValidator.kt:PdfValidator$fun validatePdf: ValidationResponse</ID>
     <ID>NestedBlockDepth:PdfValidator.kt:PdfValidator$private fun extractDocumentDetails: Pair&lt;PdfMetadata?, DocumentInfo?&gt;</ID>
-    <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$override fun drawObject: Map&lt;Shape, String&gt;?</ID>
-    <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun loadBytes: ByteArray?</ID>
-    <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun resolveXObject: PDXObject?</ID>
-    <ID>ReturnCount:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$private fun stamp</ID>
     <ID>ReturnCount:ImageBlock.kt:private fun inlineSanitizedSvg: String?</ID>
-    <ID>ReturnCount:ImageBlock.kt:private fun svgSource: SvgSource?</ID>
-    <ID>ReturnCount:ImageOptimizer.kt:ImageOptimizer$fun optimizeImage: ByteArray</ID>
-    <ID>ReturnCount:PdfValidator.kt:PdfValidator$private fun countStructureElements: Int</ID>
-    <ID>ReturnCount:TableBlock.kt:TableBlock$private fun alignStyle: String?</ID>
-    <ID>ReturnCount:Validation.kt:internal fun nullableStringField: List&lt;ValidationIssue&gt;</ID>
-    <ID>SwallowedException:Index.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:AssetResolver.kt:AssetResolver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BackgroundObjectDrawer.kt:BackgroundObjectDrawer$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Convert.kt:e: Exception</ID>
@@ -102,19 +44,10 @@
     <ID>TooGenericExceptionCaught:DocumentUploader.kt:DocumentUploader$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Identify.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImageOptimizer.kt:ImageOptimizer$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:Index.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:PdfValidator.kt:PdfValidator$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Render.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:RenderImage.kt:e: Exception</ID>
     <ID>TooGenericExceptionCaught:Validation.kt:e: Exception</ID>
-    <ID>TooGenericExceptionThrown:AssetResolver.kt:AssetResolver$throw RuntimeException("Content-Length $contentLength exceeds max size $maxSizeBytes")</ID>
-    <ID>TooGenericExceptionThrown:AssetResolver.kt:AssetResolver$throw RuntimeException("HTTP ${response.statusCode()} for $uri")</ID>
-    <ID>TooManyFunctions:Css.kt:bambamboole.pdfua.css.Css.kt</ID>
-    <ID>TooManyFunctions:PdfValidator.kt:PdfValidator</ID>
     <ID>TooManyFunctions:TemplateJsonSchema.kt:TemplateJsonSchema</ID>
-    <ID>TooManyFunctions:TemplateRenderer.kt:TemplateRenderer</ID>
-    <ID>TopLevelPropertyNaming:TemplateBuilderWeb.kt:private const val TemplateBuilderResourceRoot = "webui/template-builder"</ID>
-    <ID>UnusedParameter:PdfValidator.kt:PdfValidator$results: List&lt;ValidationResult&gt;</ID>
-    <ID>UnusedParameter:PdfValidator.kt:PdfValidator$totalPassed: Int</ID>
   </CurrentIssues>
 </SmellBaseline>
