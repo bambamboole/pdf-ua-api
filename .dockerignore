@@ -2,11 +2,7 @@
 .gradle/
 .idea/
 build/
-app/build/
-buildSrc/build/
 node_modules/
-app/src/webui/**/node_modules/
-app/src/webui/**/dist/
 
 # IDE
 *.iml
