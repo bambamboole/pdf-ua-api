@@ -29,13 +29,14 @@ private val HTML_MIME_TYPES = setOf("text/html", "application/xhtml+xml")
 
 class HtmlSourceFetcher(
     private val httpClient: HttpClient,
-    private val timeoutMs: Long = 5_000,
-    private val maxSizeBytes: Long = 5 * 1024 * 1024,
+    private val timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+    private val maxSizeBytes: Long = DEFAULT_MAX_SIZE_BYTES,
     private val allowedDomains: Set<String> = emptySet(),
     private val validateUrl: (URI, Set<String>) -> Unit = ::validatePublicHttpUrl,
 ) {
     private val logger = LoggerFactory.getLogger(HtmlSourceFetcher::class.java)
 
+    @Suppress("TooGenericExceptionCaught") // defensive boundary: any fetch failure becomes FetchResult.Failed
     fun fetch(url: String): FetchResult {
         val uri =
             try {
@@ -45,46 +46,51 @@ class HtmlSourceFetcher(
             }
 
         return try {
-            val request =
-                HttpRequest
-                    .newBuilder()
-                    .uri(uri)
-                    .timeout(Duration.ofMillis(timeoutMs))
-                    .GET()
-                    .build()
-
-            val response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray())
-
-            if (response.statusCode() !in 200..299) {
-                return FetchResult.Failed("Failed to fetch URL: HTTP ${response.statusCode()}")
-            }
-
-            val contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1)
-            if (contentLength > maxSizeBytes) {
-                return FetchResult.Failed("Failed to fetch URL: response too large ($contentLength bytes)")
-            }
-
-            val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
-            val (mimeType, charset) = parseContentType(rawContentType)
-            if (mimeType == null || mimeType !in HTML_MIME_TYPES) {
-                return FetchResult.Failed(
-                    "URL did not return HTML (Content-Type: ${rawContentType ?: "<none>"})",
-                )
-            }
-
-            val body = response.body()
-            if (body.size > maxSizeBytes) {
-                return FetchResult.Failed("Failed to fetch URL: response too large (${body.size} bytes)")
-            }
-
-            val html = String(body, charset)
-            val finalUrl = response.uri().toString()
-            logger.debug("Fetched HTML source: {} ({} bytes)", finalUrl, body.size)
-            FetchResult.Success(html, finalUrl)
+            val response = httpClient.send(buildRequest(uri), HttpResponse.BodyHandlers.ofByteArray())
+            evaluateResponse(response) ?: buildSuccess(response)
         } catch (e: Exception) {
             logger.warn("Failed to fetch URL {}: {}", uri, e.message)
             FetchResult.Failed("Failed to fetch URL: ${e.message ?: e.javaClass.simpleName}")
         }
+    }
+
+    private fun buildRequest(uri: URI): HttpRequest =
+        HttpRequest
+            .newBuilder()
+            .uri(uri)
+            .timeout(Duration.ofMillis(timeoutMs))
+            .GET()
+            .build()
+
+    private fun evaluateResponse(response: HttpResponse<ByteArray>): FetchResult.Failed? {
+        if (response.statusCode() !in HTTP_OK_MIN..HTTP_OK_MAX) {
+            return FetchResult.Failed("Failed to fetch URL: HTTP ${response.statusCode()}")
+        }
+        val contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1)
+        if (contentLength > maxSizeBytes) {
+            return FetchResult.Failed("Failed to fetch URL: response too large ($contentLength bytes)")
+        }
+        val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
+        val mimeType = parseContentType(rawContentType).first
+        if (mimeType == null || mimeType !in HTML_MIME_TYPES) {
+            return FetchResult.Failed(
+                "URL did not return HTML (Content-Type: ${rawContentType ?: "<none>"})",
+            )
+        }
+        if (response.body().size > maxSizeBytes) {
+            return FetchResult.Failed("Failed to fetch URL: response too large (${response.body().size} bytes)")
+        }
+        return null
+    }
+
+    private fun buildSuccess(response: HttpResponse<ByteArray>): FetchResult.Success {
+        val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
+        val charset = parseContentType(rawContentType).second
+        val body = response.body()
+        val html = String(body, charset)
+        val finalUrl = response.uri().toString()
+        logger.debug("Fetched HTML source: {} ({} bytes)", finalUrl, body.size)
+        return FetchResult.Success(html, finalUrl)
     }
 
     private fun parseContentType(raw: String?): Pair<String?, Charset> {
@@ -111,6 +117,11 @@ class HtmlSourceFetcher(
     }
 
     companion object {
+        private const val DEFAULT_TIMEOUT_MS: Long = 5_000
+        private const val DEFAULT_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
+        private const val HTTP_OK_MIN = 200
+        private const val HTTP_OK_MAX = 299
+
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient
                 .newBuilder()

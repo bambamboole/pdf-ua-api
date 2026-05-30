@@ -132,49 +132,70 @@ fun Route.renderRoutes(
         )
     }
 
-    if (htmlSourceFetcher != null) {
-        @KtorDescription(
-            summary = "Render a URL to PDF",
-            description = "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
-        )
-        @KtorResponds(
-            [
-                ResponseEntry("200", ByteArray::class, description = "PDF document"),
-                ResponseEntry("400", Nothing::class, description = "Invalid URL or fetch failure"),
-                ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-            ],
-        )
-        post("/render/url") {
-            val request = call.receive<RenderUrlRequest>()
-            require(request.url.isNotBlank()) { "url cannot be empty" }
-
-            when (val result = htmlSourceFetcher.fetch(request.url)) {
-                is FetchResult.InvalidUrl -> {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
-                }
-
-                is FetchResult.Failed -> {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
-                }
-
-                is FetchResult.Success -> {
-                    val pdfResult =
-                        PdfRenderer.convertHtmlToPdf(
-                            html = result.html,
-                            producer = pdfProducer,
-                            assetResolver = assetResolver,
-                            baseUrl = result.finalUrl,
-                            attachments = request.attachments,
-                        )
-                    respondDocumentOrUpload(
-                        bytes = pdfResult.bytes,
-                        contentType = ContentType.Application.Pdf,
-                        fileName = "output.pdf",
-                        documentId = pdfResult.documentId,
-                        uploader = uploader,
-                    )
-                }
+    @KtorDescription(
+        summary = "Render a URL to PDF",
+        description = "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
+    )
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry("400", Nothing::class, description = "Invalid URL or fetch failure"),
+            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
+        ],
+    )
+    post("/render/url") {
+        val fetcher =
+            htmlSourceFetcher ?: run {
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "URL rendering is not configured"),
+                )
+                return@post
             }
+        val request = call.receive<RenderUrlRequest>()
+        require(request.url.isNotBlank()) { "url cannot be empty" }
+        respondRenderedUrl(
+            result = fetcher.fetch(request.url),
+            attachments = request.attachments,
+            pdfProducer = pdfProducer,
+            assetResolver = assetResolver,
+            uploader = uploader,
+        )
+    }
+}
+
+private suspend fun RoutingContext.respondRenderedUrl(
+    result: FetchResult,
+    attachments: List<FileAttachment>?,
+    pdfProducer: String,
+    assetResolver: FSStreamFactory?,
+    uploader: DocumentUploader?,
+) {
+    when (result) {
+        is FetchResult.InvalidUrl -> {
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+        }
+
+        is FetchResult.Failed -> {
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+        }
+
+        is FetchResult.Success -> {
+            val pdfResult =
+                PdfRenderer.convertHtmlToPdf(
+                    html = result.html,
+                    producer = pdfProducer,
+                    assetResolver = assetResolver,
+                    baseUrl = result.finalUrl,
+                    attachments = attachments,
+                )
+            respondDocumentOrUpload(
+                bytes = pdfResult.bytes,
+                contentType = ContentType.Application.Pdf,
+                fileName = "output.pdf",
+                documentId = pdfResult.documentId,
+                uploader = uploader,
+            )
         }
     }
 }

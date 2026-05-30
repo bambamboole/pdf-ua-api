@@ -167,6 +167,43 @@
                 }
             }
         },
+        "/render/url": {
+            "post": {
+                "summary": "Render a URL to PDF",
+                "description": "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
+                "tags": [
+                    "Rendering"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF document",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid URL or fetch failure"
+                    },
+                    "500": {
+                        "description": "Rendering failed"
+                    }
+                },
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderUrlRequest"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/render": {
             "post": {
                 "summary": "Render HTML to image",
@@ -596,6 +633,23 @@
                 },
                 "required": [
                     "template"
+                ]
+            },
+            "bambamboole.pdfua.http.controller.RenderUrlRequest": {
+                "type": "object",
+                "properties": {
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
+                        }
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "url"
                 ]
             },
             "bambamboole.pdfua.services.RenderOptions": {
