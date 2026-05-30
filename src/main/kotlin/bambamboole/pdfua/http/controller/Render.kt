@@ -7,7 +7,10 @@ import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
+import bambamboole.pdfua.services.FetchResult
+import bambamboole.pdfua.services.HtmlSourceFetcher
 import bambamboole.pdfua.services.RenderOptions
+import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.template.ValidationIssue
@@ -33,9 +36,10 @@ fun Application.render() {
     val config: AppConfig by dependencies
     val assetResolver: AssetResolver by dependencies
     val uploader: DocumentUploader? by dependencies
+    val htmlSourceFetcher: HtmlSourceFetcher by dependencies
     routing {
         expensiveRoute(config) {
-            renderRoutes(config.pdfProducer, assetResolver, uploader)
+            renderRoutes(config.pdfProducer, assetResolver, uploader, htmlSourceFetcher)
         }
     }
 }
@@ -46,6 +50,12 @@ data class RenderRequest(
     /** Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables. */
     val data: Map<String, JsonElement> = emptyMap(),
     val options: RenderOptions = RenderOptions(),
+)
+
+@Serializable
+data class RenderUrlRequest(
+    val url: String,
+    val attachments: List<FileAttachment>? = null,
 )
 
 private const val SERIALIZATION_CAUSE_UNWRAP_DEPTH = 4
@@ -67,6 +77,7 @@ fun Route.renderRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
     uploader: DocumentUploader? = null,
+    htmlSourceFetcher: HtmlSourceFetcher? = null,
 ) {
     @KtorDescription(
         summary = "Render a template to PDF",
@@ -119,5 +130,51 @@ fun Route.renderRoutes(
             documentId = result.documentId,
             uploader = uploader,
         )
+    }
+
+    if (htmlSourceFetcher != null) {
+        @KtorDescription(
+            summary = "Render a URL to PDF",
+            description = "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
+        )
+        @KtorResponds(
+            [
+                ResponseEntry("200", ByteArray::class, description = "PDF document"),
+                ResponseEntry("400", Nothing::class, description = "Invalid URL or fetch failure"),
+                ResponseEntry("500", Nothing::class, description = "Rendering failed"),
+            ],
+        )
+        post("/render/url") {
+            val request = call.receive<RenderUrlRequest>()
+            require(request.url.isNotBlank()) { "url cannot be empty" }
+
+            when (val result = htmlSourceFetcher.fetch(request.url)) {
+                is FetchResult.InvalidUrl -> {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+                }
+
+                is FetchResult.Failed -> {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+                }
+
+                is FetchResult.Success -> {
+                    val pdfResult =
+                        PdfRenderer.convertHtmlToPdf(
+                            html = result.html,
+                            producer = pdfProducer,
+                            assetResolver = assetResolver,
+                            baseUrl = result.finalUrl,
+                            attachments = request.attachments,
+                        )
+                    respondDocumentOrUpload(
+                        bytes = pdfResult.bytes,
+                        contentType = ContentType.Application.Pdf,
+                        fileName = "output.pdf",
+                        documentId = pdfResult.documentId,
+                        uploader = uploader,
+                    )
+                }
+            }
+        }
     }
 }
