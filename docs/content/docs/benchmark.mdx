@@ -1,0 +1,77 @@
+---
+title: Benchmark
+description: pdf-ua-api vs WeasyPrint on speed, PDF/UA compliance, and file size.
+---
+
+import data from "../../../benchmark/results/latest.json";
+
+export const docs = [...new Set(data.results.map((r) => r.doc))];
+export const fmt = (n) => (n == null ? "—" : Math.round(n).toLocaleString());
+export const ms = (n) => (n == null ? "—" : `${n} ms`);
+export const kb = (b) => (b == null ? "—" : `${(b / 1024).toFixed(1)} KB`);
+
+How does pdf-ua-api compare to [WeasyPrint](https://weasyprint.org/), a popular
+HTML→PDF engine? Both run as single-worker HTTP services in Docker, hit with
+identical load — {data.meta.concurrency} concurrent clients for {data.meta.duration},
+after {data.meta.warmupRequests} warmup requests. Measured {data.meta.date};
+WeasyPrint {data.meta.weasyprintVersion}, running in its `pdf/ua-1` accessibility
+mode.
+
+{docs.map((doc) => (
+  <div key={doc}>
+    <h2>{doc} document</h2>
+    <table>
+      <thead>
+        <tr><th>Engine</th><th>Req/s</th><th>p50</th><th>p99</th><th>PDF/UA-1</th><th>Size</th></tr>
+      </thead>
+      <tbody>
+        {data.results.filter((r) => r.doc === doc).map((r) => (
+          <tr key={r.engine}>
+            <td>{r.engine}</td>
+            <td>{fmt(r.reqPerSec)}</td>
+            <td>{ms(r.p50Ms)}</td>
+            <td>{ms(r.p99Ms)}</td>
+            <td>{r.pdfUa ? "✅ Pass" : "❌ Fail"}</td>
+            <td>{kb(r.sizeBytes)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+))}
+
+## What the numbers say
+
+- **Throughput.** pdf-ua-api sustains an order of magnitude more requests per
+  second at a fraction of the latency across every document tier.
+- **Accessibility.** Every pdf-ua-api output passes both PDF/A-3a and PDF/UA-1
+  validation. WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
+  document but is flagged as non-compliant on the more complex ones.
+- **File size.** pdf-ua-api produces larger files. This is the cost of PDF/A-3a:
+  fonts are fully embedded so the document renders identically anywhere, forever.
+  It is a deliberate trade-off for archival accessibility, not an oversight.
+
+## Methodology
+
+Both engines run as single-worker HTTP services in Docker and receive the exact
+same HTML per document. A warmup phase precedes measurement so JVM cold-start
+does not skew results — disclosed, not hidden. pdf-ua-api's rate limiter is
+disabled for the run so the load test measures raw engine throughput (WeasyPrint
+has no limiter, so both run unthrottled).
+
+Throughput and latency come from [`oha`](https://github.com/hatoo/oha). Every
+output PDF — from **both** engines — is validated by pdf-ua-api's own veraPDF
+`/validate` endpoint against PDF/A-3a + PDF/UA-1, so both are judged by the same
+validator. File size is the output PDF byte length.
+
+Numbers reflect a single machine and a single run. Re-run them yourself.
+
+## Run it yourself
+
+```bash
+cd benchmark
+make benchmark
+```
+
+The full harness — corpus, services, and runner — lives in
+[`benchmark/`](https://github.com/bambamboole/pdf-ua-api/tree/main/benchmark).
