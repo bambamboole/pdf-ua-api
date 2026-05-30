@@ -29,11 +29,16 @@ data class Row(
 data class PageConfig(
     val size: PageSize = PresetPageSize(),
     val locale: String = "de_DE",
-    val margins: SpacingConfig = SpacingConfig(20, 20, 20, 25),
+    val margins: SpacingConfig = SpacingConfig(SIDE_MARGIN_MM, SIDE_MARGIN_MM, SIDE_MARGIN_MM, BOTTOM_MARGIN_MM),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),
     val background: PageBackgroundConfig? = null,
     val footer: PageFooterConfig = PageFooterConfig(),
-)
+) {
+    companion object {
+        const val SIDE_MARGIN_MM = 20
+        const val BOTTOM_MARGIN_MM = 25
+    }
+}
 
 @Serializable
 data class PageNumbersConfig(

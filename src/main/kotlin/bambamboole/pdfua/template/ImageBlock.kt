@@ -156,6 +156,7 @@ private fun svgSource(source: String): SvgSource? {
     }.getOrDefault(SvgSource.Invalid)
 }
 
+@Suppress("ReturnCount") // guard-clause heavy: each branch is a distinct failure-or-success outcome
 private fun inlineSanitizedSvg(
     source: String,
     alt: String,

@@ -58,6 +58,7 @@ internal fun issue(
     message: String,
 ): ValidationIssue = ValidationIssue(path.toString(), code, message)
 
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 fun serializationIssue(e: SerializationException): ValidationIssue {
     val msg = e.message.orEmpty()
     val code =

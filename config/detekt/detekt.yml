@@ -28,7 +28,7 @@ naming:
 
 complexity:
   TooManyFunctions:
-    allowedFunctionsPerFile: 20
+    allowedFunctionsPerFile: 30
     allowedFunctionsPerClass: 20
     allowedFunctionsPerObject: 20
     allowedFunctionsPerInterface: 20

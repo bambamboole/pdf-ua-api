@@ -22,17 +22,21 @@ data class HeadingBlock(
     val text: String,
     override val config: HeadingConfig = HeadingConfig(),
 ) : Block {
+    companion object {
+        val HEADING_LEVEL_RANGE = 1..6
+    }
+
     override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)
 
     override fun render(): Html {
-        check(config.level in 1..6) { "Heading level must be between 1 and 6: ${config.level}" }
+        check(config.level in HEADING_LEVEL_RANGE) { "Heading level must be between 1 and 6: ${config.level}" }
         return html {
             tag("h${config.level}") { text(text) }
         }
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        if (config.level in 1..6) {
+        if (config.level in HEADING_LEVEL_RANGE) {
             emptyList()
         } else {
             listOf(

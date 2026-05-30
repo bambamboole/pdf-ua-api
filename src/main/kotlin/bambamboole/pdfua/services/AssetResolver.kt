@@ -16,12 +16,13 @@ import java.time.Duration
 
 class AssetResolver(
     private val httpClient: HttpClient,
-    private val timeoutMs: Long = 5000,
-    private val maxSizeBytes: Long = 5 * 1024 * 1024,
+    private val timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+    private val maxSizeBytes: Long = DEFAULT_MAX_SIZE_BYTES,
     private val allowedDomains: Set<String> = emptySet(),
 ) : FSStreamFactory {
     private val logger = LoggerFactory.getLogger(AssetResolver::class.java)
 
+    @Suppress("TooGenericExceptionCaught") // defensive boundary: any failure here degrades to EmptyStream
     override fun getUrl(url: String): FSStream =
         try {
             val uri = URI.create(url)
@@ -45,7 +46,7 @@ class AssetResolver(
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
-        if (response.statusCode() !in 200..299) {
+        if (response.statusCode() !in HTTP_OK_MIN..HTTP_OK_MAX) {
             throw java.io.IOException("HTTP ${response.statusCode()} for $uri")
         }
 
@@ -81,6 +82,11 @@ class AssetResolver(
     }
 
     companion object {
+        const val DEFAULT_TIMEOUT_MS: Long = 5_000
+        const val DEFAULT_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
+        private const val HTTP_OK_MIN = 200
+        private const val HTTP_OK_MAX = 299
+
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient
                 .newBuilder()

@@ -33,6 +33,12 @@ object PdfRenderer {
     private val w3cDom = W3CDom()
     private val validRelationships = setOf("Source", "Data", "Alternative", "Supplement", "Unspecified")
 
+    private const val UUID_METADATA_RESERVE_BYTES = 256
+    private const val ATTACHMENT_NAME_MAX_LENGTH = 255
+    private const val MAX_ATTACHMENTS = 10
+    private const val ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
+    private const val ATTACHMENT_OUTPUT_RESERVE_DIVISOR = 4
+
     private val colorProfileBytes: ByteArray by lazy {
         logger.info("Loading sRGB color profile")
         loadResource("/colorspaces/sRGB.icc")
@@ -87,7 +93,7 @@ object PdfRenderer {
         val documentId = UUID.randomUUID().toString()
         Loader.loadPDF(pdfBytes).use { document ->
             document.documentInformation.setCustomMetadataValue("X-Document-UUID", documentId)
-            return ByteArrayOutputStream(pdfBytes.size + 256).use { outputStream ->
+            return ByteArrayOutputStream(pdfBytes.size + UUID_METADATA_RESERVE_BYTES).use { outputStream ->
                 document.save(outputStream)
                 PdfResult(outputStream.toByteArray(), documentId)
             }
@@ -95,17 +101,19 @@ object PdfRenderer {
     }
 
     private fun validateAttachments(attachments: List<FileAttachment>) {
-        require(attachments.size <= 10) { "Maximum 10 attachments allowed" }
+        require(attachments.size <= MAX_ATTACHMENTS) { "Maximum $MAX_ATTACHMENTS attachments allowed" }
         for (attachment in attachments) {
             require(attachment.name.isNotBlank()) { "Attachment name cannot be blank" }
-            require(attachment.name.length <= 255) { "Attachment name too long: ${attachment.name}" }
+            require(attachment.name.length <= ATTACHMENT_NAME_MAX_LENGTH) {
+                "Attachment name too long: ${attachment.name}"
+            }
             require(attachment.content.isNotBlank()) { "Attachment content cannot be blank" }
             require(attachment.relationship in validRelationships) {
                 "Invalid relationship '${attachment.relationship}', must be one of: $validRelationships"
             }
             try {
                 val decoded = Base64.getDecoder().decode(attachment.content)
-                require(decoded.size <= 10 * 1024 * 1024) {
+                require(decoded.size <= ATTACHMENT_MAX_BYTES) {
                     "Attachment '${attachment.name}' exceeds 10MB limit"
                 }
             } catch (e: IllegalArgumentException) {
@@ -156,7 +164,7 @@ object PdfRenderer {
 
             logger.info("Added ${attachments.size} attachment(s) to PDF")
 
-            return ByteArrayOutputStream(pdfBytes.size + pdfBytes.size / 4).use { outputStream ->
+            return ByteArrayOutputStream(pdfBytes.size + pdfBytes.size / ATTACHMENT_OUTPUT_RESERVE_DIVISOR).use { outputStream ->
                 document.save(outputStream)
                 outputStream.toByteArray()
             }
