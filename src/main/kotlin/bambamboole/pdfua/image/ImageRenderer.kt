@@ -60,6 +60,7 @@ object ImageRenderer {
         val pageProcessor = BufferedImagePageProcessor(imageType, 2.0)
 
         val builder = Java2DRendererBuilder()
+        @Suppress("DEPRECATION") // upstream OpenHTMLToPDF still recommends useFastMode for Java2D rendering
         builder.useFastMode()
         builder.useEnvironmentFonts(false)
 

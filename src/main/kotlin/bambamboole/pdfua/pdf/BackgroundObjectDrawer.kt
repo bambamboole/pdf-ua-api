@@ -32,9 +32,11 @@ object BackgroundObjectDrawer : FSObjectDrawer {
 
     private val logger = LoggerFactory.getLogger(BackgroundObjectDrawer::class.java)
 
-    // Per-document XObject memo. Guarded for concurrent renders of different documents; a single document is rendered on one thread, so check-then-put need not be atomic.
+    // Per-document XObject memo. Guarded for concurrent renders of different documents;
+    // a single document is rendered on one thread, so check-then-put need not be atomic.
     private val cache = WeakHashMap<PDDocument, MutableMap<String, PDXObject>>()
 
+    @Suppress("TooGenericExceptionCaught") // defensive boundary: any draw failure is logged and skipped
     override fun drawObject(
         e: Element,
         x: Double,

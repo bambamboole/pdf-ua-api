@@ -51,6 +51,7 @@ data class TableBlock(
     val rows: List<JsonObject> = emptyList(),
     override val config: TableConfig = TableConfig(),
 ) : Block {
+    @Suppress("MaxLineLength")
     override fun applyData(values: JsonElement): Block = copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
 
     override fun render(): Html {

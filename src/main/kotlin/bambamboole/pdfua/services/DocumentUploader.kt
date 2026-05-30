@@ -26,12 +26,13 @@ sealed interface UploadResult {
  */
 class DocumentUploader(
     private val httpClient: HttpClient,
-    private val timeoutMs: Long = 30_000,
+    private val timeoutMs: Long = DEFAULT_TIMEOUT_MS,
     private val allowedDomains: Set<String> = emptySet(),
     private val validateUrl: (URI, Set<String>) -> Unit = ::validatePublicHttpUrl,
 ) {
     private val logger = LoggerFactory.getLogger(DocumentUploader::class.java)
 
+    @Suppress("TooGenericExceptionCaught") // defensive boundary: any upload failure becomes UploadResult.Failed
     fun upload(
         url: String,
         bytes: ByteArray,
@@ -55,7 +56,7 @@ class DocumentUploader(
                     .build()
 
             val response = httpClient.send(request, HttpResponse.BodyHandlers.discarding())
-            if (response.statusCode() in 200..299) {
+            if (response.statusCode() in HTTP_OK_MIN..HTTP_OK_MAX) {
                 logger.debug("Uploaded document to {} ({} bytes)", uri, bytes.size)
                 UploadResult.Success
             } else {
@@ -68,6 +69,10 @@ class DocumentUploader(
     }
 
     companion object {
+        const val DEFAULT_TIMEOUT_MS: Long = 30_000
+        private const val HTTP_OK_MIN = 200
+        private const val HTTP_OK_MAX = 299
+
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient
                 .newBuilder()

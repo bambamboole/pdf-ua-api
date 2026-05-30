@@ -50,7 +50,11 @@ fun Route.convertAndValidateRoutes(
     )
     @KtorResponds(
         [
-            ResponseEntry("200", ConvertAndValidateResponse::class, description = "Conversion and validation result with base64-encoded PDF"),
+            ResponseEntry(
+                "200",
+                ConvertAndValidateResponse::class,
+                description = "Conversion and validation result with base64-encoded PDF",
+            ),
             ResponseEntry("400", Nothing::class, description = "Invalid request"),
             ResponseEntry("500", Nothing::class, description = "Conversion or validation failed"),
         ],

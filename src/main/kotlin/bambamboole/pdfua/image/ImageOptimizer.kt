@@ -14,7 +14,9 @@ object ImageOptimizer {
 
     private const val MAX_WIDTH_PX = 1240
     private const val JPEG_QUALITY = 0.85f
+    private const val FORMAT_SNIFF_BYTES = 4
 
+    @Suppress("TooGenericExceptionCaught") // defensive boundary: any failure falls back to original bytes
     fun optimizeImage(bytes: ByteArray): ByteArray {
         val format = detectFormat(bytes) ?: return bytes
 
@@ -42,8 +44,9 @@ object ImageOptimizer {
         }
     }
 
+    @Suppress("MagicNumber") // raw byte signatures for format sniffing — well-known constants
     internal fun detectFormat(bytes: ByteArray): String? {
-        if (bytes.size < 4) return null
+        if (bytes.size < FORMAT_SNIFF_BYTES) return null
         return when {
             bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte() -> "jpg"
             bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte() -> "png"
