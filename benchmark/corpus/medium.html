@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Invoice INV-2026-0042</title>
+    <meta name="subject" content="Sample invoice"/>
+    <meta name="author" content="PDF UA API Benchmark"/>
+    <meta name="description" content="A styled invoice with a line-item table"/>
+    <style>
+        body { font-family: 'Liberation Sans', Arial, sans-serif; margin: 40px; color: #222; }
+        h1 { color: #2c3e50; }
+        .meta td { padding: 2px 8px; }
+        table.items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.items th { background: #3498db; color: #fff; padding: 8px; text-align: left; border: 1px solid #2980b9; }
+        table.items td { padding: 8px; border: 1px solid #ccc; }
+        tr.alt td { background: #f4f8fb; }
+        tr.total td { font-weight: bold; border-top: 2px solid #2c3e50; }
+    </style>
+</head>
+<body>
+    <h1>Invoice INV-2026-0042</h1>
+    <table class="meta">
+        <tr><td><strong>Billed To</strong></td><td>Acme Corp</td></tr>
+        <tr><td><strong>Date</strong></td><td>2026-05-30</td></tr>
+        <tr><td><strong>Due</strong></td><td>2026-06-29</td></tr>
+    </table>
+    <table class="items">
+        <thead>
+            <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Consulting services</td><td>10</td><td>$120.00</td><td>$1,200.00</td></tr>
+            <tr class="alt"><td>2</td><td>Design review</td><td>4</td><td>$140.00</td><td>$560.00</td></tr>
+            <tr><td>3</td><td>Implementation</td><td>20</td><td>$110.00</td><td>$2,200.00</td></tr>
+            <tr class="alt"><td>4</td><td>QA testing</td><td>8</td><td>$95.00</td><td>$760.00</td></tr>
+            <tr><td>5</td><td>Documentation</td><td>6</td><td>$90.00</td><td>$540.00</td></tr>
+            <tr class="alt"><td>6</td><td>Project management</td><td>12</td><td>$130.00</td><td>$1,560.00</td></tr>
+            <tr><td>7</td><td>Deployment</td><td>3</td><td>$150.00</td><td>$450.00</td></tr>
+            <tr class="alt"><td>8</td><td>Training</td><td>5</td><td>$100.00</td><td>$500.00</td></tr>
+            <tr><td>9</td><td>Support retainer</td><td>1</td><td>$800.00</td><td>$800.00</td></tr>
+            <tr class="alt"><td>10</td><td>Performance audit</td><td>2</td><td>$200.00</td><td>$400.00</td></tr>
+            <tr><td>11</td><td>Security review</td><td>2</td><td>$220.00</td><td>$440.00</td></tr>
+            <tr class="alt"><td>12</td><td>Accessibility audit</td><td>3</td><td>$180.00</td><td>$540.00</td></tr>
+            <tr class="total"><td colspan="4">Total</td><td>$9,990.00</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>
