@@ -172,11 +172,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
     uploader: DocumentUploader?,
 ) {
     when (result) {
-        is FetchResult.InvalidUrl -> {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
-        }
-
-        is FetchResult.Failed -> {
+        is FetchResult.Failure -> {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
         }
 

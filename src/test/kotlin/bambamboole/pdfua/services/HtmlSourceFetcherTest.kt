@@ -15,7 +15,7 @@ class HtmlSourceFetcherTest {
         HttpClient
             .newBuilder()
             .connectTimeout(Duration.ofSeconds(1))
-            .followRedirects(HttpClient.Redirect.NORMAL)
+            .followRedirects(HttpClient.Redirect.NEVER)
             .build()
 
     // Loopback hosts are blocked by the real SSRF guard, so round-trip tests pass a no-op
@@ -148,25 +148,39 @@ class HtmlSourceFetcherTest {
     }
 
     @Test
-    fun fetchFollowsRedirects() {
-        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
-        server.createContext("/start") { exchange ->
-            exchange.responseHeaders.add("Location", "/final")
-            exchange.sendResponseHeaders(301, -1)
-            exchange.close()
+    fun fetchFailsWhenStreamedBodyExceedsCapWithoutContentLength() {
+        // Server uses chunked encoding (sendResponseHeaders with responseLength=0),
+        // so no Content-Length header is sent. The cap must be enforced by the bounded read.
+        val body = ByteArray(150) { 'x'.code.toByte() }
+        val server =
+            startServer("/page") { exchange ->
+                exchange.responseHeaders.add("Content-Type", "text/html")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { it.write(body) }
+            }
+        try {
+            val result =
+                permissiveFetcher(maxSizeBytes = 100)
+                    .fetch("http://127.0.0.1:${server.address.port}/page")
+            val failed = assertIs<FetchResult.Failed>(result)
+            assertTrue(failed.message.contains("too large"))
+        } finally {
+            server.stop(0)
         }
-        server.createContext("/final") { exchange ->
-            val body = "<html><body>final</body></html>".toByteArray()
-            exchange.responseHeaders.add("Content-Type", "text/html")
-            exchange.sendResponseHeaders(200, body.size.toLong())
-            exchange.responseBody.use { it.write(body) }
-        }
-        server.start()
+    }
+
+    @Test
+    fun fetchDoesNotFollowRedirects() {
+        val server =
+            startServer("/start") { exchange ->
+                exchange.responseHeaders.add("Location", "/final")
+                exchange.sendResponseHeaders(301, -1)
+                exchange.close()
+            }
         try {
             val result = permissiveFetcher().fetch("http://127.0.0.1:${server.address.port}/start")
-            val success = assertIs<FetchResult.Success>(result)
-            assertTrue(success.html.contains("final"))
-            assertTrue(success.finalUrl.endsWith("/final"))
+            val failed = assertIs<FetchResult.Failed>(result)
+            assertTrue(failed.message.contains("301"))
         } finally {
             server.stop(0)
         }

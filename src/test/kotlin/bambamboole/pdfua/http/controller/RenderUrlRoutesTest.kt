@@ -34,7 +34,7 @@ class RenderUrlRoutesTest {
         HttpClient
             .newBuilder()
             .connectTimeout(Duration.ofSeconds(2))
-            .followRedirects(HttpClient.Redirect.NORMAL)
+            .followRedirects(HttpClient.Redirect.NEVER)
             .build()
 
     private fun permissiveFetcher() = HtmlSourceFetcher(httpClient = httpClient(), timeoutMs = 5000, validateUrl = { _, _ -> })

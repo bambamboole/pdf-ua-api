@@ -1,6 +1,7 @@
 package bambamboole.pdfua.services
 
 import org.slf4j.LoggerFactory
+import java.io.InputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -16,17 +17,28 @@ sealed interface FetchResult {
         val finalUrl: String,
     ) : FetchResult
 
+    sealed interface Failure : FetchResult {
+        val message: String
+    }
+
     data class InvalidUrl(
-        val message: String,
-    ) : FetchResult
+        override val message: String,
+    ) : Failure
 
     data class Failed(
-        val message: String,
-    ) : FetchResult
+        override val message: String,
+    ) : Failure
 }
 
 private val HTML_MIME_TYPES = setOf("text/html", "application/xhtml+xml")
 
+/**
+ * Fetches an HTML document from a user-supplied URL. Like [DocumentUploader] it shares the
+ * SSRF guard with [AssetResolver] and follows the same defensive posture: no redirect
+ * following (the post-validation hole on a redirected Location header is closed by
+ * never sending the follow-up request), and the response body is read through a bounded
+ * stream so an unbounded server cannot exhaust memory.
+ */
 class HtmlSourceFetcher(
     private val httpClient: HttpClient,
     private val timeoutMs: Long = DEFAULT_TIMEOUT_MS,
@@ -46,8 +58,8 @@ class HtmlSourceFetcher(
             }
 
         return try {
-            val response = httpClient.send(buildRequest(uri), HttpResponse.BodyHandlers.ofByteArray())
-            evaluateResponse(response) ?: buildSuccess(response)
+            val response = httpClient.send(buildRequest(uri), HttpResponse.BodyHandlers.ofInputStream())
+            readResponse(response)
         } catch (e: Exception) {
             logger.warn("Failed to fetch URL {}: {}", uri, e.message)
             FetchResult.Failed("Failed to fetch URL: ${e.message ?: e.javaClass.simpleName}")
@@ -62,31 +74,24 @@ class HtmlSourceFetcher(
             .GET()
             .build()
 
-    private fun evaluateResponse(response: HttpResponse<ByteArray>): FetchResult.Failed? {
+    private fun readResponse(response: HttpResponse<InputStream>): FetchResult {
         if (response.statusCode() !in HTTP_OK_MIN..HTTP_OK_MAX) {
             return FetchResult.Failed("Failed to fetch URL: HTTP ${response.statusCode()}")
+        }
+        val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
+        val (mimeType, charset) = parseContentType(rawContentType)
+        if (mimeType == null || mimeType !in HTML_MIME_TYPES) {
+            return FetchResult.Failed("URL did not return HTML (Content-Type: ${rawContentType ?: "<none>"})")
         }
         val contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1)
         if (contentLength > maxSizeBytes) {
             return FetchResult.Failed("Failed to fetch URL: response too large ($contentLength bytes)")
         }
-        val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
-        val mimeType = parseContentType(rawContentType).first
-        if (mimeType == null || mimeType !in HTML_MIME_TYPES) {
-            return FetchResult.Failed(
-                "URL did not return HTML (Content-Type: ${rawContentType ?: "<none>"})",
-            )
+        val readLimit = (maxSizeBytes + 1).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        val body = response.body().use { it.readNBytes(readLimit) }
+        if (body.size.toLong() > maxSizeBytes) {
+            return FetchResult.Failed("Failed to fetch URL: response too large (>$maxSizeBytes bytes)")
         }
-        if (response.body().size > maxSizeBytes) {
-            return FetchResult.Failed("Failed to fetch URL: response too large (${response.body().size} bytes)")
-        }
-        return null
-    }
-
-    private fun buildSuccess(response: HttpResponse<ByteArray>): FetchResult.Success {
-        val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
-        val charset = parseContentType(rawContentType).second
-        val body = response.body()
         val html = String(body, charset)
         val finalUrl = response.uri().toString()
         logger.debug("Fetched HTML source: {} ({} bytes)", finalUrl, body.size)
@@ -126,7 +131,7 @@ class HtmlSourceFetcher(
             HttpClient
                 .newBuilder()
                 .connectTimeout(Duration.ofMillis(connectTimeoutMs))
-                .followRedirects(HttpClient.Redirect.NORMAL)
+                .followRedirects(HttpClient.Redirect.NEVER)
                 .build()
     }
 }
