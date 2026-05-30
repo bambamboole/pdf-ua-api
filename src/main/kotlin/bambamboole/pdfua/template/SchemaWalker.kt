@@ -35,11 +35,21 @@ class SchemaWalker {
     /** Final `$defs` map in traversal order. */
     val definitions: Map<String, JsonObject> get() = defs
 
-    /** Walks [descriptor] as the root type, returning the assembled `$def` for the root and all referenced types. */
-    fun walkRoot(descriptor: SerialDescriptor): JsonObject {
-        // We register the root descriptor like any other class so it lives in `$defs` and can self-reference.
-        registerClass(descriptor)
-        return defs[defName(descriptor)] ?: error("Root class not registered: ${descriptor.serialName}")
+    /**
+     * Registers every type transitively reachable from [rootDescriptor]'s elements as a `$def`,
+     * but does *not* register [rootDescriptor] itself. The caller (the orchestrator) builds the
+     * root schema by hand because the root has special structure (`const version: 1`, the
+     * `x-pdfUa` extension, etc.) that the walker doesn't generate.
+     */
+    fun prime(rootDescriptor: SerialDescriptor) {
+        for (i in 0 until rootDescriptor.elementsCount) {
+            val elementDesc = rootDescriptor.getElementDescriptor(i)
+            val elementAnnotations = rootDescriptor.getElementAnnotations(i)
+            if (elementAnnotations.any { it is SchemaIgnore }) continue
+            // Walk for its side-effect on `defs`; the returned JsonObject is the property's inline schema
+            // which the caller doesn't need here (the orchestrator hand-rolls the root's `properties` map).
+            valueSchema(elementDesc, elementAnnotations)
+        }
     }
 
     /**
@@ -266,15 +276,6 @@ class SchemaWalker {
         inProgress += name
 
         val title = titleFor(descriptor)
-        val isPolymorphicSubtype = "type" !in (0 until descriptor.elementsCount).map { descriptor.getElementName(it) }
-
-        // Some sealed subtypes have an auto-injected "type" discriminator already in their descriptor; others don't.
-        // We always inject a const "type" property at the top when this descriptor is a subtype of a sealed parent
-        // — but we can't tell from the descriptor alone. The natural path is: only inject when the descriptor was
-        // visited via `registerSealed` (handled there directly).
-        @Suppress("UNUSED_VARIABLE")
-        val noop = isPolymorphicSubtype
-
         val properties = linkedMapOf<String, JsonObject>()
         val required = mutableListOf<String>()
         for (i in 0 until descriptor.elementsCount) {
