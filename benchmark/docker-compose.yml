@@ -7,6 +7,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      # Disabled so the load test measures raw engine throughput, not the
+      # rate limiter. WeasyPrint has no limiter, so this keeps both unthrottled.
+      RATE_LIMIT_ENABLED: "false"
 
   weasyprint:
     build: ./weasyprint

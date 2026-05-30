@@ -31,4 +31,7 @@ Results are written to `results/latest.json`, which the docs page renders.
 
 - Both engines run as single-worker HTTP services in Docker on the same host.
 - Identical HTML input per document; corpus uses only CSS both engines support.
+- pdf-ua-api's rate limiter is disabled (`RATE_LIMIT_ENABLED=false`) so the load
+  test measures raw engine throughput; WeasyPrint has no limiter, so both run
+  unthrottled.
 - Numbers reflect one machine and one run — re-run locally to reproduce.
