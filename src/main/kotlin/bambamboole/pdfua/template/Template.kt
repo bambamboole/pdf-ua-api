@@ -15,6 +15,7 @@ data class Template(
 )
 
 @Serializable
+@SchemaTsType("{ page?: PageConfig; typography?: TypographyConfig }")
 data class TemplateConfig(
     val page: PageConfig = PageConfig(),
     val typography: TypographyConfig = TypographyConfig(),
@@ -26,9 +27,13 @@ data class Row(
 )
 
 @Serializable
+@SchemaTsType(
+    "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; " +
+        "background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
+)
 data class PageConfig(
     val size: PageSize = PresetPageSize(),
-    val locale: String = "de_DE",
+    @SchemaStringDefault("de_DE") val locale: String = "de_DE",
     val margins: SpacingConfig = SpacingConfig(SIDE_MARGIN_MM, SIDE_MARGIN_MM, SIDE_MARGIN_MM, BOTTOM_MARGIN_MM),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),
     val background: PageBackgroundConfig? = null,
@@ -42,7 +47,7 @@ data class PageConfig(
 
 @Serializable
 data class PageNumbersConfig(
-    val enabled: Boolean = false,
+    @SchemaBoolDefault(false) val enabled: Boolean = false,
     val position: Align = Align.CENTER,
 )
 
@@ -60,30 +65,42 @@ enum class PageBackgroundType {
 
 @Serializable
 data class PageBackgroundConfig(
+    @SchemaDescription("HTTP, HTTPS, or base64 data URI for an image or PDF page background.")
+    @SchemaMinLength(1)
     val src: String,
     val type: PageBackgroundType = PageBackgroundType.AUTO,
 )
 
 @Serializable
+@SchemaTsType("{ repeat?: boolean; rows?: Row[] }")
 data class PageFooterConfig(
-    val repeat: Boolean = true,
+    @SchemaBoolDefault(true) val repeat: Boolean = true,
     val rows: List<Row> = emptyList(),
 )
 
 @Serializable
 data class TypographyConfig(
+    @SchemaDescription("Bundled or external font family key.")
     val family: String? = null,
+    @SchemaDescription("Font size in points.") @SchemaMin(1)
     val size: Int? = null,
+    @SchemaDescription("Font weight; one of the FontWeight enum values.")
     val weight: FontWeight? = null,
+    @SchemaDescription("Text alignment for this typography scope.")
     val align: Align? = null,
+    @SchemaDescription("CSS color value used for text.")
     val color: String? = null,
 )
 
 @Serializable
 data class SpacingConfig(
+    @SchemaDescription("Top spacing in millimetres.") @SchemaMin(0)
     val top: Int? = null,
+    @SchemaDescription("Right spacing in millimetres.") @SchemaMin(0)
     val right: Int? = null,
+    @SchemaDescription("Bottom spacing in millimetres.") @SchemaMin(0)
     val bottom: Int? = null,
+    @SchemaDescription("Left spacing in millimetres.") @SchemaMin(0)
     val left: Int? = null,
 )
 
@@ -95,10 +112,14 @@ interface BlockConfig {
 }
 
 @Serializable
+@SerialName("BlockConfig")
+@SchemaTsType("{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }")
 data class BaseBlockConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
 ) : BlockConfig
 

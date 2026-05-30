@@ -27,19 +27,27 @@ enum class TableStyle {
 
 @Serializable
 data class TableColumn(
+    @SchemaPattern("^[A-Za-z][A-Za-z0-9_]*$")
+    @SchemaDescription("Runtime data key used for this table column.")
     val key: String,
+    @SchemaDescription("Header label rendered for this table column.")
     val label: String,
+    @SchemaDescription("Text alignment for this table column.")
     val align: Align? = null,
+    @SchemaDescription("Column width as a CSS width value, such as 20mm or 15%.")
     val width: String? = null,
 )
 
 @Serializable
+@SchemaTsType("BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }")
 data class TableConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
-    val numberRows: Boolean = false,
+    @SchemaBoolDefault(false) val numberRows: Boolean = false,
     val columns: List<TableColumn> = emptyList(),
     val style: TableStyle = TableStyle.STRIPED,
 ) : BlockConfig
@@ -47,8 +55,10 @@ data class TableConfig(
 @Serializable
 @SerialName("table")
 data class TableBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    val rows: List<JsonObject> = emptyList(),
+    // Runtime row data; supplied via the data-override channel, not by the static template payload.
+    @SchemaIgnore val rows: List<JsonObject> = emptyList(),
     override val config: TableConfig = TableConfig(),
 ) : Block {
     @Suppress("MaxLineLength")

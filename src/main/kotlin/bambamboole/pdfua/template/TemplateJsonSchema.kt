@@ -2,62 +2,163 @@ package bambamboole.pdfua.template
 
 import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.fonts.FontWeight
-import kotlinx.schema.json.AdditionalPropertiesConstraint
-import kotlinx.schema.json.AdditionalPropertiesSchema
-import kotlinx.schema.json.JsonSchema
-import kotlinx.schema.json.ObjectPropertyDefinition
-import kotlinx.schema.json.PropertyDefinition
-import kotlinx.schema.json.encodeToJsonObject
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.serializer
 
-private const val KEY_VALUE_FIELD_KEY_PATTERN = "^[A-Za-z][A-Za-z0-9_]*$"
-
-private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
-
-private val definitionTsTypes =
-    mapOf(
-        "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
-        "headingConfig" to "BlockConfig & { level?: number }",
-        "imageConfig" to "BlockConfig & { maxHeight?: number }",
-        "keyValueField" to "{ key: string; label: string }",
-        "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
-        "spacerConfig" to "BlockConfig & { height?: number }",
-        "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
-        "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
-        "pageFooterConfig" to "{ repeat?: boolean; rows?: Row[] }",
-        "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
-            "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
-        "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
-    )
-
+/**
+ * Generates the JSON Schema served at `/schema` for [Template].
+ *
+ * The schema definitions (`$defs`) are derived directly from the `@Serializable` data classes
+ * via [SchemaWalker], driven by `@Schema*` annotations placed on the data class properties
+ * (see [SchemaAnnotations.kt]). Things the walker cannot derive — the schema root identity
+ * (`$schema`, `$id`, `title`), the const `version: 1`, the `x-pdfUa` runtime-metadata block,
+ * and the legacy `tsType` extension on a handful of `$defs` — live here.
+ */
 object TemplateJsonSchema {
     private const val TEMPLATE_VERSION = 1
     private const val RENDER_ENDPOINT = "/render/template"
 
-    fun current(): JsonObject =
-        JsonSchema(
-            schema = "https://json-schema.org/draft/2020-12/schema",
-            id = "https://pdf-ua-api.com/schemas/template-v1.json",
-            title = "Template",
-            type = listOf("object"),
-            required = listOf("version"),
-            additionalProperties = AdditionalPropertiesConstraint.deny(),
-            properties =
-                mapOf(
-                    "version" to constInteger(TEMPLATE_VERSION),
-                    "config" to ref("templateConfig"),
-                    "fonts" to fontsProperty(),
-                    "attachments" to arrayOf(ref("fileAttachment")),
-                    "rows" to arrayOf(ref("row")),
-                ),
-            defs = definitions(),
-        ).encodeToJsonObject()
-            .withRootExtension("x-pdfUa", pdfUaMetadata())
-            .withDefinitionExtensions(definitionTsTypes)
+    /** TypeScript type aliases attached to specific `$defs` via the `tsType` extension. */
+    private val definitionTsTypes =
+        mapOf(
+            "blockConfig" to "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }",
+            "headingConfig" to "BlockConfig & { level?: number }",
+            "imageConfig" to "BlockConfig & { maxHeight?: number }",
+            "keyValueField" to "{ key: string; label: string }",
+            "keyValueConfig" to "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }",
+            "spacerConfig" to "BlockConfig & { height?: number }",
+            "dividerConfig" to "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }",
+            "tableConfig" to "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }",
+            "pageFooterConfig" to "{ repeat?: boolean; rows?: Row[] }",
+            "pageConfig" to "{ size?: PageSize; locale?: string; margins?: SpacingConfig; " +
+                "pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
+            "templateConfig" to "{ page?: PageConfig; typography?: TypographyConfig }",
+        )
+
+    private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
+
+    fun current(): JsonObject {
+        val walker = SchemaWalker()
+        walker.walkRoot(serializer<Template>().descriptor)
+        val rawDefs = walker.definitions.toMutableMap()
+
+        // Post-process: enforce the documented `block` oneOf order (which is a UX-meaningful sequence
+        // — text first, containers last — not the alphabetic order kotlinx.serialization produces).
+        rawDefs["block"] =
+            buildJsonObject {
+                put(
+                    "oneOf",
+                    buildJsonArray {
+                        blockOrder.forEach { discriminator ->
+                            val defName = kebabToCamel(discriminator) + "Block"
+                            add(buildJsonObject { put("\$ref", "#/\$defs/$defName") })
+                        }
+                    },
+                )
+            }
+        // Register `fontWeight` as a top-level enum $def for SDK consumers that key off it,
+        // even though the typographyConfig.weight field inlines the nullable enum directly.
+        rawDefs["fontWeight"] = fontWeightDef()
+
+        val defs = applyTsTypeOverrides(rawDefs, definitionTsTypes)
+        return buildJsonObject {
+            put("\$schema", "https://json-schema.org/draft/2020-12/schema")
+            put("\$id", "https://pdf-ua-api.com/schemas/template-v1.json")
+            put("title", "Template")
+            put("type", "object")
+            put(
+                "properties",
+                buildJsonObject {
+                    put(
+                        "version",
+                        buildJsonObject {
+                            put("type", "integer")
+                            put("const", TEMPLATE_VERSION)
+                        },
+                    )
+                    put("config", refTo("templateConfig"))
+                    put(
+                        "fonts",
+                        buildJsonObject {
+                            put("type", "object")
+                            put("description", "External fonts keyed by font family name.")
+                            put("additionalProperties", refTo("fontFace"))
+                        },
+                    )
+                    put(
+                        "attachments",
+                        buildJsonObject {
+                            put("type", "array")
+                            put("items", refTo("fileAttachment"))
+                        },
+                    )
+                    put(
+                        "rows",
+                        buildJsonObject {
+                            put("type", "array")
+                            put("items", refTo("row"))
+                        },
+                    )
+                },
+            )
+            put("additionalProperties", false)
+            put("required", buildJsonArray { add("version") })
+            put("\$defs", JsonObject(defs.filterKeys { it != "template" }))
+            put("x-pdfUa", pdfUaMetadata())
+        }
+    }
+
+    private fun kebabToCamel(value: String): String =
+        value
+            .split('-')
+            .mapIndexed { index, segment ->
+                if (index == 0) segment else segment.replaceFirstChar { it.uppercase() }
+            }.joinToString("")
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun fontWeightDef(): JsonObject {
+        val descriptor = FontWeight.serializer().descriptor
+        return buildJsonObject {
+            put("type", "string")
+            put("title", "FontWeight")
+            put(
+                "enum",
+                buildJsonArray {
+                    for (i in 0 until descriptor.elementsCount) add(descriptor.getElementName(i))
+                },
+            )
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun pageFormatSerialName(format: PageFormat): String = PageFormat.serializer().descriptor.getElementName(format.ordinal)
+
+    private fun applyTsTypeOverrides(
+        defs: Map<String, JsonObject>,
+        tsTypes: Map<String, String>,
+    ): Map<String, JsonObject> {
+        if (tsTypes.isEmpty()) return defs
+        val result = linkedMapOf<String, JsonObject>()
+        for ((name, def) in defs) {
+            val ts = tsTypes[name]
+            if (ts == null) {
+                result[name] = def
+            } else {
+                result[name] =
+                    buildJsonObject {
+                        def.forEach { (k, v) -> put(k, v) }
+                        put("tsType", ts)
+                    }
+            }
+        }
+        return result
+    }
 
     private fun pdfUaMetadata(): JsonObject =
         buildJsonObject {
@@ -77,13 +178,13 @@ object TemplateJsonSchema {
                 BundledFonts.families.sorted().forEach(::add)
             }
             putJsonArray("blockOrder") {
-                blockOrder.forEach(::add)
+                listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table").forEach(::add)
             }
             putJsonArray("pageFormats") {
                 PageFormat.entries.forEach { format ->
                     add(
                         buildJsonObject {
-                            put("name", format.serializedName())
+                            put("name", pageFormatSerialName(format))
                             put("widthMm", format.widthMm)
                             put("heightMm", format.heightMm)
                         },
@@ -92,269 +193,8 @@ object TemplateJsonSchema {
             }
         }
 
-    private fun definitions(): Map<String, PropertyDefinition> {
-        val result = linkedMapOf<String, PropertyDefinition>()
-        result += enumDefinitions()
-        result += configDefinitions()
-        result += blockDefinitions()
-        result += pageDefinitions()
-        return result
-    }
-
-    private fun enumDefinitions(): Map<String, PropertyDefinition> =
-        linkedMapOf(
-            "align" to stringEnum("Align", Align.entries.map { it.serializedName() }),
-            "pageFormat" to stringEnum("PageFormat", PageFormat.entries.map { it.serializedName() }),
-            "orientation" to stringEnum("Orientation", Orientation.entries.map { it.serializedName() }),
-            "dividerStyle" to stringEnum("DividerStyle", DividerStyle.entries.map { it.serializedName() }),
-            "tableStyle" to stringEnum("TableStyle", TableStyle.entries.map { it.serializedName() }),
-            "fontWeight" to stringEnum("FontWeight", FontWeight.entries.map { it.serializedName() }),
-            "pageBackgroundType" to stringEnum("PageBackgroundType", PageBackgroundType.entries.map { it.serializedName() }),
-        )
-
-    private fun configDefinitions(): Map<String, PropertyDefinition> =
-        linkedMapOf(
-            "typographyConfig" to typographyConfig(),
-            "spacingConfig" to spacingConfig(),
-            "blockConfig" to blockConfig(),
-            "headingConfig" to extendedBlockConfig("HeadingConfig", "level" to int(min = 1, max = 6, default = 2)),
-            "imageConfig" to extendedBlockConfig("ImageConfig", "maxHeight" to int(min = 1, default = 60)),
-            "keyValueField" to keyValueField(),
-            "keyValueConfig" to
-                extendedBlockConfig(
-                    "KeyValueConfig",
-                    "labelWidth" to string(default = "30mm"),
-                    "fields" to arrayOf(ref("keyValueField")),
-                ),
-            "spacerConfig" to extendedBlockConfig("SpacerConfig", "height" to int(min = 0, default = 5)),
-            "dividerConfig" to
-                extendedBlockConfig(
-                    "DividerConfig",
-                    "thickness" to int(min = 0, default = 1),
-                    "lineColor" to string(pattern = "^#[0-9A-Fa-f]{3,8}$", default = "#d1d5db"),
-                    "style" to ref("dividerStyle"),
-                ),
-            "tableColumn" to tableColumn(),
-            "tableConfig" to
-                extendedBlockConfig(
-                    "TableConfig",
-                    "numberRows" to boolean(default = false),
-                    "columns" to arrayOf(ref("tableColumn")),
-                    "style" to ref("tableStyle"),
-                ),
-        )
-
-    private fun blockDefinitions(): Map<String, PropertyDefinition> =
-        linkedMapOf(
-            "textBlock" to block("TextBlock", "text", listOf("text"), "blockConfig", "text" to string()),
-            "htmlBlock" to block("HtmlBlock", "html", listOf("html"), "blockConfig", "html" to string()),
-            "headingBlock" to block("HeadingBlock", "heading", listOf("text"), "headingConfig", "text" to string()),
-            "imageBlock" to
-                block(
-                    "ImageBlock",
-                    "image",
-                    listOf("src"),
-                    "imageConfig",
-                    "src" to string(description = "Public image URL, SVG markup, or uploaded image data URL."),
-                    "alt" to string(default = "", description = "Alternative text for screen readers and PDF accessibility."),
-                ),
-            "keyValueBlock" to
-                block(
-                    "KeyValueBlock",
-                    "key-value",
-                    emptyList(),
-                    "keyValueConfig",
-                    "values" to keyValueValues(),
-                ),
-            "spacerBlock" to block("SpacerBlock", "spacer", emptyList(), "spacerConfig"),
-            "dividerBlock" to block("DividerBlock", "divider", emptyList(), "dividerConfig"),
-            "tableBlock" to block("TableBlock", "table", emptyList(), "tableConfig"),
-            "block" to oneOf(blockOrder.map { ref("${it.camelCase()}Block") }),
-        )
-
-    private fun pageDefinitions(): Map<String, PropertyDefinition> =
-        linkedMapOf(
-            "row" to row(),
-            "presetPageSize" to presetPageSize(),
-            "customPageSize" to customPageSize(),
-            "pageSize" to oneOf(listOf(ref("presetPageSize"), ref("customPageSize")), title = "PageSize"),
-            "pageNumbersConfig" to pageNumbersConfig(),
-            "pageBackgroundConfig" to pageBackgroundConfig(),
-            "pageFooterConfig" to pageFooterConfig(),
-            "pageConfig" to pageConfig(),
-            "templateConfig" to templateConfig(),
-            "fontFace" to fontFace(),
-            "fileAttachment" to fileAttachment(),
-        )
+    private fun refTo(defName: String): JsonObject =
+        buildJsonObject {
+            put("\$ref", "#/\$defs/$defName")
+        }
 }
-
-// Schema section builders ---------------------------------------------------
-
-private fun typographyConfig(): PropertyDefinition =
-    schemaObject("TypographyConfig") {
-        "family" to nullableString(description = "Bundled or external font family key.")
-        "size" to nullableInt(min = 1, description = "Font size in points.")
-        "weight" to
-            nullableEnum(
-                FontWeight.entries.map { it.serializedName() },
-                description = "Font weight; one of the FontWeight enum values.",
-            )
-        "align" to nullableEnum(Align.entries.map { it.serializedName() }, description = "Text alignment for this typography scope.")
-        "color" to nullableString(description = "CSS color value used for text.")
-    }
-
-private fun spacingConfig(): PropertyDefinition =
-    schemaObject("SpacingConfig") {
-        "top" to nullableInt(min = 0, description = "Top spacing in millimetres.")
-        "right" to nullableInt(min = 0, description = "Right spacing in millimetres.")
-        "bottom" to nullableInt(min = 0, description = "Bottom spacing in millimetres.")
-        "left" to nullableInt(min = 0, description = "Left spacing in millimetres.")
-    }
-
-private fun blockConfig(): PropertyDefinition = schemaObject("BlockConfig", baseBlockConfigProperties())
-
-private fun extendedBlockConfig(
-    title: String,
-    vararg properties: Pair<String, PropertyDefinition>,
-): PropertyDefinition = schemaObject(title, baseBlockConfigProperties() + properties)
-
-private fun keyValueField(): PropertyDefinition =
-    schemaObject("KeyValueField", required = listOf("key", "label")) {
-        "key" to string(pattern = KEY_VALUE_FIELD_KEY_PATTERN)
-        "label" to string()
-    }
-
-private fun keyValueValues(): PropertyDefinition =
-    ObjectPropertyDefinition(
-        title = "KeyValueValues",
-        propertyNames = string(pattern = KEY_VALUE_FIELD_KEY_PATTERN),
-        additionalProperties = AdditionalPropertiesSchema(nullableStringValue()),
-    )
-
-private fun baseBlockConfigProperties(): Map<String, PropertyDefinition> =
-    linkedMapOf(
-        "typography" to nullableRef("typographyConfig"),
-        "spacing" to nullableRef("spacingConfig"),
-        "width" to nullableString(description = "CSS width for this block, such as 50%, 80mm, or auto."),
-        "align" to
-            nullableEnum(
-                Align.entries.map { it.serializedName() },
-                description = "Horizontal placement of this block within its row cell.",
-            ),
-    )
-
-private fun block(
-    title: String,
-    type: String,
-    requiredFields: List<String>,
-    configDefinition: String,
-    vararg fields: Pair<String, PropertyDefinition>,
-): PropertyDefinition =
-    schemaObject(
-        title,
-        required = listOf("type") + requiredFields,
-        properties =
-            linkedMapOf(
-                "type" to constString(type),
-                "id" to nullableString(description = "Stable block identifier used for runtime data overrides."),
-                *fields,
-                "config" to ref(configDefinition),
-            ),
-    )
-
-private fun tableColumn(): PropertyDefinition =
-    schemaObject("TableColumn", required = listOf("key", "label")) {
-        "key" to
-            string(
-                pattern = "^[A-Za-z][A-Za-z0-9_]*$",
-                description = "Runtime data key used for this table column.",
-            )
-        "label" to string(description = "Header label rendered for this table column.")
-        "align" to
-            nullableEnum(
-                Align.entries.map { it.serializedName() },
-                description = "Text alignment for this table column.",
-            )
-        "width" to nullableString(description = "Column width as a CSS width value, such as 20mm or 15%.")
-    }
-
-private fun row(): PropertyDefinition =
-    schemaObject("Row", required = listOf("blocks")) {
-        "blocks" to arrayOf(ref("block"))
-    }
-
-private fun presetPageSize(): PropertyDefinition =
-    schemaObject("PresetPageSize") {
-        "format" to ref("pageFormat")
-        "orientation" to ref("orientation")
-    }
-
-private fun customPageSize(): PropertyDefinition =
-    schemaObject("CustomPageSize", required = listOf("width", "height")) {
-        "width" to int(min = 1)
-        "height" to int(min = 1)
-    }
-
-private fun pageNumbersConfig(): PropertyDefinition =
-    schemaObject("PageNumbersConfig") {
-        "enabled" to boolean(default = false)
-        "position" to ref("align")
-    }
-
-private fun pageBackgroundConfig(): PropertyDefinition =
-    schemaObject("PageBackgroundConfig", required = listOf("src")) {
-        "src" to
-            string(
-                minLength = 1,
-                description = "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
-            )
-        "type" to ref("pageBackgroundType")
-    }
-
-private fun pageFooterConfig(): PropertyDefinition =
-    schemaObject("PageFooterConfig") {
-        "repeat" to boolean(default = true)
-        "rows" to arrayOf(ref("row"))
-    }
-
-private fun pageConfig(): PropertyDefinition =
-    schemaObject("PageConfig") {
-        "size" to ref("pageSize")
-        "locale" to string(default = "de_DE")
-        "margins" to ref("spacingConfig")
-        "pageNumbers" to ref("pageNumbersConfig")
-        "background" to nullableRef("pageBackgroundConfig")
-        "footer" to ref("pageFooterConfig")
-    }
-
-private fun templateConfig(): PropertyDefinition =
-    schemaObject("TemplateConfig") {
-        "page" to ref("pageConfig")
-        "typography" to ref("typographyConfig")
-    }
-
-private fun fontFace(): PropertyDefinition =
-    schemaObject("FontFace", required = listOf("src")) {
-        "src" to string()
-        "weight" to
-            string(
-                default = "400",
-                description = "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
-            )
-        "style" to string(default = "normal")
-    }
-
-private fun fileAttachment(): PropertyDefinition =
-    schemaObject("FileAttachment", required = listOf("name", "content")) {
-        "name" to string()
-        "content" to string(description = "Base64-encoded file content.")
-        "mimeType" to string(default = "application/octet-stream")
-        "description" to nullableString()
-        "relationship" to string(default = "Alternative")
-    }
-
-private fun fontsProperty(): PropertyDefinition =
-    ObjectPropertyDefinition(
-        description = "External fonts keyed by font family name.",
-        additionalProperties = AdditionalPropertiesSchema(ref("fontFace")),
-    )
