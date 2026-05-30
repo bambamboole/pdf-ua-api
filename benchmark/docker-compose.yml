@@ -1,0 +1,33 @@
+name: benchmark
+
+services:
+  pdf-ua-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+
+  weasyprint:
+    build: ./weasyprint
+    ports:
+      - "8081:8080"
+
+  runner:
+    build: ./runner
+    profiles: ["run"]
+    depends_on:
+      pdf-ua-api:
+        condition: service_healthy
+      weasyprint:
+        condition: service_healthy
+    environment:
+      PDF_UA_API: "http://pdf-ua-api:8080"
+      WEASYPRINT: "http://weasyprint:8080"
+      CONCURRENCY: "${CONCURRENCY:-20}"
+      DURATION: "${DURATION:-30s}"
+      WARMUP: "${WARMUP:-50}"
+      RUN_DATE: "${RUN_DATE:-unknown}"
+    volumes:
+      - ./corpus:/corpus:ro
+      - ./results:/results
