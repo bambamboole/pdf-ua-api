@@ -94,7 +94,6 @@ dependencies {
 
     // Kotlinx Serialization
     implementation(libs.kotlinxSerialization)
-    implementation(libs.kotlinxSchemaJson)
 
     // OpenHTMLToPDF
     implementation(libs.openhtmltopdfCore)

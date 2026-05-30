@@ -11,25 +11,32 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
+@SchemaTsType("{ key: string; label: string }")
 data class KeyValueField(
-    val key: String,
+    @SchemaPattern("^[A-Za-z][A-Za-z0-9_]*$") val key: String,
     val label: String,
 )
 
 @Serializable
+@SchemaTsType("BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }")
 data class KeyValueConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
-    val labelWidth: String = "30mm",
+    @SchemaStringDefault("30mm") val labelWidth: String = "30mm",
     val fields: List<KeyValueField> = emptyList(),
 ) : BlockConfig
 
 @Serializable
 @SerialName("key-value")
 data class KeyValueBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
+    @SchemaTitle("KeyValueValues")
+    @SchemaPropertyNames(pattern = "^[A-Za-z][A-Za-z0-9_]*$")
     val values: Map<String, String?> = emptyMap(),
     override val config: KeyValueConfig = KeyValueConfig(),
 ) : Block {

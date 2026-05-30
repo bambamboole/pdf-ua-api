@@ -9,17 +9,21 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+@SchemaTsType("BlockConfig & { height?: number }")
 data class SpacerConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
-    val height: Int = 5,
+    @SchemaMin(0) @SchemaIntDefault(5) val height: Int = 5,
 ) : BlockConfig
 
 @Serializable
 @SerialName("spacer")
 data class SpacerBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     override val config: SpacerConfig = SpacerConfig(),
 ) : Block {

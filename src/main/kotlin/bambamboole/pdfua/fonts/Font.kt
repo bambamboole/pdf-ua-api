@@ -1,5 +1,7 @@
 package bambamboole.pdfua.fonts
 
+import bambamboole.pdfua.template.SchemaDescription
+import bambamboole.pdfua.template.SchemaStringDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -7,7 +9,10 @@ import kotlinx.serialization.Serializable
 data class FontFace(
     val src: String,
     /** One or more whitespace-separated [FontWeight] values, e.g. "400" or "400 700". */
+    @SchemaDescription("One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".")
+    @SchemaStringDefault("400")
     val weight: String = "400",
+    @SchemaStringDefault("normal")
     val style: String = "normal",
 )
 
