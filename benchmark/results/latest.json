@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "date": "2026-05-30",
+    "concurrency": 20,
+    "duration": "30s",
+    "warmupRequests": 50,
+    "weasyprintVersion": "63.1"
+  },
+  "results": [
+    {
+      "doc": "small",
+      "engine": "pdf-ua-api",
+      "reqPerSec": 347.00868632423584,
+      "successRate": 1.0,
+      "p50Ms": 48,
+      "p90Ms": 86,
+      "p99Ms": 250,
+      "compliant": true,
+      "pdfA": true,
+      "pdfUa": true,
+      "errorCount": 0,
+      "sizeBytes": 23945
+    },
+    {
+      "doc": "small",
+      "engine": "weasyprint",
+      "reqPerSec": 20.730893900715817,
+      "successRate": 1.0,
+      "p50Ms": 985,
+      "p90Ms": 1351,
+      "p99Ms": 3036,
+      "compliant": false,
+      "pdfA": false,
+      "pdfUa": true,
+      "errorCount": 12,
+      "sizeBytes": 7557
+    },
+    {
+      "doc": "medium",
+      "engine": "pdf-ua-api",
+      "reqPerSec": 315.9166922522558,
+      "successRate": 1.0,
+      "p50Ms": 58,
+      "p90Ms": 83,
+      "p99Ms": 167,
+      "compliant": true,
+      "pdfA": true,
+      "pdfUa": true,
+      "errorCount": 0,
+      "sizeBytes": 41338
+    },
+    {
+      "doc": "medium",
+      "engine": "weasyprint",
+      "reqPerSec": 11.065372534832989,
+      "successRate": 1.0,
+      "p50Ms": 1829,
+      "p90Ms": 2209,
+      "p99Ms": 8107,
+      "compliant": false,
+      "pdfA": false,
+      "pdfUa": false,
+      "errorCount": 105,
+      "sizeBytes": 14442
+    },
+    {
+      "doc": "large",
+      "engine": "pdf-ua-api",
+      "reqPerSec": 12.828286970454736,
+      "successRate": 1.0,
+      "p50Ms": 1511,
+      "p90Ms": 1931,
+      "p99Ms": 2369,
+      "compliant": true,
+      "pdfA": true,
+      "pdfUa": true,
+      "errorCount": 0,
+      "sizeBytes": 517652
+    },
+    {
+      "doc": "large",
+      "engine": "weasyprint",
+      "reqPerSec": 1.1998191889679632,
+      "successRate": 1.0,
+      "p50Ms": 16326,
+      "p90Ms": 26897,
+      "p99Ms": 28640,
+      "compliant": false,
+      "pdfA": false,
+      "pdfUa": false,
+      "errorCount": 6,
+      "sizeBytes": 169347
+    }
+  ]
+}
