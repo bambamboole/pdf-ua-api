@@ -14,6 +14,7 @@ import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
+import bambamboole.pdfua.services.HtmlSourceFetcher
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.server.application.*
@@ -72,6 +73,14 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
             null
         }
 
+    val htmlSourceFetcher =
+        HtmlSourceFetcher(
+            httpClient = HtmlSourceFetcher.createHttpClient(config.assetTimeoutMs),
+            timeoutMs = config.assetTimeoutMs,
+            maxSizeBytes = config.assetMaxSizeBytes,
+            allowedDomains = config.assetAllowedDomains,
+        )
+
     val resolvedJwkProvider: JwkProvider? =
         config.jwt?.let { jwkProvider ?: buildJwkProvider(it.jwksUrl) }
 
@@ -79,6 +88,7 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
         provide<AppConfig> { config }
         provide<AssetResolver> { assetResolver }
         provide<DocumentUploader?> { documentUploader }
+        provide<HtmlSourceFetcher> { htmlSourceFetcher }
         provide<JwkProvider?> { resolvedJwkProvider }
     }
 }
