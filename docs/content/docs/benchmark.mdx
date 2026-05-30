@@ -47,9 +47,13 @@ mode.
 - **Accessibility.** Every pdf-ua-api output passes both PDF/A-3a and PDF/UA-1
   validation. WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
   document but is flagged as non-compliant on the more complex ones.
-- **File size.** pdf-ua-api produces larger files. This is the cost of PDF/A-3a:
-  fonts are fully embedded so the document renders identically anywhere, forever.
-  It is a deliberate trade-off for archival accessibility, not an oversight.
+- **File size.** pdf-ua-api produces larger files — but not because WeasyPrint
+  skips font embedding. Both engines embed the same subsetted *Liberation Sans*.
+  The difference is what pdf-ua-api packs into a single PDF/A-3a file: an ICC
+  color profile, a PDF/A output intent, **and** a full accessibility tag tree.
+  WeasyPrint 63.1 can produce either an archival file (`pdf/a-3b`, with the ICC
+  profile) **or** an accessible one (`pdf/ua-1`, tagged) — not both at once. The
+  extra bytes are the cost of combined archival accessibility, not overhead.
 
 ## Methodology
 
@@ -59,10 +63,12 @@ does not skew results — disclosed, not hidden. pdf-ua-api's rate limiter is
 disabled for the run so the load test measures raw engine throughput (WeasyPrint
 has no limiter, so both run unthrottled).
 
-Throughput and latency come from [`oha`](https://github.com/hatoo/oha). Every
-output PDF — from **both** engines — is validated by pdf-ua-api's own veraPDF
-`/validate` endpoint against PDF/A-3a + PDF/UA-1, so both are judged by the same
-validator. File size is the output PDF byte length.
+Both containers ship Liberation Sans, so the engines embed the same typeface and
+file size isn't skewed by font choice. Throughput and latency come from
+[`oha`](https://github.com/hatoo/oha). Every output PDF — from **both** engines —
+is validated by pdf-ua-api's own veraPDF `/validate` endpoint against PDF/A-3a +
+PDF/UA-1, so both are judged by the same validator. File size is the output PDF
+byte length.
 
 Numbers reflect a single machine and a single run. Re-run them yourself.
 

@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libfontconfig1 \
-    libgdk-pixbuf-2.0-0 fonts-dejavu-core curl \
+    libgdk-pixbuf-2.0-0 fonts-liberation fonts-dejavu-core curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

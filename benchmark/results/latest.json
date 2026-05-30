@@ -1,6 +1,6 @@
 {
   "meta": {
-    "date": "2026-05-30",
+    "date": "2026-05-31",
     "concurrency": 20,
     "duration": "30s",
     "warmupRequests": 50,
@@ -10,86 +10,86 @@
     {
       "doc": "small",
       "engine": "pdf-ua-api",
-      "reqPerSec": 347.00868632423584,
+      "reqPerSec": 326.581808967661,
       "successRate": 1.0,
-      "p50Ms": 48,
-      "p90Ms": 86,
-      "p99Ms": 250,
+      "p50Ms": 56,
+      "p90Ms": 87,
+      "p99Ms": 149,
       "compliant": true,
       "pdfA": true,
       "pdfUa": true,
       "errorCount": 0,
-      "sizeBytes": 23945
+      "sizeBytes": 23946
     },
     {
       "doc": "small",
       "engine": "weasyprint",
-      "reqPerSec": 20.730893900715817,
+      "reqPerSec": 37.76167943005671,
       "successRate": 1.0,
-      "p50Ms": 985,
-      "p90Ms": 1351,
-      "p99Ms": 3036,
+      "p50Ms": 529,
+      "p90Ms": 714,
+      "p99Ms": 895,
       "compliant": false,
       "pdfA": false,
       "pdfUa": true,
-      "errorCount": 12,
-      "sizeBytes": 7557
+      "errorCount": 11,
+      "sizeBytes": 7805
     },
     {
       "doc": "medium",
       "engine": "pdf-ua-api",
-      "reqPerSec": 315.9166922522558,
+      "reqPerSec": 204.98192181752228,
       "successRate": 1.0,
-      "p50Ms": 58,
-      "p90Ms": 83,
-      "p99Ms": 167,
+      "p50Ms": 92,
+      "p90Ms": 138,
+      "p99Ms": 224,
       "compliant": true,
       "pdfA": true,
       "pdfUa": true,
       "errorCount": 0,
-      "sizeBytes": 41338
+      "sizeBytes": 41337
     },
     {
       "doc": "medium",
       "engine": "weasyprint",
-      "reqPerSec": 11.065372534832989,
+      "reqPerSec": 14.532767509718855,
       "successRate": 1.0,
-      "p50Ms": 1829,
-      "p90Ms": 2209,
-      "p99Ms": 8107,
+      "p50Ms": 1381,
+      "p90Ms": 1924,
+      "p99Ms": 5180,
       "compliant": false,
       "pdfA": false,
       "pdfUa": false,
       "errorCount": 105,
-      "sizeBytes": 14442
+      "sizeBytes": 14871
     },
     {
       "doc": "large",
       "engine": "pdf-ua-api",
-      "reqPerSec": 12.828286970454736,
+      "reqPerSec": 9.398636749669613,
       "successRate": 1.0,
-      "p50Ms": 1511,
-      "p90Ms": 1931,
-      "p99Ms": 2369,
+      "p50Ms": 2018,
+      "p90Ms": 3003,
+      "p99Ms": 3796,
       "compliant": true,
       "pdfA": true,
       "pdfUa": true,
       "errorCount": 0,
-      "sizeBytes": 517652
+      "sizeBytes": 517653
     },
     {
       "doc": "large",
       "engine": "weasyprint",
-      "reqPerSec": 1.1998191889679632,
+      "reqPerSec": 1.233158067166879,
       "successRate": 1.0,
-      "p50Ms": 16326,
-      "p90Ms": 26897,
-      "p99Ms": 28640,
+      "p50Ms": 15406,
+      "p90Ms": 27240,
+      "p99Ms": 28957,
       "compliant": false,
       "pdfA": false,
       "pdfUa": false,
       "errorCount": 6,
-      "sizeBytes": 169347
+      "sizeBytes": 167273
     }
   ]
 }
