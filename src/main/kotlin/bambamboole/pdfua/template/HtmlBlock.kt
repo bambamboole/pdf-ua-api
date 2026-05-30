@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 @SerialName("html")
 data class HtmlBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     val html: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),

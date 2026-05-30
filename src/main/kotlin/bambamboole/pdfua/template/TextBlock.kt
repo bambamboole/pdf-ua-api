@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 @SerialName("text")
 data class TextBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     val text: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),
