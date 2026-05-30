@@ -38,6 +38,7 @@ export default defineConfig({
                     label: "HTML",
                     items: [
                         {label: "HTML to PDF", link: "/html/html-to-pdf/"},
+                        {label: "URL to PDF", link: "/html/url-to-pdf/"},
                         {label: "HTML to Image", link: "/html/html-to-image/"},
                     ],
                 },

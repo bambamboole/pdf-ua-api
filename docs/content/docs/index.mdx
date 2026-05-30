@@ -16,18 +16,20 @@ Beyond conversion it validates existing PDFs, identifies documents it produced, 
 [renders HTML to images](/html/html-to-image/), all over a small HTTP API that runs as a single
 container with no external services.
 
-## Two ways to create a PDF
+## Three ways to create a PDF
 
-You can drive the API with raw HTML or with a structured template, depending on what you already
-have:
+Pick the entry point that matches what you already have:
 
-- **From HTML** — send a complete HTML document to `POST /convert`. Best when you already produce
-  markup or use a templating engine. See [HTML to PDF](/html/html-to-pdf/).
-- **From a template** — send a JSON template of rows and blocks to `POST /render/template`. Best
-  for structured documents like invoices, where layout and data stay separate. See
+- **From HTML** — send a complete HTML document to `POST /convert`. Best when you already
+  produce markup or use a templating engine. See [HTML to PDF](/html/html-to-pdf/).
+- **From a URL** — send a public URL to `POST /render/url` and the API fetches the HTML for
+  you. Best when the document already lives at a URL — a static site or a server-rendered
+  page. See [URL to PDF](/html/url-to-pdf/).
+- **From a template** — send a JSON template of rows and blocks to `POST /render/template`.
+  Best for structured documents like invoices, where layout and data stay separate. See
   [Templates](/templates/structure/).
 
-Both paths produce the same accessible PDF/A-3a output.
+All three paths produce the same accessible PDF/A-3a output.
 
 ## Highlights
 

@@ -1,0 +1,85 @@
+---
+title: URL to PDF
+description: Fetch a public URL and convert the page to an accessible PDF/A-3a.
+---
+
+`POST /render/url` fetches the HTML at a public URL, then renders it through the same engine
+as [HTML to PDF](/html/html-to-pdf/). Use it when the document already exists at a URL — a
+static site, a server-rendered page, a published invoice link — and you do not want to download
+and re-post the HTML yourself.
+
+```bash
+curl -X POST http://localhost:8080/render/url \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/page"}' \
+  --output out.pdf
+```
+
+The fetched URL becomes the base URL for the rendered document, so relative `<img>`, `<link>`,
+and `<script>` references inside the page resolve against the originating site automatically.
+
+## Request body
+
+The JSON body accepts these fields:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `url` | — | The `http` or `https` URL to fetch (required) |
+| `attachments` | — | Optional PDF/A-3 file attachments to embed in the output, identical to `/convert` |
+
+## How it works
+
+The API performs three steps in order:
+
+- **Fetch.** Sends a single anonymous `GET` to the URL, with a configurable timeout and
+  response size cap. Redirects are **not** followed (see [Security](#security) below); a `3xx`
+  response is treated as a fetch failure.
+- **Validate.** Checks that the response status is `2xx` and that `Content-Type` is
+  `text/html` or `application/xhtml+xml`. The declared `charset` is honoured when decoding the
+  body; missing or unknown charsets fall back to UTF-8.
+- **Render.** Hands the decoded HTML to the same PDF/A-3a + PDF/UA pipeline used by
+  `POST /convert`, with the fetched URL as the rendering base URL.
+
+## HTML & CSS support
+
+This endpoint shares the renderer with [HTML to PDF](/html/html-to-pdf/), so the same support
+matrix applies:
+
+- CSS 2.1, `@page`, `@font-face`, inline SVG and raster images are supported.
+- JavaScript, Flexbox, Grid, and CSS animations are **not**. Pages that rely on client-side
+  rendering produce empty or skeletal output.
+
+Use this endpoint for static and server-rendered pages. For SPAs, render to HTML first with
+your own tooling and call `POST /convert` instead.
+
+## Security
+
+The URL is fetched under the same SSRF guard as image assets:
+
+- Only `http` and `https` schemes are accepted.
+- Loopback, private, link-local, and wildcard addresses are rejected before any request leaves
+  the API.
+- Redirects are not followed, so a redirect target cannot smuggle the request to an internal
+  host.
+- The response body is read through a bounded stream and capped at the configured maximum
+  size, even if the server omits `Content-Length`.
+
+Set `ASSET_ALLOWED_DOMAINS` to restrict which hosts may be fetched.
+
+## Configuration
+
+The fetcher shares the existing asset configuration — no new environment variables:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ASSET_TIMEOUT` | `5000` | Connect and request timeout in milliseconds |
+| `ASSET_MAX_SIZE` | `5242880` | Maximum response body size in bytes |
+| `ASSET_ALLOWED_DOMAINS` | — | Optional comma-separated allowlist of fetchable hosts; empty means any public host |
+
+## Responses
+
+- **`200 OK`** — the rendered PDF as `application/pdf`.
+- **`400 Bad Request`** — the URL is missing, malformed, blocked by the SSRF guard, returned
+  a non-2xx status, exceeded the size cap, or did not return HTML. The response body contains
+  an `error` field with the reason.
+- **`500 Internal Server Error`** — the PDF rendering pipeline failed unexpectedly.

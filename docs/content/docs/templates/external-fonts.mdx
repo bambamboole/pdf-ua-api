@@ -6,11 +6,19 @@ description: Use a custom font fetched from a URL.
 import TryItPdf from "../../../components/TryItPdf.tsx";
 import externalFonts from "../../../examples/templates/external-fonts.json?raw";
 
-Declare custom fonts under `template.fonts`, keyed by family name, each with a `src` URL (plus
-`weight`/`style`). Reference the family from any block's `config.typography.family`. Everything
-else falls back to the bundled typography family.
+Declare custom fonts under `template.fonts`. The value is a map keyed by family name, and each
+entry takes the following fields:
+
+- **`src`** — URL of the font file to load at render time (TTF or OTF).
+- **`weight`** — one or more whitespace-separated CSS weights the file supplies (default
+  `"400"`). For a variable font that covers regular and bold, use `"400 700"`.
+- **`style`** — `"normal"` or `"italic"` (default `"normal"`).
+
+Reference a declared family from any block's `config.typography.family`. Anything that does not
+set a family falls back to the bundled typography family.
 
 The example fetches "Lobster" from a public CDN at render time, so the API must have network
-access and allow that host (it allows public hosts by default; see `ASSET_ALLOWED_DOMAINS`).
+access and allow that host. It allows any public host by default; tighten this via
+`ASSET_ALLOWED_DOMAINS`.
 
 <TryItPdf mode="template" initialCode={externalFonts} client:only="react" />

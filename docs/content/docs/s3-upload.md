@@ -10,10 +10,11 @@ large files through your application and is handy for serverless callers.
 ## How it works
 
 Send an `X-Upload-Url` header containing a presigned **PUT** URL on any generating endpoint —
-`POST /convert`, `POST /render/template`, or `POST /render`. The API then `PUT`s the result to
-that URL with the correct `Content-Type` (`application/pdf`, or `image/png` / `image/jpeg` for
-`/render`) and replies `204 No Content` with an empty body. For PDFs the `X-Document-UUID`
-response header is still set, so you can correlate the stored file.
+`POST /convert`, `POST /render/url`, `POST /render/template`, or `POST /render`. The API then
+`PUT`s the result to that URL with the correct `Content-Type` (`application/pdf`, or
+`image/png` / `image/jpeg` for `/render`) and replies `204 No Content` with an empty body. For
+PDFs the `X-Document-UUID` response header is still set, so you can correlate the stored
+file.
 
 You generate the presigned URL yourself (for example with the AWS SDK's `put_object` presigner),
 so the API never needs storage credentials — it only performs the upload.

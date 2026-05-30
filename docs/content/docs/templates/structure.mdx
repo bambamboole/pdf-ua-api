@@ -6,11 +6,42 @@ description: The shape of a template — rows and blocks.
 import TryItPdf from "../../../components/TryItPdf.tsx";
 import structure from "../../../examples/templates/structure.json?raw";
 
-A template is rendered with `POST /render/template`, whose body is
-`{ "template": { … }, "data": { … }, "options": { … } }`. The `template` holds
-`version`, a `config` (page size, locale, typography), and `rows`. Each row contains one or
-more `blocks` (`text`, `heading`, `table`, `image`, `key-value`, `spacer`, raw `html`). Blocks
-in the same row lay out side by side using `config.width`.
+A template is rendered with `POST /render/template`. The request body has three top-level
+fields:
+
+- **`template`** — the document definition (required). See its fields below.
+- **`data`** — per-block content overrides keyed by block id. Use this to render the same
+  template with different content.
+- **`options`** — runtime rendering options:
+  - `title` — the PDF document title.
+  - `baseUrl` — base URL for resolving relative asset references inside the template.
+
+The `template` object is built from these fields:
+
+- **`version`** — schema version of the template format.
+- **`config`** — document-wide settings, with two sub-objects:
+  - `page` — `size`, `locale`, `margins`, `pageNumbers`, optional `background`, and
+    repeating `footer` rows.
+  - `typography` — default font `family`, `size`, `weight`, `align`, and `color`. Inherited
+    by every block unless overridden on the block's own `config.typography`.
+- **`fonts`** — optional map of custom font families to load by URL. See
+  [External Fonts](/templates/external-fonts/).
+- **`attachments`** — optional PDF/A-3 file attachments embedded into the output.
+- **`rows`** — the ordered list of rows that make up the body of the document. Each row
+  contains one or more `blocks` that lay out side by side using each block's `config.width`.
+
+A block belongs to one of the following types. All of them carry a common `config` for
+typography, spacing, width, and alignment:
+
+- `text` — paragraph copy.
+- `heading` — a heading at a configurable level.
+- `table` — a table built from rows of typed cells, with automatic pagination.
+- `image` — an inline image referenced by URL or data URI.
+- `key-value` — labelled key/value pairs, typically used for invoice metadata.
+- `divider` — a horizontal rule with configurable style (`solid`, `dashed`, `dotted`,
+  `double`, `none`).
+- `spacer` — vertical whitespace.
+- `html` — a raw HTML escape hatch when nothing else fits.
 
 Edit the JSON and click **Render PDF**.
 

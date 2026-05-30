@@ -6,8 +6,8 @@ description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported
 import TryItPdf from "../../../components/TryItPdf.tsx";
 import styledTable from "../../../examples/styled-table.html?raw";
 
-`POST /convert` takes a JSON body `{ "html": "..." }` and returns a PDF/A-3a document
-with PDF/UA accessibility.
+`POST /convert` takes a JSON body with the HTML you want to render and returns a PDF/A-3a
+document with PDF/UA accessibility.
 
 ```bash
 curl -X POST http://localhost:8080/convert \
@@ -19,6 +19,19 @@ curl -X POST http://localhost:8080/convert \
 Set a `lang` attribute and a `<title>` — both are required for accessible output. Bundled
 fonts are available by `font-family` (no system fonts needed), and wide tables paginate
 automatically.
+
+If the document already lives at a public URL, use [URL to PDF](/html/url-to-pdf/) instead and
+let the API fetch the HTML for you.
+
+## Request body
+
+The JSON body accepts these fields:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `html` | — | The complete HTML document to render (required) |
+| `baseUrl` | — | Optional base URL used to resolve relative `<img>`, `<link>`, and `<script>` references inside the HTML |
+| `attachments` | — | Optional PDF/A-3 file attachments to embed in the output |
 
 ## HTML & CSS support
 
