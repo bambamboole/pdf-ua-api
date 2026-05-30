@@ -27,6 +27,11 @@ Instructions for coding agents working in this repository.
 - `JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED" ./gradlew test` suppresses native-access warnings from PDF tooling.
 - CI runs `./gradlew spotlessCheck detekt --no-daemon` then `./gradlew test --no-daemon`. Run `spotlessCheck` locally before pushing — it's not part of `test`, so it's easy to miss formatting drift otherwise.
 
+## Benchmark
+
+- `benchmark/` holds a one-command Docker benchmark against WeasyPrint (`cd benchmark && make benchmark`). It runs both engines as HTTP services, drives load with `oha`, validates every output via the API's own veraPDF `/validate`, and writes `benchmark/results/latest.json`, which the docs `/benchmark` page renders at build time.
+- The benchmark disables pdf-ua-api's rate limiter (`RATE_LIMIT_ENABLED=false`) so it measures raw engine throughput; this is disclosed in the harness README and on the docs page.
+
 ## Development Rules
 
 - Check sibling files before creating or editing code so naming, structure, and Ktor/Gradle patterns stay consistent.

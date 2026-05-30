@@ -30,6 +30,11 @@ Guidance for Claude Code when working in this repository.
 - Some conversion tests write generated PDFs or diff images beside fixtures when baselines differ. Review these files before keeping or deleting them.
 - CI runs `./gradlew spotlessCheck detekt --no-daemon` then `./gradlew test --no-daemon`. Run `spotlessCheck` locally before pushing — it's not part of `test`, so it's easy to miss formatting drift otherwise.
 
+## Benchmark
+
+- `benchmark/` holds a one-command Docker benchmark against WeasyPrint (`cd benchmark && make benchmark`). It runs both engines as HTTP services, drives load with `oha`, validates every output via the API's own veraPDF `/validate`, and writes `benchmark/results/latest.json`, which the docs `/benchmark` page renders at build time.
+- The benchmark disables pdf-ua-api's rate limiter (`RATE_LIMIT_ENABLED=false`) so it measures raw engine throughput; this is disclosed in the harness README and on the docs page.
+
 ## Runtime Configuration
 
 - Config lives in `src/main/resources/application.yaml`; env-var interpolation uses Ktor's `$ENV_VAR:default` syntax (empty default means "treat as missing"; `AppConfig.getOptional` filters blanks).
