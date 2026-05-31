@@ -10,6 +10,7 @@ logback = "1.5.28"
 logstashLogbackEncoder = "8.1"
 verapdf = "1.28.2"
 jsoup = "1.18.3"
+hypherator = "1.1"
 spotless = "8.5.1"
 detekt = "2.0.0-alpha.3"
 ktlint = "1.8.0"
@@ -25,6 +26,9 @@ openhtmltopdfJava2d = { module = "io.github.openhtmltopdf:openhtmltopdf-java2d",
 
 # HTML Parser
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+# Hyphenation (LibreOffice Hunspell dictionaries via Liang patterns)
+hypherator = { module = "io.sevcik:hypherator", version.ref = "hypherator" }
 
 # Logging
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
