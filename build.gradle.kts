@@ -103,6 +103,9 @@ dependencies {
     // HTML Parser
     implementation(libs.jsoup)
 
+    // Hyphenation
+    implementation(libs.hypherator)
+
     // Logging
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)

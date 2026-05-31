@@ -1,6 +1,7 @@
 package bambamboole.pdfua.pdf
 
 import bambamboole.pdfua.fonts.BundledFonts
+import bambamboole.pdfua.hyphenation.LocaleAwareHyphenator
 import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
@@ -70,6 +71,8 @@ object PdfRenderer {
 
         val jsoupDoc = Jsoup.parse(html)
         val w3cDoc = w3cDom.fromJsoup(jsoupDoc)
+        val hyphenator =
+            LocaleAwareHyphenator.forLang(jsoupDoc.selectFirst("html")?.attr("lang"))
 
         val pdfBytes =
             ByteArrayOutputStream(512 * 1024).use { outputStream ->
@@ -78,6 +81,9 @@ object PdfRenderer {
                 builder.withProducer(producer)
                 if (assetResolver != null) {
                     builder.useHttpStreamImplementation(assetResolver)
+                }
+                if (hyphenator != null) {
+                    builder.useHyphenation(hyphenator)
                 }
                 builder.withW3cDocument(w3cDoc, baseUrl)
                 builder.toStream(outputStream)
