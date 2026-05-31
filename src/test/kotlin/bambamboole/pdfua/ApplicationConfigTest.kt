@@ -80,4 +80,13 @@ class ApplicationConfigTest {
             "application.yaml TRUST_PRIVATE_HOSTS default must match AppConfig.Defaults.TRUST_PRIVATE_HOSTS",
         )
     }
+
+    @Test
+    fun yamlAssetDefaultsMatchAppConfigDefaults() {
+        val yaml = ApplicationConfigTest::class.java.getResource("/application.yaml")!!.readText()
+        val timeout = Regex("timeout:\\s*\"\\\$ASSET_TIMEOUT:(\\d+)\"").find(yaml)?.groupValues?.get(1)
+        val maxSize = Regex("maxSize:\\s*\"\\\$ASSET_MAX_SIZE:(\\d+)\"").find(yaml)?.groupValues?.get(1)
+        assertEquals("60000", timeout, "application.yaml ASSET_TIMEOUT default must match AppConfig.Defaults.ASSET_TIMEOUT_MS")
+        assertEquals("52428800", maxSize, "application.yaml ASSET_MAX_SIZE default must match AppConfig.Defaults.ASSET_MAX_SIZE_BYTES")
+    }
 }

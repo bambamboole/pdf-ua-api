@@ -34,8 +34,8 @@ data class AppConfig(
         const val PDF_PRODUCER = "pdf-ua-api.com"
         const val MAX_REQUEST_SIZE_BYTES: Long = 10L * 1024 * 1024
         const val LOG_FORMAT = "text"
-        const val ASSET_TIMEOUT_MS: Long = 5_000
-        const val ASSET_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
+        const val ASSET_TIMEOUT_MS: Long = 60_000
+        const val ASSET_MAX_SIZE_BYTES: Long = 50L * 1024 * 1024
         const val TRUST_PRIVATE_HOSTS = true
         const val UPLOAD_ENABLED = true
         const val UPLOAD_TIMEOUT_MS: Long = 30_000

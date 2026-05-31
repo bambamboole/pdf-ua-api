@@ -38,8 +38,8 @@ pdf:
   maxRequestSize: "$MAX_REQUEST_SIZE:10485760"
 
 assets:
-  timeout: "$ASSET_TIMEOUT:5000"
-  maxSize: "$ASSET_MAX_SIZE:5242880"
+  timeout: "$ASSET_TIMEOUT:60000"
+  maxSize: "$ASSET_MAX_SIZE:52428800"
   allowedDomains: "$ASSET_ALLOWED_DOMAINS:"
 
 trustPrivateHosts: "$TRUST_PRIVATE_HOSTS:true"
