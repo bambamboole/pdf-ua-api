@@ -59,6 +59,8 @@ object ImageRenderer {
         val imageType = if (format == "jpg") BufferedImage.TYPE_INT_RGB else BufferedImage.TYPE_INT_ARGB
         val pageProcessor = BufferedImagePageProcessor(imageType, 2.0)
 
+        // Note: Java2DRendererBuilder hardcodes XhtmlNamespaceHandler internally with no public override,
+        // so image rendering uses OpenHTMLToPDF's stock UA stylesheet — see PdfUaNamespaceHandler.
         val builder = Java2DRendererBuilder()
         @Suppress("DEPRECATION") // upstream OpenHTMLToPDF still recommends useFastMode for Java2D rendering
         builder.useFastMode()

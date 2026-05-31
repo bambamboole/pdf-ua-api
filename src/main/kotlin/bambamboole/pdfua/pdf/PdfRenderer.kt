@@ -77,6 +77,7 @@ object PdfRenderer {
         val pdfBytes =
             ByteArrayOutputStream(512 * 1024).use { outputStream ->
                 val builder = PdfRendererBuilder()
+                builder.useNamespaceHandler(PdfUaNamespaceHandler())
                 configurePdfUA(builder, html)
                 builder.withProducer(producer)
                 if (assetResolver != null) {
