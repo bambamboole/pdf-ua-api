@@ -106,6 +106,9 @@ dependencies {
     // Hyphenation
     implementation(libs.hypherator)
 
+    // ImageIO plugins
+    implementation(libs.imageioWebp)
+
     // Logging
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)

@@ -11,6 +11,7 @@ logstashLogbackEncoder = "8.1"
 verapdf = "1.28.2"
 jsoup = "1.18.3"
 hypherator = "1.1"
+twelvemonkeys = "3.11.0"
 spotless = "8.5.1"
 detekt = "2.0.0-alpha.3"
 ktlint = "1.8.0"
@@ -29,6 +30,9 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Hyphenation (LibreOffice Hunspell dictionaries via Liang patterns)
 hypherator = { module = "io.sevcik:hypherator", version.ref = "hypherator" }
+
+# ImageIO plugins
+imageioWebp = { module = "com.twelvemonkeys.imageio:imageio-webp", version.ref = "twelvemonkeys" }
 
 # Logging
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
