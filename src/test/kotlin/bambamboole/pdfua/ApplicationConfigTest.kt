@@ -69,4 +69,15 @@ class ApplicationConfigTest {
             val exception = assertFailsWith<IllegalStateException> { startApplication() }
             assertTrue(exception.message!!.contains("JWT_ISSUER"))
         }
+
+    @Test
+    fun yamlTrustPrivateHostsDefaultMatchesAppConfigDefault() {
+        val yaml = ApplicationConfigTest::class.java.getResource("/application.yaml")!!.readText()
+        val match = Regex("trustPrivateHosts:\\s*\"\\\$TRUST_PRIVATE_HOSTS:(true|false)\"").find(yaml)
+        assertEquals(
+            "true",
+            match?.groupValues?.get(1),
+            "application.yaml TRUST_PRIVATE_HOSTS default must match AppConfig.Defaults.TRUST_PRIVATE_HOSTS",
+        )
+    }
 }

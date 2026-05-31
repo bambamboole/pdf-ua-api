@@ -19,6 +19,7 @@ data class AppConfig(
     val assetTimeoutMs: Long,
     val assetMaxSizeBytes: Long,
     val assetAllowedDomains: Set<String>,
+    val trustPrivateHosts: Boolean,
     val uploadEnabled: Boolean,
     val uploadTimeoutMs: Long,
     val uploadAllowedDomains: Set<String>,
@@ -35,6 +36,7 @@ data class AppConfig(
         const val LOG_FORMAT = "text"
         const val ASSET_TIMEOUT_MS: Long = 5_000
         const val ASSET_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
+        const val TRUST_PRIVATE_HOSTS = true
         const val UPLOAD_ENABLED = true
         const val UPLOAD_TIMEOUT_MS: Long = 30_000
         const val RATE_LIMIT_ENABLED = true
@@ -57,6 +59,7 @@ data class AppConfig(
                 assetTimeoutMs = config.long("assets.timeout", Defaults.ASSET_TIMEOUT_MS),
                 assetMaxSizeBytes = config.long("assets.maxSize", Defaults.ASSET_MAX_SIZE_BYTES),
                 assetAllowedDomains = parseCsvSet(config.optional("assets.allowedDomains")),
+                trustPrivateHosts = config.bool("trustPrivateHosts", Defaults.TRUST_PRIVATE_HOSTS),
                 uploadEnabled = config.bool("upload.enabled", Defaults.UPLOAD_ENABLED),
                 uploadTimeoutMs = config.long("upload.timeout", Defaults.UPLOAD_TIMEOUT_MS),
                 uploadAllowedDomains = parseCsvSet(config.optional("upload.allowedDomains")),

@@ -42,6 +42,8 @@ assets:
   maxSize: "$ASSET_MAX_SIZE:5242880"
   allowedDomains: "$ASSET_ALLOWED_DOMAINS:"
 
+trustPrivateHosts: "$TRUST_PRIVATE_HOSTS:true"
+
 upload:
   enabled: "$UPLOAD_ENABLED:true"
   timeout: "$UPLOAD_TIMEOUT:30000"
