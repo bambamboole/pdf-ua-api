@@ -3,9 +3,6 @@ title: HTML to PDF
 description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported.
 ---
 
-import TryItPdf from "../../../components/TryItPdf.tsx";
-import styledTable from "../../../examples/styled-table.html?raw";
-
 `POST /convert` takes a JSON body with the HTML you want to render and returns a PDF/A-3a
 document with PDF/UA accessibility.
 
@@ -52,10 +49,4 @@ It does **not** support:
 Design documents with classic block/table/float layout. See the openhtmltopdf docs for the
 authoritative feature list.
 
-## Try it
-
-Edit the HTML and click **Render PDF**. The live render calls the API at `PUBLIC_API_URL`
-(default `http://localhost:8080`); the API must allow this site's origin via
-`CORS_ALLOWED_ORIGINS`.
-
-<TryItPdf mode="html" initialCode={styledTable} client:only="react" />
+Use the sample request above to render a PDF from your own tooling.

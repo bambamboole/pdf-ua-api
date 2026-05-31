@@ -1,0 +1,22 @@
+---
+title: Builder
+description: Visual template builder for PDF/UA templates.
+---
+
+import TemplateBuilderIsland from "../../../components/TemplateBuilderIsland.tsx";
+import invoice from "../../../examples/templates/invoice.json?raw";
+
+The template builder is an embeddable React interface for composing PDF UA API templates without
+writing the JSON by hand. It exposes the same rows, blocks, document settings, runtime data, and
+PDF preview pipeline used by `POST /render/template`, so the JSON it produces stays aligned with
+the API schema.
+
+Use it when you want to sketch or maintain structured documents visually, then copy the generated
+JSON payload into your application or keep the builder embedded in your own tooling. The package
+lives in the
+[`bambamboole/pdf-ua-template-builder`](https://github.com/bambamboole/pdf-ua-template-builder)
+repository.
+
+The instance below starts with the invoice example loaded.
+
+<TemplateBuilderIsland initialCode={invoice} client:only="react" />

@@ -2,11 +2,13 @@ import {defineConfig} from "astro/config";
 import starlight from "@astrojs/starlight";
 import react from "@astrojs/react";
 import starlightOpenAPI, {openAPISidebarGroups} from "starlight-openapi";
+import tailwindcss from "@tailwindcss/vite";
 
 // Served at the root of the custom domain, so the base is "/" unless an explicit
 // BASE_PATH is provided. `||` guards against an empty string from CI's configure-pages.
 const base = process.env.BASE_PATH || "/";
 const site = process.env.SITE_URL || "https://pdf-ua-api.bambamboole.com";
+const viteCacheSuffix = process.argv.includes("build") ? "build" : "dev";
 
 export default defineConfig({
     site,
@@ -18,6 +20,7 @@ export default defineConfig({
             social: [
                 {icon: "github", label: "GitHub", href: "https://github.com/bambamboole/pdf-ua-api"},
             ],
+            customCss: ["./docs/styles/global.css"],
             plugins: [
                 starlightOpenAPI([
                     {base: "api", label: "API Reference", schema: "./docs/openapi/openapi.json"},
@@ -46,6 +49,7 @@ export default defineConfig({
                     label: "Templates",
                     items: [
                         {label: "Structure", link: "/templates/structure/"},
+                        {label: "Builder", link: "/templates/builder/"},
                         {label: "Background", link: "/templates/background/"},
                         {label: "External Fonts", link: "/templates/external-fonts/"},
                         {label: "Invoice", link: "/templates/invoice/"},
@@ -56,4 +60,8 @@ export default defineConfig({
         }),
         react(),
     ],
+    vite: {
+        cacheDir: `node_modules/.vite-${viteCacheSuffix}`,
+        plugins: [tailwindcss()],
+    },
 });

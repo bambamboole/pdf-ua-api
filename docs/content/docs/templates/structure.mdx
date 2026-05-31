@@ -3,7 +3,7 @@ title: Structure
 description: The shape of a template — rows and blocks.
 ---
 
-import TryItPdf from "../../../components/TryItPdf.tsx";
+import TemplateEditorIsland from "../../../components/TemplateEditorIsland.tsx";
 import structure from "../../../examples/templates/structure.json?raw";
 
 A template is rendered with `POST /render/template`. The request body has three top-level
@@ -45,4 +45,4 @@ typography, spacing, width, and alignment:
 
 Edit the JSON and click **Render PDF**.
 
-<TryItPdf mode="template" initialCode={structure} client:only="react" />
+<TemplateEditorIsland initialCode={structure} client:only="react" />
