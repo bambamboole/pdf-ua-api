@@ -29,19 +29,23 @@ enum class DividerStyle {
 }
 
 @Serializable
+@SchemaTsType("BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }")
 data class DividerConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
-    val thickness: Int = 1,
-    val lineColor: String = "#d1d5db",
+    @SchemaMin(0) @SchemaIntDefault(1) val thickness: Int = 1,
+    @SchemaPattern("^#[0-9A-Fa-f]{3,8}$") @SchemaStringDefault("#d1d5db") val lineColor: String = "#d1d5db",
     val style: DividerStyle = DividerStyle.SOLID,
 ) : BlockConfig
 
 @Serializable
 @SerialName("divider")
 data class DividerBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     override val config: DividerConfig = DividerConfig(),
 ) : Block {

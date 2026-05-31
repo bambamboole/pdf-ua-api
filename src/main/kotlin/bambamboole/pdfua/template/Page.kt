@@ -18,8 +18,8 @@ data class PresetPageSize(
 
 @Serializable
 data class CustomPageSize(
-    val width: Int,
-    val height: Int,
+    @SchemaMin(1) val width: Int,
+    @SchemaMin(1) val height: Int,
 ) : PageSize
 
 object PageSizeSerializer : JsonContentPolymorphicSerializer<PageSize>(PageSize::class) {

@@ -7,17 +7,21 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+@SchemaTsType("BlockConfig & { level?: number }")
 data class HeadingConfig(
     override val typography: TypographyConfig? = null,
     override val spacing: SpacingConfig? = null,
+    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
     override val width: String? = null,
+    @SchemaDescription("Horizontal placement of this block within its row cell.")
     override val align: Align? = null,
-    val level: Int = 2,
+    @SchemaMin(1) @SchemaMax(6) @SchemaIntDefault(2) val level: Int = 2,
 ) : BlockConfig
 
 @Serializable
 @SerialName("heading")
 data class HeadingBlock(
+    @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     val text: String,
     override val config: HeadingConfig = HeadingConfig(),
