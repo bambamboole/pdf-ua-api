@@ -14,7 +14,7 @@ object ImageOptimizer {
 
     private const val MAX_WIDTH_PX = 1240
     private const val JPEG_QUALITY = 0.85f
-    private const val FORMAT_SNIFF_BYTES = 4
+    private const val FORMAT_SNIFF_BYTES = 12
 
     @Suppress("TooGenericExceptionCaught") // defensive boundary: any failure falls back to original bytes
     fun optimizeImage(bytes: ByteArray): ByteArray {
@@ -22,6 +22,24 @@ object ImageOptimizer {
 
         return try {
             val image = ImageIO.read(ByteArrayInputStream(bytes)) ?: return bytes
+
+            if (format == "webp") {
+                val resized = if (image.width > MAX_WIDTH_PX) resize(image, MAX_WIDTH_PX) else image
+                val outputFormat = if (image.colorModel.hasAlpha()) "png" else "jpg"
+                val encoded = encode(resized, outputFormat)
+                logger.debug(
+                    "Transcoded webp -> {}: {}x{} -> {}x{}, {} -> {} bytes",
+                    outputFormat,
+                    image.width,
+                    image.height,
+                    resized.width,
+                    resized.height,
+                    bytes.size,
+                    encoded.size,
+                )
+                return encoded
+            }
+
             if (image.width <= MAX_WIDTH_PX) return bytes
 
             val resized = resize(image, MAX_WIDTH_PX)
@@ -49,7 +67,12 @@ object ImageOptimizer {
         if (bytes.size < FORMAT_SNIFF_BYTES) return null
         return when {
             bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte() -> "jpg"
+
             bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte() -> "png"
+
+            bytes[0] == 0x52.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() && bytes[3] == 0x46.toByte() &&
+                bytes[8] == 0x57.toByte() && bytes[9] == 0x45.toByte() && bytes[10] == 0x42.toByte() && bytes[11] == 0x50.toByte() -> "webp"
+
             else -> null
         }
     }

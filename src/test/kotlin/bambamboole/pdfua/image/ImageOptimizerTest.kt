@@ -100,6 +100,57 @@ class ImageOptimizerTest {
         assertNull(ImageOptimizer.detectFormat("hello".toByteArray()))
     }
 
+    @Test
+    fun detectFormatRecognizesWebp() {
+        val webp = loadFixture("opaque-100.webp")
+        assertEquals("webp", ImageOptimizer.detectFormat(webp))
+    }
+
+    @Test
+    fun webpWithoutAlphaIsTranscodedToJpeg() {
+        val webp = loadFixture("opaque-100.webp")
+        val result = ImageOptimizer.optimizeImage(webp)
+        assertEquals(0xFF.toByte(), result[0])
+        assertEquals(0xD8.toByte(), result[1])
+        assertEquals(0xFF.toByte(), result[2])
+    }
+
+    @Test
+    fun webpWithAlphaIsTranscodedToPng() {
+        val webp = loadFixture("alpha-100.webp")
+        val result = ImageOptimizer.optimizeImage(webp)
+        val pngSignature =
+            byteArrayOf(
+                0x89.toByte(),
+                0x50,
+                0x4E,
+                0x47,
+                0x0D,
+                0x0A,
+                0x1A,
+                0x0A,
+            )
+        assertTrue(
+            result.copyOfRange(0, 8).contentEquals(pngSignature),
+            "WebP with alpha should be transcoded to PNG",
+        )
+    }
+
+    @Test
+    fun wideWebpIsResizedAndTranscoded() {
+        val webp = loadFixture("opaque-2000x1000.webp")
+        val result = ImageOptimizer.optimizeImage(webp)
+        val resultImage = ImageIO.read(ByteArrayInputStream(result))
+        assertEquals(1240, resultImage.width)
+        assertEquals(620, resultImage.height)
+    }
+
+    private fun loadFixture(name: String): ByteArray =
+        ImageOptimizerTest::class.java
+            .getResource("/fixtures/webp/$name")
+            ?.readBytes()
+            ?: error("Missing fixture: /fixtures/webp/$name")
+
     private fun createJpeg(
         width: Int,
         height: Int,
