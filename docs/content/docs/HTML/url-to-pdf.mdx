@@ -74,8 +74,8 @@ The fetcher shares the existing asset configuration:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ASSET_TIMEOUT` | `5000` | Connect and request timeout in milliseconds |
-| `ASSET_MAX_SIZE` | `5242880` | Maximum response body size in bytes |
+| `ASSET_TIMEOUT` | `60000` | Connect and request timeout in milliseconds |
+| `ASSET_MAX_SIZE` | `52428800` | Maximum response body size in bytes |
 | `ASSET_ALLOWED_DOMAINS` | — | Optional comma-separated allowlist of fetchable hosts; empty means any public host |
 | `TRUST_PRIVATE_HOSTS` | `true` | When `true` (default), the API will fetch URLs that resolve to loopback, private, or link-local addresses. Set to `false` to enable the SSRF guard. The `http`/`https` scheme check and `ASSET_ALLOWED_DOMAINS` allowlist always apply. |
 
