@@ -97,4 +97,38 @@ class DocumentUploaderTest {
             validatePublicHttpUrl(URI.create("https://evil.com/x"), setOf("bucket.example.com"))
         }
     }
+
+    @Test
+    fun guardWithTrustPrivateHostsAllowsLoopback() {
+        validatePublicHttpUrl(URI.create("http://127.0.0.1/x"), emptySet(), trustPrivateHosts = true)
+    }
+
+    @Test
+    fun guardWithTrustPrivateHostsAllowsSiteLocal() {
+        validatePublicHttpUrl(URI.create("http://10.0.0.1/x"), emptySet(), trustPrivateHosts = true)
+        validatePublicHttpUrl(URI.create("http://192.168.1.1/x"), emptySet(), trustPrivateHosts = true)
+    }
+
+    @Test
+    fun guardWithTrustPrivateHostsAllowsLinkLocal() {
+        validatePublicHttpUrl(URI.create("http://169.254.169.254/x"), emptySet(), trustPrivateHosts = true)
+    }
+
+    @Test
+    fun guardWithTrustPrivateHostsStillRejectsNonHttpScheme() {
+        assertFailsWith<IllegalArgumentException> {
+            validatePublicHttpUrl(URI.create("ftp://127.0.0.1/x"), emptySet(), trustPrivateHosts = true)
+        }
+    }
+
+    @Test
+    fun guardWithTrustPrivateHostsStillEnforcesAllowlist() {
+        assertFailsWith<IllegalArgumentException> {
+            validatePublicHttpUrl(
+                URI.create("http://127.0.0.1/x"),
+                setOf("bucket.example.com"),
+                trustPrivateHosts = true,
+            )
+        }
+    }
 }

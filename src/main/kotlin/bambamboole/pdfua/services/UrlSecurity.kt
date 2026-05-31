@@ -11,6 +11,7 @@ import java.net.URI
 internal fun validatePublicHttpUrl(
     uri: URI,
     allowedDomains: Set<String>,
+    trustPrivateHosts: Boolean = false,
 ) {
     val scheme = uri.scheme?.lowercase()
     require(scheme == "http" || scheme == "https") {
@@ -24,6 +25,8 @@ internal fun validatePublicHttpUrl(
             "Domain not in allowed list: $host"
         }
     }
+
+    if (trustPrivateHosts) return
 
     val addresses = InetAddress.getAllByName(host)
     for (addr in addresses) {
