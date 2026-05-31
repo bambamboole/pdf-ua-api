@@ -35,7 +35,7 @@ and a `<title>` — both are required for the accessibility tags to be generated
 
 ## Next steps
 
-- Learn which HTML and CSS the renderer supports, and try it live in the browser, on the
-  [HTML to PDF](/html/html-to-pdf/) page.
-- Build structured documents without hand-writing HTML using [Templates](/templates/structure/).
+- Learn which HTML and CSS the renderer supports on the [HTML to PDF](/html/html-to-pdf/) page.
+- Build structured documents without hand-writing HTML using [Templates](/templates/structure/) or
+  the visual [template builder](/templates/builder/).
 - Explore every endpoint in the [API Reference](/api/).
