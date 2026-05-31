@@ -2,17 +2,16 @@ import "@bambamboole/pdf-ua-template-builder/style.css";
 import "./TemplateIslands.css";
 
 import { useMemo, type ReactNode } from "react";
+import { resolveDocsApiUrl } from "./apiUrl";
 import { parseTemplateRequest } from "./templateRequest";
 import { usePdfUaTemplateBuilder } from "./usePdfUaTemplateBuilder";
-
-const DEFAULT_API_URL = "https://pdf-ua-api.c1.bambamboole.com";
 
 interface TemplateBuilderIslandProps {
   initialCode: string;
 }
 
 export default function TemplateBuilderIsland({ initialCode }: TemplateBuilderIslandProps) {
-  const apiUrl = import.meta.env.PUBLIC_API_URL ?? DEFAULT_API_URL;
+  const apiUrl = resolveDocsApiUrl(import.meta.env.PUBLIC_API_URL);
   const parsed = useMemo(() => parseSafely(initialCode), [initialCode]);
   const moduleState = usePdfUaTemplateBuilder();
   const examples = useMemo(
