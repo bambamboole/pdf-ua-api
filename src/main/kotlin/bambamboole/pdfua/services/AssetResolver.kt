@@ -19,6 +19,7 @@ class AssetResolver(
     private val timeoutMs: Long = DEFAULT_TIMEOUT_MS,
     private val maxSizeBytes: Long = DEFAULT_MAX_SIZE_BYTES,
     private val allowedDomains: Set<String> = emptySet(),
+    private val validateUrl: (URI, Set<String>) -> Unit = ::validatePublicHttpUrl,
 ) : FSStreamFactory {
     private val logger = LoggerFactory.getLogger(AssetResolver::class.java)
 
@@ -26,14 +27,14 @@ class AssetResolver(
     override fun getUrl(url: String): FSStream =
         try {
             val uri = URI.create(url)
-            validateUrl(uri)
+            guardUrl(uri)
             fetchUrl(uri)
         } catch (e: Exception) {
             logger.warn("Failed to fetch asset: {} - {}", url, e.message)
             EmptyStream
         }
 
-    internal fun validateUrl(uri: URI) = validatePublicHttpUrl(uri, allowedDomains)
+    internal fun guardUrl(uri: URI) = validateUrl(uri, allowedDomains)
 
     private fun fetchUrl(uri: URI): FSStream {
         val request =

@@ -15,6 +15,7 @@ import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.HtmlSourceFetcher
+import bambamboole.pdfua.services.validatePublicHttpUrl
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.server.application.*
@@ -53,6 +54,11 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
     PdfValidator.warmup()
     ImageRenderer.warmup()
 
+    val trustPrivate = config.trustPrivateHosts
+    val validateUrl: (URI, Set<String>) -> Unit = { uri, domains ->
+        validatePublicHttpUrl(uri, domains, trustPrivateHosts = trustPrivate)
+    }
+
     val httpClient = AssetResolver.createHttpClient(config.assetTimeoutMs)
     val assetResolver =
         AssetResolver(
@@ -60,6 +66,7 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
             timeoutMs = config.assetTimeoutMs,
             maxSizeBytes = config.assetMaxSizeBytes,
             allowedDomains = config.assetAllowedDomains,
+            validateUrl = validateUrl,
         )
 
     val documentUploader: DocumentUploader? =
@@ -68,6 +75,7 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
                 httpClient = DocumentUploader.createHttpClient(config.assetTimeoutMs),
                 timeoutMs = config.uploadTimeoutMs,
                 allowedDomains = config.uploadAllowedDomains,
+                validateUrl = validateUrl,
             )
         } else {
             null
@@ -79,6 +87,7 @@ fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
             timeoutMs = config.assetTimeoutMs,
             maxSizeBytes = config.assetMaxSizeBytes,
             allowedDomains = config.assetAllowedDomains,
+            validateUrl = validateUrl,
         )
 
     val resolvedJwkProvider: JwkProvider? =
