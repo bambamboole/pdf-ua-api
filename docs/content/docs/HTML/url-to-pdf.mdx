@@ -54,11 +54,13 @@ your own tooling and call `POST /convert` instead.
 
 ## Security
 
-The URL is fetched under the same SSRF guard as image assets:
+The URL is fetched under the same guard as image assets:
 
 - Only `http` and `https` schemes are accepted.
-- Loopback, private, link-local, and wildcard addresses are rejected before any request leaves
-  the API.
+- The optional SSRF guard rejects loopback, private, link-local, and wildcard addresses
+  before any request leaves the API. It is **disabled by default** (`TRUST_PRIVATE_HOSTS=true`)
+  so the API works against internal hosts out of the box. **Set `TRUST_PRIVATE_HOSTS=false`
+  on any internet-facing deployment** to enable the guard.
 - Redirects are not followed, so a redirect target cannot smuggle the request to an internal
   host.
 - The response body is read through a bounded stream and capped at the configured maximum
@@ -68,13 +70,14 @@ Set `ASSET_ALLOWED_DOMAINS` to restrict which hosts may be fetched.
 
 ## Configuration
 
-The fetcher shares the existing asset configuration — no new environment variables:
+The fetcher shares the existing asset configuration:
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `ASSET_TIMEOUT` | `5000` | Connect and request timeout in milliseconds |
 | `ASSET_MAX_SIZE` | `5242880` | Maximum response body size in bytes |
 | `ASSET_ALLOWED_DOMAINS` | — | Optional comma-separated allowlist of fetchable hosts; empty means any public host |
+| `TRUST_PRIVATE_HOSTS` | `true` | When `true` (default), the API will fetch URLs that resolve to loopback, private, or link-local addresses. Set to `false` to enable the SSRF guard. The `http`/`https` scheme check and `ASSET_ALLOWED_DOMAINS` allowlist always apply. |
 
 ## Responses
 

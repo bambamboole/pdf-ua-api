@@ -48,9 +48,10 @@ docker run -p 8080:8080 \
 
 ## Security
 
-The upload URL is validated with the same SSRF guard as asset fetching: private, loopback, and
-link-local addresses are always rejected, and redirects are never followed so they can't bypass
-the guard. Set `UPLOAD_ALLOWED_DOMAINS` to restrict uploads to specific hosts.
+The upload URL is validated with the same guard as asset fetching: redirects are never followed
+so they can't bypass the guard. Private, loopback, and link-local addresses are rejected only
+when `TRUST_PRIVATE_HOSTS=false` (the guard is **off by default**); enable it on internet-facing
+deployments. Set `UPLOAD_ALLOWED_DOMAINS` to restrict uploads to specific hosts.
 
 ## Responses
 
