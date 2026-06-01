@@ -3,6 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
+import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
@@ -93,6 +94,35 @@ fun Route.renderRoutes(
     uploader: DocumentUploader? = null,
     htmlSourceFetcher: HtmlSourceFetcher? = null,
 ) {
+    @KtorDescription(
+        summary = "Render HTML to PDF",
+        description = "Renders HTML to a PDF/A-3a + PDF/UA document.",
+    )
+    @KtorResponds(
+        [
+            ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
+            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
+        ],
+    )
+    post("/render/html") {
+        val request = call.receive<RenderHtmlRequest>()
+        require(request.html.isNotBlank()) { "HTML content cannot be empty" }
+
+        val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
+
+        val result =
+            PdfRenderer.convertHtmlToPdf(
+                html = request.html,
+                producer = pdfProducer,
+                assetResolver = assetResolver,
+                baseUrl = baseUrl,
+                attachments = request.attachments,
+            )
+
+        respondPdfOrUpload(result, uploader)
+    }
+
     @KtorDescription(
         summary = "Render a template to PDF",
         description = "Renders a JSON template (with optional per-block data overrides) to a PDF/A-3a document.",
