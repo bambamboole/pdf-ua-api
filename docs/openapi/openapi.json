@@ -36,7 +36,10 @@
                                             "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
                                         },
                                         "pdf": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "format": "byte",
+                                            "contentEncoding": "base64",
+                                            "contentMediaType": "application/pdf"
                                         }
                                     },
                                     "required": [
@@ -108,7 +111,10 @@
                                             "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
                                         },
                                         "pdf": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "format": "byte",
+                                            "contentEncoding": "base64",
+                                            "contentMediaType": "application/pdf"
                                         }
                                     },
                                     "required": [
@@ -187,7 +193,10 @@
                                             "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
                                         },
                                         "pdf": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "format": "byte",
+                                            "contentEncoding": "base64",
+                                            "contentMediaType": "application/pdf"
                                         }
                                     },
                                     "required": [

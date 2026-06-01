@@ -204,7 +204,13 @@ val patchOpenApi by tasks.registering {
                 "properties" to
                     mapOf(
                         "validation" to validationResponseSchema,
-                        "pdf" to mapOf("type" to "string"),
+                        "pdf" to
+                            mapOf(
+                                "type" to "string",
+                                "format" to "byte",
+                                "contentEncoding" to "base64",
+                                "contentMediaType" to "application/pdf",
+                            ),
                     ),
                 "required" to listOf("validation", "pdf"),
             )

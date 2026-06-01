@@ -11,7 +11,7 @@ active at a time:
 3. **Public** — when neither is configured, the API is open.
 
 JWT takes precedence over the API key when both are configured. Authentication guards the
-conversion, rendering, validation, and identification endpoints; `/health`, the template schema,
+rendering, validation, and identification endpoints; `/health`, the template schema,
 and the API docs stay public. Failed or missing credentials return `401`.
 
 ## API KEY
