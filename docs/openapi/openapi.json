@@ -528,6 +528,9 @@
                     "baseUrl": {
                         "type": "string"
                     },
+                    "embedColorProfile": {
+                        "type": "boolean"
+                    },
                     "html": {
                         "type": "string"
                     }
@@ -696,6 +699,9 @@
                         "items": {
                             "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
                         }
+                    },
+                    "embedColorProfile": {
+                        "type": "boolean"
                     },
                     "url": {
                         "type": "string"
