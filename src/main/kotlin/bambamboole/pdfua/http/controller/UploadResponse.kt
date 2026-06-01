@@ -1,5 +1,6 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.http.ErrorResponse
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.pdf.PdfResult
 import bambamboole.pdfua.pdf.PdfValidator
@@ -65,7 +66,7 @@ suspend fun RoutingContext.respondDocumentOrUpload(
     }
 
     if (uploader == null) {
-        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Document upload is not enabled"))
+        call.respond(HttpStatusCode.BadRequest, ErrorResponse("Document upload is not enabled"))
         return
     }
 
@@ -76,11 +77,11 @@ suspend fun RoutingContext.respondDocumentOrUpload(
         }
 
         is UploadResult.InvalidUrl -> {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse(result.message))
         }
 
         is UploadResult.Failed -> {
-            call.respond(HttpStatusCode.BadGateway, mapOf("error" to result.message))
+            call.respond(HttpStatusCode.BadGateway, ErrorResponse(result.message))
         }
     }
 }
@@ -120,7 +121,7 @@ internal suspend fun RoutingContext.rejectPdfJsonUploadConflict(): Boolean {
 
     call.respond(
         HttpStatusCode.BadRequest,
-        mapOf("error" to "Accept: application/json cannot be combined with X-Upload-Url"),
+        ErrorResponse("Accept: application/json cannot be combined with X-Upload-Url"),
     )
     return true
 }

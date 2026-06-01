@@ -153,43 +153,14 @@ class SchemaWalker {
         annotations: List<Annotation>,
     ): JsonObject =
         when (descriptor.kind) {
-            PrimitiveKind.STRING -> {
-                buildJsonObject {
-                    put(
-                        "type",
-                        buildJsonArray {
-                            add("string")
-                            add("null")
-                        },
-                    )
-                    annotations.applyStringConstraints(this)
-                }
-            }
-
-            PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> {
-                buildJsonObject {
-                    put(
-                        "type",
-                        buildJsonArray {
-                            add("integer")
-                            add("null")
-                        },
-                    )
-                    annotations.applyIntConstraints(this)
-                }
-            }
-
-            PrimitiveKind.BOOLEAN -> {
-                buildJsonObject {
-                    put(
-                        "type",
-                        buildJsonArray {
-                            add("boolean")
-                            add("null")
-                        },
-                    )
-                    annotations.applyBoolConstraints(this)
-                }
+            PrimitiveKind.STRING,
+            PrimitiveKind.INT,
+            PrimitiveKind.LONG,
+            PrimitiveKind.SHORT,
+            PrimitiveKind.BYTE,
+            PrimitiveKind.BOOLEAN,
+            -> {
+                withNullType(nonNullSchema(descriptor, annotations))
             }
 
             SerialKind.ENUM -> {
@@ -213,13 +184,12 @@ class SchemaWalker {
             }
 
             else -> {
-                // For nullable class/enum/list refs, emit oneOf [<inner>, null].
-                val inner = nonNullSchema(descriptor, annotations)
+                // For nullable class/list/map refs, emit oneOf [<inner>, null].
                 buildJsonObject {
                     put(
                         "oneOf",
                         buildJsonArray {
-                            add(inner)
+                            add(nonNullSchema(descriptor, annotations))
                             add(buildJsonObject { put("type", "null") })
                         },
                     )
@@ -468,4 +438,18 @@ class SchemaWalker {
      * marker) whose `serialName` contains `<PageSize>`.
      */
     private fun SerialDescriptor.isPageSize(): Boolean = serialName.endsWith("<PageSize>")
+}
+
+/** Rewrites a non-null primitive schema's scalar `type` to the nullable `[type, "null"]` form. */
+private fun withNullType(base: JsonObject): JsonObject {
+    val typeName = (base.getValue("type") as JsonPrimitive).content
+    return JsonObject(
+        base + (
+            "type" to
+                buildJsonArray {
+                    add(typeName)
+                    add("null")
+                }
+        ),
+    )
 }

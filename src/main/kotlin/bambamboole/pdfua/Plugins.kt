@@ -2,6 +2,7 @@ package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.http.BEARER_SECURITY_SCHEME
+import bambamboole.pdfua.http.ErrorResponse
 import bambamboole.pdfua.http.openApiSpec
 import bambamboole.pdfua.http.serializeOpenApiDoc
 import com.auth0.jwk.JwkProvider
@@ -47,16 +48,10 @@ fun Application.serialization() {
 fun Application.statusPages() {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
-            call.respond(
-                io.ktor.http.HttpStatusCode.BadRequest,
-                mapOf("error" to (cause.message ?: "Invalid request")),
-            )
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse(cause.message ?: "Invalid request"))
         }
         exception<Throwable> { call, cause ->
-            call.respond(
-                io.ktor.http.HttpStatusCode.InternalServerError,
-                mapOf("error" to (cause.message ?: "Unknown error")),
-            )
+            call.respond(HttpStatusCode.InternalServerError, ErrorResponse(cause.message ?: "Unknown error"))
         }
     }
 }
