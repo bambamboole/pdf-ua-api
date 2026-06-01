@@ -15,10 +15,16 @@ data class Template(
 )
 
 @Serializable
-@SchemaTsType("{ page?: PageConfig; typography?: TypographyConfig }")
+@SchemaTsType("{ title?: string; page?: PageConfig; typography?: TypographyConfig; embedColorProfile?: boolean }")
 data class TemplateConfig(
+    @SchemaDescription("Document title. Used as the PDF document title, which PDF/UA requires.")
+    @SchemaStringDefault("Document")
+    val title: String = "Document",
     val page: PageConfig = PageConfig(),
     val typography: TypographyConfig = TypographyConfig(),
+    @SchemaDescription("Embed the PDF/A ICC color profile. Disable only for PDF/UA-without-PDF/A output.")
+    @SchemaBoolDefault(true)
+    val embedColorProfile: Boolean = true,
 )
 
 @Serializable

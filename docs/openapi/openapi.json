@@ -121,17 +121,6 @@
                                         "type": "object",
                                         "description": "Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables."
                                     },
-                                    "options": {
-                                        "type": "object",
-                                        "properties": {
-                                            "baseUrl": {
-                                                "type": "string"
-                                            },
-                                            "title": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
                                     "template": {
                                         "$ref": "#/components/schemas/Template"
                                     }
@@ -1827,15 +1816,25 @@
                         "type": "object",
                         "title": "TemplateConfig",
                         "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Document title. Used as the PDF document title, which PDF/UA requires.",
+                                "default": "Document"
+                            },
                             "page": {
                                 "$ref": "#/$defs/pageConfig"
                             },
                             "typography": {
                                 "$ref": "#/$defs/typographyConfig"
+                            },
+                            "embedColorProfile": {
+                                "type": "boolean",
+                                "description": "Embed the PDF/A ICC color profile. Disable only for PDF/UA-without-PDF/A output.",
+                                "default": true
                             }
                         },
                         "additionalProperties": false,
-                        "tsType": "{ page?: PageConfig; typography?: TypographyConfig }"
+                        "tsType": "{ title?: string; page?: PageConfig; typography?: TypographyConfig; embedColorProfile?: boolean }"
                     },
                     "fontFace": {
                         "type": "object",

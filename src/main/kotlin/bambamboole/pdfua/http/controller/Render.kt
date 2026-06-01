@@ -13,7 +13,6 @@ import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.FetchResult
 import bambamboole.pdfua.services.HtmlSourceFetcher
-import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
@@ -56,7 +55,6 @@ data class RenderRequest(
     val template: Template,
     /** Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables. */
     val data: Map<String, JsonElement> = emptyMap(),
-    val options: RenderOptions = RenderOptions(),
 )
 
 @Serializable
@@ -186,17 +184,6 @@ private fun renderRequestSchema(): JsonSchema =
                                     "array of row objects for tables.",
                         ),
                     ),
-                "options" to
-                    ReferenceOr.Value(
-                        JsonSchema(
-                            type = JsonType.OBJECT,
-                            properties =
-                                mapOf(
-                                    "baseUrl" to ReferenceOr.Value(JsonSchema(type = JsonType.STRING)),
-                                    "title" to ReferenceOr.Value(JsonSchema(type = JsonType.STRING)),
-                                ),
-                        ),
-                    ),
                 "template" to ReferenceOr.Reference(TEMPLATE_SCHEMA_REF),
             ),
         required = listOf("template"),
@@ -248,19 +235,15 @@ private suspend fun RoutingContext.renderTemplate(
         return
     }
 
-    request.options.baseUrl
-        .takeIf { it.isNotEmpty() }
-        ?.let { validateBaseUrl(it) }
-    val html = TemplateRenderer.render(request.template, request.data, request.options)
+    val html = TemplateRenderer.render(request.template, request.data)
 
     val result =
         PdfRenderer.convertHtmlToPdf(
             html = html,
             producer = pdfProducer,
             assetResolver = assetResolver,
-            baseUrl = request.options.baseUrl,
             attachments = request.template.attachments,
-            options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
+            options = PdfRenderOptions(embedColorProfile = request.template.config.embedColorProfile),
         )
 
     respondPdfOrUpload(result, uploader)
