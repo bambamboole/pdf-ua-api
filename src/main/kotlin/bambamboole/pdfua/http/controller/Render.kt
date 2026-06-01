@@ -4,6 +4,7 @@ import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.RenderHtmlRequest
+import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
 import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.pdf.PdfRenderOptions
@@ -167,8 +168,8 @@ private fun Operation.Builder.pdfRenderOperation(
 }
 
 /**
- * Hand-authored schema for [RenderRequest]; the full [Template] is intentionally opaque here and
- * documented via `GET /schema` instead of inlining its large recursive structure.
+ * Hand-authored schema for [RenderRequest]; the `template` field references the shared `Template`
+ * component (`TEMPLATE_SCHEMA_REF`), the same schema served by `GET /schema`.
  */
 private fun renderRequestSchema(): JsonSchema =
     JsonSchema(
@@ -195,14 +196,7 @@ private fun renderRequestSchema(): JsonSchema =
                                 ),
                         ),
                     ),
-                "template" to
-                    ReferenceOr.Value(
-                        JsonSchema(
-                            type = JsonType.OBJECT,
-                            description =
-                                "Template document to render. See GET /schema for the canonical template schema.",
-                        ),
-                    ),
+                "template" to ReferenceOr.Reference(TEMPLATE_SCHEMA_REF),
             ),
         required = listOf("template"),
     )

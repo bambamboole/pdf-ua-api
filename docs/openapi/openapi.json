@@ -50,7 +50,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Template"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -159,8 +163,7 @@
                                         }
                                     },
                                     "template": {
-                                        "type": "object",
-                                        "description": "Template document to render. See GET /schema for the canonical template schema."
+                                        "$ref": "#/components/schemas/Template"
                                     }
                                 }
                             }
@@ -797,6 +800,1219 @@
                             "null"
                         ]
                     }
+                }
+            },
+            "Template": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "https://pdf-ua-api.com/schemas/template-v1.json",
+                "title": "Template",
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "integer",
+                        "const": 1
+                    },
+                    "config": {
+                        "$ref": "#/$defs/templateConfig"
+                    },
+                    "fonts": {
+                        "type": "object",
+                        "description": "External fonts keyed by font family name.",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/fontFace"
+                        }
+                    },
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/fileAttachment"
+                        }
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/row"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "version"
+                ],
+                "$defs": {
+                    "pageFormat": {
+                        "type": "string",
+                        "title": "PageFormat",
+                        "enum": [
+                            "A3",
+                            "A4",
+                            "A5",
+                            "A6",
+                            "Letter",
+                            "Legal",
+                            "Tabloid"
+                        ]
+                    },
+                    "orientation": {
+                        "type": "string",
+                        "title": "Orientation",
+                        "enum": [
+                            "portrait",
+                            "landscape"
+                        ]
+                    },
+                    "presetPageSize": {
+                        "type": "object",
+                        "title": "PresetPageSize",
+                        "properties": {
+                            "format": {
+                                "$ref": "#/$defs/pageFormat"
+                            },
+                            "orientation": {
+                                "$ref": "#/$defs/orientation"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "customPageSize": {
+                        "type": "object",
+                        "title": "CustomPageSize",
+                        "properties": {
+                            "width": {
+                                "type": "integer",
+                                "minimum": 1.0
+                            },
+                            "height": {
+                                "type": "integer",
+                                "minimum": 1.0
+                            }
+                        },
+                        "required": [
+                            "width",
+                            "height"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "pageSize": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/$defs/presetPageSize"
+                            },
+                            {
+                                "$ref": "#/$defs/customPageSize"
+                            }
+                        ],
+                        "title": "PageSize"
+                    },
+                    "spacingConfig": {
+                        "type": "object",
+                        "title": "SpacingConfig",
+                        "properties": {
+                            "top": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Top spacing in millimetres.",
+                                "minimum": 0.0
+                            },
+                            "right": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Right spacing in millimetres.",
+                                "minimum": 0.0
+                            },
+                            "bottom": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Bottom spacing in millimetres.",
+                                "minimum": 0.0
+                            },
+                            "left": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Left spacing in millimetres.",
+                                "minimum": 0.0
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "align": {
+                        "type": "string",
+                        "title": "Align",
+                        "enum": [
+                            "left",
+                            "center",
+                            "right"
+                        ]
+                    },
+                    "pageNumbersConfig": {
+                        "type": "object",
+                        "title": "PageNumbersConfig",
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "position": {
+                                "$ref": "#/$defs/align"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "pageBackgroundType": {
+                        "type": "string",
+                        "title": "PageBackgroundType",
+                        "enum": [
+                            "auto",
+                            "image",
+                            "pdf"
+                        ]
+                    },
+                    "pageBackgroundConfig": {
+                        "type": "object",
+                        "title": "PageBackgroundConfig",
+                        "properties": {
+                            "src": {
+                                "type": "string",
+                                "description": "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+                                "minLength": 1
+                            },
+                            "type": {
+                                "$ref": "#/$defs/pageBackgroundType"
+                            }
+                        },
+                        "required": [
+                            "src"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "typographyConfig": {
+                        "type": "object",
+                        "title": "TypographyConfig",
+                        "properties": {
+                            "family": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Bundled or external font family key."
+                            },
+                            "size": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Font size in points.",
+                                "minimum": 1.0
+                            },
+                            "weight": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Font weight; one of the FontWeight enum values.",
+                                "enum": [
+                                    "300",
+                                    "400",
+                                    "500",
+                                    "600",
+                                    "700",
+                                    null
+                                ]
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Text alignment for this typography scope.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS color value used for text."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "dividerStyle": {
+                        "type": "string",
+                        "title": "DividerStyle",
+                        "enum": [
+                            "solid",
+                            "dashed",
+                            "dotted",
+                            "double",
+                            "none"
+                        ]
+                    },
+                    "dividerConfig": {
+                        "type": "object",
+                        "title": "DividerConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "thickness": {
+                                "type": "integer",
+                                "default": 1,
+                                "minimum": 0.0
+                            },
+                            "lineColor": {
+                                "type": "string",
+                                "pattern": "^#[0-9A-Fa-f]{3,8}$",
+                                "default": "#d1d5db"
+                            },
+                            "style": {
+                                "$ref": "#/$defs/dividerStyle"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
+                    },
+                    "dividerBlock": {
+                        "type": "object",
+                        "title": "DividerBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "divider"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "config": {
+                                "$ref": "#/$defs/dividerConfig"
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "headingConfig": {
+                        "type": "object",
+                        "title": "HeadingConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "level": {
+                                "type": "integer",
+                                "default": 2,
+                                "minimum": 1.0,
+                                "maximum": 6.0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { level?: number }"
+                    },
+                    "headingBlock": {
+                        "type": "object",
+                        "title": "HeadingBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "heading"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "$ref": "#/$defs/headingConfig"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "blockConfig": {
+                        "type": "object",
+                        "title": "BlockConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
+                    },
+                    "htmlBlock": {
+                        "type": "object",
+                        "title": "HtmlBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "html"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "html": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "$ref": "#/$defs/blockConfig"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "html"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "imageConfig": {
+                        "type": "object",
+                        "title": "ImageConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "maxHeight": {
+                                "type": "integer",
+                                "default": 60,
+                                "minimum": 1.0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { maxHeight?: number }"
+                    },
+                    "imageBlock": {
+                        "type": "object",
+                        "title": "ImageBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "image"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "src": {
+                                "type": "string",
+                                "description": "Public image URL, SVG markup, or uploaded image data URL."
+                            },
+                            "alt": {
+                                "type": "string",
+                                "description": "Alternative text for screen readers and PDF accessibility.",
+                                "default": ""
+                            },
+                            "config": {
+                                "$ref": "#/$defs/imageConfig"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "src"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "keyValueField": {
+                        "type": "object",
+                        "title": "KeyValueField",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                            },
+                            "label": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "key",
+                            "label"
+                        ],
+                        "additionalProperties": false,
+                        "tsType": "{ key: string; label: string }"
+                    },
+                    "keyValueConfig": {
+                        "type": "object",
+                        "title": "KeyValueConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "labelWidth": {
+                                "type": "string",
+                                "default": "30mm"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/$defs/keyValueField"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }"
+                    },
+                    "keyValueBlock": {
+                        "type": "object",
+                        "title": "KeyValueBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "key-value"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "values": {
+                                "type": "object",
+                                "title": "KeyValueValues",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                                },
+                                "additionalProperties": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "config": {
+                                "$ref": "#/$defs/keyValueConfig"
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "spacerConfig": {
+                        "type": "object",
+                        "title": "SpacerConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "height": {
+                                "type": "integer",
+                                "default": 5,
+                                "minimum": 0.0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { height?: number }"
+                    },
+                    "spacerBlock": {
+                        "type": "object",
+                        "title": "SpacerBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "spacer"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "config": {
+                                "$ref": "#/$defs/spacerConfig"
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "tableColumn": {
+                        "type": "object",
+                        "title": "TableColumn",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Runtime data key used for this table column.",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "Header label rendered for this table column."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Text alignment for this table column.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Column width as a CSS width value, such as 20mm or 15%."
+                            }
+                        },
+                        "required": [
+                            "key",
+                            "label"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "tableStyle": {
+                        "type": "string",
+                        "title": "TableStyle",
+                        "enum": [
+                            "striped",
+                            "bordered",
+                            "minimal"
+                        ]
+                    },
+                    "tableConfig": {
+                        "type": "object",
+                        "title": "TableConfig",
+                        "properties": {
+                            "typography": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/typographyConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spacing": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/spacingConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Horizontal placement of this block within its row cell.",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right",
+                                    null
+                                ]
+                            },
+                            "numberRows": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/$defs/tableColumn"
+                                }
+                            },
+                            "style": {
+                                "$ref": "#/$defs/tableStyle"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }"
+                    },
+                    "tableBlock": {
+                        "type": "object",
+                        "title": "TableBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "table"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "config": {
+                                "$ref": "#/$defs/tableConfig"
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "textBlock": {
+                        "type": "object",
+                        "title": "TextBlock",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "text"
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Stable block identifier used for runtime data overrides."
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "$ref": "#/$defs/blockConfig"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "block": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/$defs/textBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/htmlBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/headingBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/imageBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/keyValueBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/spacerBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/dividerBlock"
+                            },
+                            {
+                                "$ref": "#/$defs/tableBlock"
+                            }
+                        ]
+                    },
+                    "row": {
+                        "type": "object",
+                        "title": "Row",
+                        "properties": {
+                            "blocks": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/$defs/block"
+                                }
+                            }
+                        },
+                        "required": [
+                            "blocks"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "pageFooterConfig": {
+                        "type": "object",
+                        "title": "PageFooterConfig",
+                        "properties": {
+                            "repeat": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/$defs/row"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "{ repeat?: boolean; rows?: Row[] }"
+                    },
+                    "pageConfig": {
+                        "type": "object",
+                        "title": "PageConfig",
+                        "properties": {
+                            "size": {
+                                "$ref": "#/$defs/pageSize"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "default": "de_DE"
+                            },
+                            "margins": {
+                                "$ref": "#/$defs/spacingConfig"
+                            },
+                            "pageNumbers": {
+                                "$ref": "#/$defs/pageNumbersConfig"
+                            },
+                            "background": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/pageBackgroundConfig"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "footer": {
+                                "$ref": "#/$defs/pageFooterConfig"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }"
+                    },
+                    "templateConfig": {
+                        "type": "object",
+                        "title": "TemplateConfig",
+                        "properties": {
+                            "page": {
+                                "$ref": "#/$defs/pageConfig"
+                            },
+                            "typography": {
+                                "$ref": "#/$defs/typographyConfig"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "tsType": "{ page?: PageConfig; typography?: TypographyConfig }"
+                    },
+                    "fontFace": {
+                        "type": "object",
+                        "title": "FontFace",
+                        "properties": {
+                            "src": {
+                                "type": "string"
+                            },
+                            "weight": {
+                                "type": "string",
+                                "description": "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
+                                "default": "400"
+                            },
+                            "style": {
+                                "type": "string",
+                                "default": "normal"
+                            }
+                        },
+                        "required": [
+                            "src"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "fileAttachment": {
+                        "type": "object",
+                        "title": "FileAttachment",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Base64-encoded file content."
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "default": "application/octet-stream"
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "relationship": {
+                                "type": "string",
+                                "default": "Alternative"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "fontWeight": {
+                        "type": "string",
+                        "title": "FontWeight",
+                        "enum": [
+                            "300",
+                            "400",
+                            "500",
+                            "600",
+                            "700"
+                        ]
+                    }
+                },
+                "x-pdfUa": {
+                    "kind": "template",
+                    "templateVersion": 1,
+                    "renderEndpoint": "/render/template",
+                    "templateFields": [
+                        "version",
+                        "config",
+                        "fonts",
+                        "attachments",
+                        "rows"
+                    ],
+                    "attachmentFields": [
+                        "name",
+                        "content",
+                        "mimeType",
+                        "description",
+                        "relationship"
+                    ],
+                    "externalFontFields": [
+                        "src",
+                        "weight",
+                        "style"
+                    ],
+                    "bundledFonts": [
+                        "Fira Code",
+                        "Inter",
+                        "JetBrains Mono",
+                        "Lato",
+                        "Liberation Mono",
+                        "Liberation Sans",
+                        "Liberation Serif",
+                        "Merriweather",
+                        "Montserrat",
+                        "Noto Sans",
+                        "Noto Sans Mono",
+                        "Noto Serif",
+                        "Nunito",
+                        "Open Sans",
+                        "Oswald",
+                        "Playfair Display",
+                        "Poppins",
+                        "Raleway",
+                        "Roboto",
+                        "Rubik"
+                    ],
+                    "blockOrder": [
+                        "text",
+                        "html",
+                        "heading",
+                        "image",
+                        "key-value",
+                        "spacer",
+                        "divider",
+                        "table"
+                    ],
+                    "pageFormats": [
+                        {
+                            "name": "A3",
+                            "widthMm": 297.0,
+                            "heightMm": 420.0
+                        },
+                        {
+                            "name": "A4",
+                            "widthMm": 210.0,
+                            "heightMm": 297.0
+                        },
+                        {
+                            "name": "A5",
+                            "widthMm": 148.0,
+                            "heightMm": 210.0
+                        },
+                        {
+                            "name": "A6",
+                            "widthMm": 105.0,
+                            "heightMm": 148.0
+                        },
+                        {
+                            "name": "Letter",
+                            "widthMm": 215.9,
+                            "heightMm": 279.4
+                        },
+                        {
+                            "name": "Legal",
+                            "widthMm": 215.9,
+                            "heightMm": 355.6
+                        },
+                        {
+                            "name": "Tabloid",
+                            "widthMm": 279.4,
+                            "heightMm": 431.8
+                        }
+                    ]
                 }
             }
         },

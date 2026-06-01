@@ -3,6 +3,7 @@ package bambamboole.pdfua
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.http.BEARER_SECURITY_SCHEME
 import bambamboole.pdfua.http.openApiSpec
+import bambamboole.pdfua.http.serializeOpenApiDoc
 import com.auth0.jwk.JwkProvider
 import io.ktor.http.*
 import io.ktor.openapi.OpenApiInfo
@@ -129,7 +130,11 @@ fun Application.swagger() {
     openApiSpec(version)
     routing {
         swaggerUI(path = "api-docs") {
-            source = OpenApiDocSource.Routing(contentType = ContentType.Application.Json)
+            source =
+                OpenApiDocSource.Routing(
+                    contentType = ContentType.Application.Json,
+                    serializeModel = ::serializeOpenApiDoc,
+                )
             info =
                 OpenApiInfo(
                     title = "PDF API",

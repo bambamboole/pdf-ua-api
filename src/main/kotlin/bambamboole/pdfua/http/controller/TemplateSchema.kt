@@ -1,9 +1,10 @@
 package bambamboole.pdfua.http.controller
 
+import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
 import bambamboole.pdfua.template.TemplateJsonSchema
 import io.ktor.http.*
 import io.ktor.openapi.JsonSchema
-import io.ktor.openapi.JsonType
+import io.ktor.openapi.ReferenceOr
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -27,7 +28,9 @@ fun Route.templateSchemaRoutes() {
         responses {
             HttpStatusCode.OK {
                 description = "Template JSON Schema"
-                ContentType.Application.Json { schema = JsonSchema(type = JsonType.OBJECT) }
+                ContentType.Application.Json {
+                    schema = JsonSchema(allOf = listOf(ReferenceOr.Reference(TEMPLATE_SCHEMA_REF)))
+                }
             }
         }
     }

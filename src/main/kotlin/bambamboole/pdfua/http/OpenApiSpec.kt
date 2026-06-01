@@ -1,5 +1,6 @@
 package bambamboole.pdfua.http
 
+import bambamboole.pdfua.template.TemplateJsonSchema
 import io.ktor.http.*
 import io.ktor.openapi.HttpSecurityScheme
 import io.ktor.openapi.JsonSchema
@@ -15,8 +16,14 @@ import io.ktor.server.routing.openapi.plus
 import io.ktor.server.routing.openapi.registerSecurityScheme
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 
 const val BEARER_SECURITY_SCHEME = "bearerAuth"
+
+/** Name and `$ref` of the shared template schema component referenced by `/render/template` and `/schema`. */
+const val TEMPLATE_SCHEMA_COMPONENT = "Template"
+const val TEMPLATE_SCHEMA_REF = "#/components/schemas/$TEMPLATE_SCHEMA_COMPONENT"
 
 /** Schema for a raw binary response or request body (for example `application/pdf`). */
 fun binarySchema(): JsonSchema = JsonSchema(type = JsonType.STRING, format = "binary")
@@ -49,7 +56,22 @@ fun Application.buildOpenApiDocument(version: String): OpenApiDoc {
     return defaults + routingRoot.descendants() + findSecuritySchemes()
 }
 
-fun Application.serializeOpenApiDocument(version: String): String = specJson.encodeToString(buildOpenApiDocument(version))
+/**
+ * Serializes an assembled document to JSON, injecting [TemplateJsonSchema] as the shared `Template`
+ * component. The schema is injected as raw JSON because it is a self-contained JSON Schema document
+ * (`$schema`/`$id`/`$defs`) that Ktor's typed [JsonSchema] model cannot represent without losing its
+ * `$defs`. Both `/render/template` and `/schema` `$ref` this component.
+ */
+fun serializeOpenApiDoc(doc: OpenApiDoc): String {
+    val root = specJson.parseToJsonElement(specJson.encodeToString(doc)).jsonObject
+    val components = root["components"]?.jsonObject ?: JsonObject(emptyMap())
+    val schemas = components["schemas"]?.jsonObject ?: JsonObject(emptyMap())
+    val mergedSchemas = JsonObject(schemas + (TEMPLATE_SCHEMA_COMPONENT to TemplateJsonSchema.current()))
+    val mergedComponents = JsonObject(components + ("schemas" to mergedSchemas))
+    return specJson.encodeToString(JsonObject(root + ("components" to mergedComponents)))
+}
+
+fun Application.serializeOpenApiDocument(version: String): String = serializeOpenApiDoc(buildOpenApiDocument(version))
 
 /**
  * Registers the bearer security scheme and serves the assembled specification as JSON. The endpoint
