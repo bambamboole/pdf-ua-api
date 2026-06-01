@@ -32,7 +32,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Benchmark
 
-- `benchmark/` holds a one-command Docker benchmark against WeasyPrint and Gotenberg Chromium (`cd benchmark && make benchmark`). It runs the engines as HTTP services, drives load with `oha`, validates every output via the API's own veraPDF `/validate`, and writes `benchmark/results/latest.json`, which the docs `/comparison` page renders at build time.
+- `benchmark/` holds a one-command Docker benchmark against WeasyPrint and Gotenberg Chromium (`cd benchmark && make benchmark`). It runs the engines as HTTP services, drives load with `oha`, validates every output via the API's own veraPDF `/validate`, and writes `benchmark/results/latest.json`, which the docs `/benchmark` page renders at build time.
 - The benchmark disables pdf-ua-api's rate limiter (`RATE_LIMIT_ENABLED=false`) so it measures raw engine throughput; this is disclosed in the harness README and on the docs page.
 
 ## Runtime Configuration

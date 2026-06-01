@@ -1,0 +1,102 @@
+---
+title: Benchmark
+description: pdf-ua-api vs WeasyPrint vs Gotenberg Chromium on speed, PDF/UA compliance, and file size.
+---
+
+import data from "../../../benchmark/results/latest.json";
+
+export const docs = [...new Set(data.results.map((r) => r.doc))];
+export const fmt = (n) => (n == null ? "—" : Math.round(n).toLocaleString());
+export const ms = (n) => (n == null ? "—" : `${n} ms`);
+export const kb = (b) => (b == null ? "—" : `${(b / 1024).toFixed(1)} KB`);
+
+All engines run as HTTP services in Docker, hit with identical load —
+{data.meta.concurrency} concurrent clients for {data.meta.duration}, after
+{data.meta.warmupRequests} warmup requests. Measured {data.meta.date};
+WeasyPrint {data.meta.weasyprintVersion}, running in its `pdf/ua-1`
+accessibility mode; Gotenberg {data.meta.gotenbergVersion}, running its Chromium
+HTML converter.
+
+The published numbers were measured on a MacBook Pro with an M1 Max. Numbers
+reflect one machine and one run; re-run them yourself for your hardware.
+
+pdf-ua-api is run with `embedColorProfile` set to
+**{String(data.meta.pdfUaEmbedColorProfile)}** for this benchmark; the default
+harness value is `false` so file size is compared without pdf-ua-api's PDF/A
+output intent.
+
+{docs.map((doc) => (
+  <div key={doc}>
+    <h3>{doc} document</h3>
+    <table>
+      <thead>
+        <tr><th>Engine</th><th>Req/s</th><th>p50</th><th>p99</th><th>PDF/UA-1</th><th>Size</th></tr>
+      </thead>
+      <tbody>
+        {data.results.filter((r) => r.doc === doc).map((r) => (
+          <tr key={r.engine}>
+            <td>{r.engine}</td>
+            <td>{fmt(r.reqPerSec)}</td>
+            <td>{ms(r.p50Ms)}</td>
+            <td>{ms(r.p99Ms)}</td>
+            <td>{r.pdfUa ? "Pass" : "Fail"}</td>
+            <td>{kb(r.sizeBytes)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+))}
+
+## What the numbers say
+
+- **Throughput.** pdf-ua-api is fastest across the small, medium, and mixed
+  large accessible-output runs in this result set. Gotenberg Chromium is included
+  as a non-PDF/UA rendering baseline and remains useful for raw browser-output
+  comparison.
+- **Accessibility.** Every pdf-ua-api output passes PDF/UA-1 validation. With
+  `embedColorProfile=true`, the normal API output also passes PDF/A-3a.
+  WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
+  document but is flagged as non-compliant on the more complex ones. Gotenberg
+  Chromium output is included as a rendering baseline, not as a PDF/UA engine.
+- **File size.** pdf-ua-api produces larger files — but not because WeasyPrint
+  skips font embedding. The engines embed the same subsetted *Liberation Sans*.
+  The normal pdf-ua-api default packs an ICC color profile, a PDF/A output intent,
+  **and** a full accessibility tag tree into one file. The benchmark disables the
+  color profile for pdf-ua-api so the size column compares accessible output mode
+  against WeasyPrint's `pdf/ua-1` mode while showing where Chromium-only output
+  lands. Re-run with
+  `PDF_UA_EMBED_COLOR_PROFILE=true` to measure the combined archival accessible
+  output.
+
+## Methodology
+
+All engines run as HTTP services in Docker and receive the exact same HTML per
+document. Gotenberg receives it as a multipart `index.html` upload with
+`preferCssPageSize=true` and `printBackground=true`. A warmup phase precedes
+measurement so cold-start does not skew results — disclosed, not hidden.
+pdf-ua-api's rate limiter is disabled for the run so the load test measures raw
+engine throughput.
+
+The corpus has three document shapes: a small text document, a medium invoice
+with tables, and a large mixed report with paragraphs, figures, callouts, and a
+limited number of tables. The large fixture intentionally avoids being a pure
+table stress test.
+
+The containers ship Liberation Sans, so the engines embed the same typeface and
+file size isn't skewed by font choice. Throughput and latency come from
+[`oha`](https://github.com/hatoo/oha). Every output PDF — from **all** engines —
+is validated by pdf-ua-api's own veraPDF `/validate` endpoint, so all are judged
+by the same validator. The default run disables pdf-ua-api's embedded color
+profile for the benchmark request only; the API's normal default remains PDF/A-3a
+and PDF/UA-1 output. File size is the output PDF byte length.
+
+## Run it yourself
+
+```bash
+cd benchmark
+make benchmark
+```
+
+The full harness — corpus, services, and runner — lives in
+[`benchmark/`](https://github.com/bambamboole/pdf-ua-api/tree/main/benchmark).

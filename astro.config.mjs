@@ -84,7 +84,7 @@ if (svg) {
                 {label: "Authentication", link: "/authentication/"},
                 {label: "Rate Limiting", link: "/rate-limiting/"},
                 {label: "S3 PDF Upload", link: "/s3-upload/"},
-                {label: "Comparison", link: "/comparison/"},
+                {label: "Benchmark", link: "/benchmark/"},
                 {
                     label: "HTML",
                     items: [
