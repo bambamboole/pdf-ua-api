@@ -11,6 +11,42 @@
         }
     ],
     "paths": {
+        "/health": {
+            "get": {
+                "summary": "Health check",
+                "description": "Returns the health status of the API. Always accessible without authentication.",
+                "tags": [
+                    "Health"
+                ]
+            }
+        },
+        "/identify": {
+            "post": {
+                "summary": "Identify PDF",
+                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
+                "tags": [
+                    "Identification"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Identification result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.IdentifyResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PDF content is empty or invalid"
+                    },
+                    "500": {
+                        "description": "Failed to read PDF"
+                    }
+                }
+            }
+        },
         "/render/html": {
             "post": {
                 "summary": "Render HTML to PDF",
@@ -302,42 +338,6 @@
                         }
                     }
                 ]
-            }
-        },
-        "/health": {
-            "get": {
-                "summary": "Health check",
-                "description": "Returns the health status of the API. Always accessible without authentication.",
-                "tags": [
-                    "Health"
-                ]
-            }
-        },
-        "/identify": {
-            "post": {
-                "summary": "Identify PDF",
-                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
-                "tags": [
-                    "Identification"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Identification result",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.IdentifyResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "PDF content is empty or invalid"
-                    },
-                    "500": {
-                        "description": "Failed to read PDF"
-                    }
-                }
             }
         },
         "/schema": {

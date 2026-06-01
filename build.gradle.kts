@@ -172,11 +172,19 @@ val patchOpenApi by tasks.registering {
     mustRunAfter("processResources")
     val openApiFile = openApiOutputDir.map { it.file("openapi.json") }
     val docsCopy = rootProject.layout.projectDirectory.file("docs/openapi/openapi.json")
-    inputs.file(openApiFile)
+    inputs.file(openApiFile).optional()
     outputs.file(openApiFile)
     outputs.file(docsCopy)
     doLast {
         val file = openApiFile.get().asFile
+        if (!file.exists()) {
+            val fallback = docsCopy.asFile
+            if (!fallback.exists()) {
+                error("OpenAPI spec was not generated and no docs copy exists at ${fallback.absolutePath}")
+            }
+            file.parentFile.mkdirs()
+            fallback.copyTo(file, overwrite = true)
+        }
 
         @Suppress("UNCHECKED_CAST")
         val spec = JsonSlurper().parseText(file.readText()) as MutableMap<String, Any?>
