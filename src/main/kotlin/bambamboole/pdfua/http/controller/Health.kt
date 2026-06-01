@@ -1,13 +1,18 @@
 package bambamboole.pdfua.http.controller
 
 import io.ktor.http.*
-import io.ktor.openapi.JsonSchema
-import io.ktor.openapi.JsonType
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import io.ktor.utils.io.ExperimentalKtorApi
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class HealthResponse(
+    val status: String,
+)
 
 fun Application.health() {
     routing { healthRoutes() }
@@ -16,7 +21,7 @@ fun Application.health() {
 @OptIn(ExperimentalKtorApi::class)
 fun Route.healthRoutes() {
     get("/health") {
-        call.respond(mapOf("status" to "ok"))
+        call.respond(HealthResponse(status = "ok"))
     }.describe {
         tag("Health")
         summary = "Health check"
@@ -24,16 +29,7 @@ fun Route.healthRoutes() {
         responses {
             HttpStatusCode.OK {
                 description = "Service is healthy"
-                schema =
-                    JsonSchema(
-                        type = JsonType.OBJECT,
-                        properties =
-                            mapOf(
-                                "status" to
-                                    io.ktor.openapi.ReferenceOr
-                                        .Value(JsonSchema(type = JsonType.STRING)),
-                            ),
-                    )
+                schema = jsonSchema<HealthResponse>()
             }
         }
     }

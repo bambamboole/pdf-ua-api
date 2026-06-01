@@ -24,12 +24,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "status": {
-                                            "type": "string"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/HealthResponse"
                                 }
                             }
                         }
@@ -377,6 +372,18 @@
     "webhooks": {},
     "components": {
         "schemas": {
+            "HealthResponse": {
+                "type": "object",
+                "title": "HealthResponse",
+                "required": [
+                    "status"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
             "FileAttachment": {
                 "type": "object",
                 "title": "FileAttachment",
