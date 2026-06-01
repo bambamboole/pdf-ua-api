@@ -1,9 +1,9 @@
 {
-    "openapi": "3.1.0",
+    "openapi": "3.1.1",
     "info": {
         "title": "PDF API",
-        "description": "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation",
-        "version": "dev"
+        "version": "dev",
+        "description": "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation"
     },
     "servers": [
         {
@@ -13,47 +13,78 @@
     "paths": {
         "/health": {
             "get": {
-                "summary": "Health check",
-                "description": "Returns the health status of the API. Always accessible without authentication.",
                 "tags": [
                     "Health"
-                ]
-            }
-        },
-        "/identify": {
-            "post": {
-                "summary": "Identify PDF",
-                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
-                "tags": [
-                    "Identification"
                 ],
+                "summary": "Health check",
+                "description": "Returns the health status of the API. Always accessible without authentication.",
                 "responses": {
                     "200": {
-                        "description": "Identification result",
+                        "description": "Service is healthy",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.IdentifyResponse"
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
-                    },
-                    "400": {
-                        "description": "PDF content is empty or invalid"
-                    },
-                    "500": {
-                        "description": "Failed to read PDF"
+                    }
+                }
+            }
+        },
+        "/schema": {
+            "get": {
+                "tags": [
+                    "Rendering"
+                ],
+                "summary": "Get the template schema",
+                "description": "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. The response is a JSON Schema document describing the Template type accepted by /render/template, with builder metadata under x-pdfUa.",
+                "responses": {
+                    "200": {
+                        "description": "Template JSON Schema",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
         "/render/html": {
             "post": {
-                "summary": "Render HTML to PDF",
-                "description": "Renders HTML to a PDF/A-3a + PDF/UA document.",
                 "tags": [
                     "Rendering"
                 ],
+                "summary": "Render HTML to PDF",
+                "description": "Renders HTML to a PDF/A-3a + PDF/UA document, or a JSON validation response when Accept is application/json.",
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RenderHtmlRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "PDF document or JSON validation response",
@@ -66,69 +97,77 @@
                             },
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "validation": {
-                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
-                                        },
-                                        "pdf": {
-                                            "type": "string",
-                                            "format": "byte",
-                                            "contentEncoding": "base64",
-                                            "contentMediaType": "application/pdf"
-                                        }
-                                    },
-                                    "required": [
-                                        "validation",
-                                        "pdf"
-                                    ]
+                                    "$ref": "#/components/schemas/RenderPdfResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid request or JSON/upload conflict"
-                    },
-                    "500": {
-                        "description": "Rendering failed"
+                        "description": "Invalid request, empty HTML, or JSON/upload conflict"
                     },
                     "204": {
                         "description": "PDF uploaded successfully"
                     },
                     "502": {
                         "description": "Upload target rejected the request or was unreachable"
+                    },
+                    "500": {
+                        "description": "Rendering failed"
                     }
-                },
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.RenderHtmlRequest"
-                            }
-                        }
-                    }
-                },
-                "parameters": [
-                    {
-                        "name": "X-Upload-Url",
-                        "in": "header",
-                        "required": false,
-                        "description": "Presigned PUT URL that receives the generated document.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/render/template": {
             "post": {
-                "summary": "Render a template to PDF",
-                "description": "Renders a JSON template to a PDF/A-3a document or JSON validation response.",
                 "tags": [
                     "Rendering"
                 ],
+                "summary": "Render a template to PDF",
+                "description": "Renders a JSON template to a PDF/A-3a document, or a JSON validation response when Accept is application/json.",
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "template"
+                                ],
+                                "properties": {
+                                    "data": {
+                                        "type": "object",
+                                        "description": "Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables."
+                                    },
+                                    "options": {
+                                        "type": "object",
+                                        "properties": {
+                                            "baseUrl": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "template": {
+                                        "type": "object",
+                                        "description": "Template document to render. See GET /schema for the canonical template schema."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "PDF document or JSON validation response",
@@ -141,76 +180,53 @@
                             },
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "validation": {
-                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
-                                        },
-                                        "pdf": {
-                                            "type": "string",
-                                            "format": "byte",
-                                            "contentEncoding": "base64",
-                                            "contentMediaType": "application/pdf"
-                                        }
-                                    },
-                                    "required": [
-                                        "validation",
-                                        "pdf"
-                                    ]
+                                    "$ref": "#/components/schemas/RenderPdfResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid request or JSON/upload conflict",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Rendering failed"
+                        "description": "Invalid template, data, request, or JSON/upload conflict"
                     },
                     "204": {
                         "description": "PDF uploaded successfully"
                     },
                     "502": {
                         "description": "Upload target rejected the request or was unreachable"
-                    }
-                },
-                "parameters": [
-                    {
-                        "name": "X-Upload-Url",
-                        "in": "header",
-                        "required": false,
-                        "description": "Presigned PUT URL that receives the generated document.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderRequest"
-                            }
-                        }
+                    },
+                    "500": {
+                        "description": "Rendering failed"
                     }
                 }
             }
         },
         "/render/url": {
             "post": {
-                "summary": "Render a URL to PDF",
-                "description": "Fetches the HTML at the given URL and renders it to a PDF or JSON validation response.",
                 "tags": [
                     "Rendering"
                 ],
+                "summary": "Render a URL to PDF",
+                "description": "Fetches the HTML at the given URL and renders it to a PDF, or a JSON validation response when Accept is application/json.",
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RenderUrlRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "PDF document or JSON validation response",
@@ -223,69 +239,53 @@
                             },
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "validation": {
-                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
-                                        },
-                                        "pdf": {
-                                            "type": "string",
-                                            "format": "byte",
-                                            "contentEncoding": "base64",
-                                            "contentMediaType": "application/pdf"
-                                        }
-                                    },
-                                    "required": [
-                                        "validation",
-                                        "pdf"
-                                    ]
+                                    "$ref": "#/components/schemas/RenderPdfResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid request or JSON/upload conflict"
-                    },
-                    "500": {
-                        "description": "Rendering failed"
+                        "description": "Invalid URL, fetch failure, or JSON/upload conflict"
                     },
                     "204": {
                         "description": "PDF uploaded successfully"
                     },
                     "502": {
                         "description": "Upload target rejected the request or was unreachable"
+                    },
+                    "500": {
+                        "description": "Rendering failed"
                     }
-                },
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderUrlRequest"
-                            }
-                        }
-                    }
-                },
+                }
+            }
+        },
+        "/render": {
+            "post": {
+                "tags": [
+                    "Rendering"
+                ],
+                "summary": "Render HTML to image",
+                "description": "Renders HTML to a PNG or JPEG image, or uploads it when X-Upload-Url is provided.",
                 "parameters": [
                     {
                         "name": "X-Upload-Url",
                         "in": "header",
-                        "required": false,
                         "description": "Presigned PUT URL that receives the generated document.",
                         "schema": {
                             "type": "string"
                         }
                     }
-                ]
-            }
-        },
-        "/render": {
-            "post": {
-                "summary": "Render HTML to image",
-                "description": "Renders HTML to a PNG or JPEG image. Returns the image binary.",
-                "tags": [
-                    "Rendering"
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RenderImageRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "Rendered image",
@@ -307,74 +307,43 @@
                     "400": {
                         "description": "Invalid request or upload URL"
                     },
-                    "500": {
-                        "description": "Rendering failed"
-                    },
                     "204": {
                         "description": "Image uploaded successfully"
                     },
                     "502": {
                         "description": "Upload target rejected the request or was unreachable"
-                    }
-                },
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderImageRequest"
-                            }
-                        }
-                    }
-                },
-                "parameters": [
-                    {
-                        "name": "X-Upload-Url",
-                        "in": "header",
-                        "required": false,
-                        "description": "Presigned PUT URL that receives the generated document.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/schema": {
-            "get": {
-                "summary": "Get the template schema",
-                "description": "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. The response is a JSON Schema document describing the Template type accepted by /render/template, with builder metadata under x-pdfUa.",
-                "tags": [
-                    "Rendering"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Template JSON Schema",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
+                    },
+                    "500": {
+                        "description": "Rendering failed"
                     }
                 }
             }
         },
         "/validate": {
             "post": {
-                "summary": "Validate PDF",
-                "description": "Validates a PDF against PDF/A-3a and PDF/UA-1 standards using veraPDF. Send PDF binary as request body.",
                 "tags": [
                     "Validation"
                 ],
+                "summary": "Validate PDF",
+                "description": "Validates a PDF against PDF/A-3a and PDF/UA-1 standards using veraPDF. Send PDF binary as request body.",
+                "requestBody": {
+                    "content": {
+                        "application/pdf": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "Validation result",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
+                                    "$ref": "#/components/schemas/ValidationResponse"
                                 }
                             }
                         }
@@ -387,126 +356,110 @@
                     }
                 }
             }
-        }
-    },
-    "components": {
-        "schemas": {
-            "bambamboole.pdfua.http.CategoryResult": {
-                "type": "object",
-                "properties": {
-                    "category": {
-                        "type": "string"
-                    },
-                    "failedChecks": {
-                        "type": "integer"
-                    },
-                    "passedChecks": {
-                        "type": "integer"
-                    }
-                },
-                "required": [
-                    "category",
-                    "passedChecks",
-                    "failedChecks"
-                ]
-            },
-            "bambamboole.pdfua.http.DocumentInfo": {
-                "type": "object",
-                "properties": {
-                    "fonts": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.http.FontInfo"
+        },
+        "/identify": {
+            "post": {
+                "tags": [
+                    "Identification"
+                ],
+                "summary": "Identify PDF",
+                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
+                "requestBody": {
+                    "content": {
+                        "application/pdf": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
                         }
                     },
-                    "images": {
-                        "type": "integer"
-                    },
-                    "language": {
-                        "type": "string"
-                    },
-                    "pages": {
-                        "type": "integer"
-                    },
-                    "structureElements": {
-                        "type": "integer"
-                    },
-                    "tagged": {
-                        "type": "boolean"
-                    }
+                    "required": true
                 },
-                "required": [
-                    "pages",
-                    "tagged",
-                    "structureElements",
-                    "fonts",
-                    "images"
-                ]
-            },
-            "bambamboole.pdfua.http.FontInfo": {
-                "type": "object",
-                "properties": {
-                    "embedded": {
-                        "type": "boolean"
+                "responses": {
+                    "200": {
+                        "description": "Identification result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IdentifyResponse"
+                                }
+                            }
+                        }
                     },
+                    "400": {
+                        "description": "PDF content is empty or invalid"
+                    },
+                    "500": {
+                        "description": "Failed to read PDF"
+                    }
+                }
+            }
+        }
+    },
+    "webhooks": {},
+    "components": {
+        "schemas": {
+            "FileAttachment": {
+                "type": "object",
+                "title": "FileAttachment",
+                "required": [
+                    "name",
+                    "content"
+                ],
+                "properties": {
                     "name": {
                         "type": "string"
                     },
-                    "type": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "name",
-                    "embedded",
-                    "type"
-                ]
-            },
-            "bambamboole.pdfua.http.PdfMetadata": {
-                "type": "object",
-                "properties": {
-                    "author": {
+                    "content": {
                         "type": "string"
                     },
-                    "creationDate": {
+                    "mimeType": {
                         "type": "string"
                     },
-                    "creator": {
-                        "type": "string"
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
-                    "producer": {
-                        "type": "string"
-                    },
-                    "subject": {
-                        "type": "string"
-                    },
-                    "title": {
+                    "relationship": {
                         "type": "string"
                     }
                 }
             },
-            "bambamboole.pdfua.http.ProfileResult": {
+            "RenderHtmlRequest": {
                 "type": "object",
+                "title": "RenderHtmlRequest",
+                "required": [
+                    "html"
+                ],
                 "properties": {
-                    "failedChecks": {
-                        "type": "integer"
+                    "html": {
+                        "type": "string"
                     },
-                    "isCompliant": {
+                    "baseUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "attachments": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/FileAttachment"
+                        }
+                    },
+                    "embedColorProfile": {
                         "type": "boolean"
-                    },
-                    "passedChecks": {
-                        "type": "integer"
-                    },
-                    "profile": {
-                        "type": "string"
-                    },
-                    "specification": {
-                        "type": "string"
-                    },
-                    "totalChecks": {
-                        "type": "integer"
                     }
-                },
+                }
+            },
+            "ProfileResult": {
+                "type": "object",
+                "title": "ProfileResult",
                 "required": [
                     "profile",
                     "specification",
@@ -514,366 +467,349 @@
                     "totalChecks",
                     "passedChecks",
                     "failedChecks"
-                ]
-            },
-            "bambamboole.pdfua.http.RenderHtmlRequest": {
-                "type": "object",
+                ],
                 "properties": {
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
-                        }
-                    },
-                    "baseUrl": {
+                    "profile": {
                         "type": "string"
                     },
-                    "embedColorProfile": {
+                    "specification": {
+                        "type": "string"
+                    },
+                    "isCompliant": {
                         "type": "boolean"
                     },
-                    "html": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "html"
-                ]
-            },
-            "bambamboole.pdfua.http.ValidationErrorResponse": {
-                "type": "object",
-                "properties": {
-                    "error": {
-                        "type": "string"
+                    "totalChecks": {
+                        "type": "integer"
                     },
-                    "issues": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.ValidationIssue"
-                        }
+                    "passedChecks": {
+                        "type": "integer"
+                    },
+                    "failedChecks": {
+                        "type": "integer"
                     }
-                },
-                "required": [
-                    "issues"
-                ]
+                }
             },
-            "bambamboole.pdfua.http.ValidationFailure": {
+            "CategoryResult": {
                 "type": "object",
+                "title": "CategoryResult",
+                "required": [
+                    "category",
+                    "passedChecks",
+                    "failedChecks"
+                ],
                 "properties": {
                     "category": {
                         "type": "string"
                     },
-                    "clause": {
-                        "type": "string"
+                    "passedChecks": {
+                        "type": "integer"
                     },
-                    "errorDetails": {
-                        "type": "string"
-                    },
-                    "location": {
-                        "type": "string"
-                    },
-                    "message": {
-                        "type": "string"
-                    },
-                    "profile": {
-                        "type": "string"
-                    },
-                    "testNumber": {
+                    "failedChecks": {
                         "type": "integer"
                     }
-                },
+                }
+            },
+            "ValidationSummary": {
+                "type": "object",
+                "title": "ValidationSummary",
+                "required": [
+                    "totalChecks",
+                    "passedChecks",
+                    "failedChecks"
+                ],
+                "properties": {
+                    "totalChecks": {
+                        "type": "integer"
+                    },
+                    "passedChecks": {
+                        "type": "integer"
+                    },
+                    "failedChecks": {
+                        "type": "integer"
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryResult"
+                        }
+                    }
+                }
+            },
+            "FontInfo": {
+                "type": "object",
+                "title": "FontInfo",
+                "required": [
+                    "name",
+                    "embedded",
+                    "type"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "embedded": {
+                        "type": "boolean"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DocumentInfo": {
+                "type": "object",
+                "title": "DocumentInfo",
+                "required": [
+                    "pages",
+                    "tagged",
+                    "structureElements",
+                    "fonts",
+                    "images"
+                ],
+                "properties": {
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "tagged": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "structureElements": {
+                        "type": "integer"
+                    },
+                    "fonts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FontInfo"
+                        }
+                    },
+                    "images": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ValidationFailure": {
+                "type": "object",
+                "title": "ValidationFailure",
                 "required": [
                     "profile",
                     "clause",
                     "testNumber",
                     "category",
                     "message"
-                ]
-            },
-            "bambamboole.pdfua.http.ValidationResponse": {
-                "type": "object",
+                ],
                 "properties": {
-                    "documentInfo": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.http.DocumentInfo"
+                    "profile": {
+                        "type": "string"
                     },
-                    "failures": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationFailure"
-                        }
+                    "clause": {
+                        "type": "string"
                     },
-                    "isCompliant": {
-                        "type": "boolean"
-                    },
-                    "metadata": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.http.PdfMetadata"
-                    },
-                    "profiles": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ProfileResult"
-                        }
-                    },
-                    "summary": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationSummary"
-                    }
-                },
-                "required": [
-                    "isCompliant",
-                    "profiles",
-                    "summary"
-                ]
-            },
-            "bambamboole.pdfua.http.ValidationSummary": {
-                "type": "object",
-                "properties": {
-                    "categories": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.http.CategoryResult"
-                        }
-                    },
-                    "failedChecks": {
+                    "testNumber": {
                         "type": "integer"
                     },
-                    "passedChecks": {
-                        "type": "integer"
-                    },
-                    "totalChecks": {
-                        "type": "integer"
-                    }
-                },
-                "required": [
-                    "totalChecks",
-                    "passedChecks",
-                    "failedChecks"
-                ]
-            },
-            "bambamboole.pdfua.http.controller.IdentifyResponse": {
-                "type": "object",
-                "properties": {
-                    "documentId": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.http.controller.RenderImageRequest": {
-                "type": "object",
-                "properties": {
-                    "baseUrl": {
-                        "type": "string"
-                    },
-                    "format": {
-                        "type": "string"
-                    },
-                    "html": {
-                        "type": "string"
-                    },
-                    "width": {
-                        "type": "integer"
-                    }
-                },
-                "required": [
-                    "html"
-                ]
-            },
-            "bambamboole.pdfua.http.controller.RenderPdfResponse": {
-                "type": "object",
-                "properties": {
-                    "pdf": {
-                        "type": "string"
-                    },
-                    "validation": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
-                    }
-                },
-                "required": [
-                    "validation",
-                    "pdf"
-                ]
-            },
-            "bambamboole.pdfua.http.controller.RenderUrlRequest": {
-                "type": "object",
-                "properties": {
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
-                        }
-                    },
-                    "embedColorProfile": {
-                        "type": "boolean"
-                    },
-                    "url": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "url"
-                ]
-            },
-            "bambamboole.pdfua.template.FileAttachment": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "mimeType": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "relationship": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "name",
-                    "content"
-                ]
-            },
-            "bambamboole.pdfua.template.ValidationIssue": {
-                "type": "object",
-                "properties": {
-                    "code": {
+                    "category": {
                         "type": "string"
                     },
                     "message": {
                         "type": "string"
                     },
-                    "path": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "path",
-                    "code",
-                    "message"
-                ]
-            },
-            "kotlin.collections.Map.Entry_Of_String_and_JsonElement": {
-                "type": "object",
-                "properties": {
-                    "key": {
-                        "type": "string"
+                    "location": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
-                    "value": {
-                        "$ref": "#/components/schemas/kotlinx.serialization.json.JsonElement"
-                    }
-                },
-                "required": [
-                    "key",
-                    "value"
-                ]
-            },
-            "kotlinx.serialization.json.JsonArray": {
-                "type": "object",
-                "properties": {
-                    "size": {
-                        "type": "integer"
+                    "errorDetails": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 }
             },
-            "kotlinx.serialization.json.JsonElement": {
+            "PdfMetadata": {
                 "type": "object",
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/kotlinx.serialization.json.JsonArray"
+                "title": "PdfMetadata",
+                "properties": {
+                    "title": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
-                    {
-                        "$ref": "#/components/schemas/kotlinx.serialization.json.JsonObject"
+                    "subject": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
-                    {
-                        "$ref": "#/components/schemas/kotlinx.serialization.json.JsonPrimitive"
+                    "author": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "creator": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "producer": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "creationDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
+                }
+            },
+            "ValidationResponse": {
+                "type": "object",
+                "title": "ValidationResponse",
+                "required": [
+                    "isCompliant",
+                    "profiles",
+                    "summary"
                 ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "kotlinx.serialization.json.JsonArray": "#/components/schemas/kotlinx.serialization.json.JsonArray",
-                        "kotlinx.serialization.json.JsonObject": "#/components/schemas/kotlinx.serialization.json.JsonObject",
-                        "kotlinx.serialization.json.JsonPrimitive": "#/components/schemas/kotlinx.serialization.json.JsonPrimitive"
+                "properties": {
+                    "isCompliant": {
+                        "type": "boolean"
+                    },
+                    "profiles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProfileResult"
+                        }
+                    },
+                    "summary": {
+                        "$ref": "#/components/schemas/ValidationSummary"
+                    },
+                    "documentInfo": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/DocumentInfo"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "failures": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationFailure"
+                        }
+                    },
+                    "metadata": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PdfMetadata"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 }
             },
-            "kotlinx.serialization.json.JsonObject": {
+            "RenderPdfResponse": {
                 "type": "object",
+                "title": "RenderPdfResponse",
+                "required": [
+                    "validation",
+                    "pdf"
+                ],
                 "properties": {
-                    "entries": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/kotlin.collections.Map.Entry_Of_String_and_JsonElement"
-                        }
+                    "validation": {
+                        "$ref": "#/components/schemas/ValidationResponse"
                     },
-                    "keys": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "size": {
-                        "type": "integer"
-                    },
-                    "values": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/kotlinx.serialization.json.JsonElement"
-                        }
+                    "pdf": {
+                        "type": "string"
                     }
                 }
             },
-            "kotlinx.serialization.json.JsonPrimitive": {
+            "RenderUrlRequest": {
                 "type": "object",
+                "title": "RenderUrlRequest",
+                "required": [
+                    "url"
+                ],
                 "properties": {
-                    "content": {
+                    "url": {
                         "type": "string"
                     },
-                    "isString": {
+                    "attachments": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/FileAttachment"
+                        }
+                    },
+                    "embedColorProfile": {
                         "type": "boolean"
                     }
-                },
-                "required": [
-                    "isString",
-                    "content"
-                ]
+                }
             },
-            "bambamboole.pdfua.http.controller.RenderRequest": {
+            "RenderImageRequest": {
                 "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "object",
-                        "description": "Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables.",
-                        "additionalProperties": true
-                    },
-                    "options": {
-                        "type": "object",
-                        "properties": {
-                            "baseUrl": {
-                                "type": "string"
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "template": {
-                        "type": "object",
-                        "description": "Template document to render. See GET /schema for the canonical template schema."
-                    }
-                },
+                "title": "RenderImageRequest",
                 "required": [
-                    "template"
-                ]
+                    "html"
+                ],
+                "properties": {
+                    "html": {
+                        "type": "string"
+                    },
+                    "baseUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "format": {
+                        "type": "string"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "IdentifyResponse": {
+                "type": "object",
+                "title": "IdentifyResponse",
+                "properties": {
+                    "documentId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
             }
         },
         "securitySchemes": {
             "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer"
+                "scheme": "bearer",
+                "type": "http"
             }
         }
-    }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
 }

@@ -6,13 +6,29 @@ import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.UploadResult
 import io.ktor.http.*
+import io.ktor.openapi.JsonSchema
+import io.ktor.openapi.JsonType
+import io.ktor.openapi.Operation
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.Serializable
 import java.util.Base64
 
 const val UPLOAD_URL_HEADER = "X-Upload-Url"
+
+/** Documents the optional `X-Upload-Url` header shared by every route that can upload its output. */
+@OptIn(ExperimentalKtorApi::class)
+fun Operation.Builder.uploadUrlHeaderParameter() {
+    parameters {
+        header(UPLOAD_URL_HEADER) {
+            required = false
+            description = "Presigned PUT URL that receives the generated document."
+            schema = JsonSchema(type = JsonType.STRING)
+        }
+    }
+}
 
 @Serializable
 data class RenderPdfResponse(

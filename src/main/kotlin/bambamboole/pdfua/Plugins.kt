@@ -1,7 +1,11 @@
 package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.http.BEARER_SECURITY_SCHEME
+import bambamboole.pdfua.http.openApiSpec
 import com.auth0.jwk.JwkProvider
+import io.ktor.http.*
+import io.ktor.openapi.OpenApiInfo
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,6 +21,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.OpenApiDocSource
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 
@@ -120,7 +125,19 @@ fun Application.auth() {
 }
 
 fun Application.swagger() {
+    val version = loadVersion()
+    openApiSpec(version)
     routing {
-        swaggerUI(path = "api-docs", swaggerFile = "openapi/openapi.json")
+        swaggerUI(path = "api-docs") {
+            source = OpenApiDocSource.Routing(contentType = ContentType.Application.Json)
+            info =
+                OpenApiInfo(
+                    title = "PDF API",
+                    version = version,
+                    description =
+                        "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation",
+                )
+            security { requirement(BEARER_SECURITY_SCHEME) }
+        }
     }
 }

@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
         .main(args)
 }
 
-private fun loadVersion(): String {
+internal fun loadVersion(): String {
     val props = Properties()
     Thread
         .currentThread()
