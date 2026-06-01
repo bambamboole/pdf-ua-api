@@ -18,7 +18,7 @@ services:
       - "8081:8080"
 
   gotenberg:
-    image: gotenberg/gotenberg:8-chromium
+    image: gotenberg/gotenberg:8
     ports:
       - "3000:3000"
     healthcheck:

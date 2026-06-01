@@ -1,6 +1,6 @@
 ---
 title: Benchmark
-description: pdf-ua-api vs WeasyPrint vs Gotenberg Chromium on speed, PDF/UA compliance, and file size.
+description: pdf-ua-api vs WeasyPrint vs Gotenberg on speed, PDF/UA compliance, and file size.
 ---
 
 import data from "../../../benchmark/results/latest.json";
@@ -9,13 +9,19 @@ export const docs = [...new Set(data.results.map((r) => r.doc))];
 export const fmt = (n) => (n == null ? "—" : Math.round(n).toLocaleString());
 export const ms = (n) => (n == null ? "—" : `${n} ms`);
 export const kb = (b) => (b == null ? "—" : `${(b / 1024).toFixed(1)} KB`);
+export const engineNames = {
+  "pdf-ua-api": "pdf-ua-api",
+  weasyprint: "WeasyPrint",
+  "gotenberg-chromium": "Gotenberg Chromium",
+  "gotenberg-libreoffice": "Gotenberg LibreOffice",
+};
 
 All engines run as HTTP services in Docker, hit with identical load —
 {data.meta.concurrency} concurrent clients for {data.meta.duration}, after
 {data.meta.warmupRequests} warmup requests. Measured {data.meta.date};
 WeasyPrint {data.meta.weasyprintVersion}, running in its `pdf/ua-1`
-accessibility mode; Gotenberg {data.meta.gotenbergVersion}, running its Chromium
-HTML converter.
+accessibility mode; Gotenberg {data.meta.gotenbergVersion}, running its
+Chromium HTML converter and LibreOffice converter.
 
 The published numbers were measured on a MacBook Pro with an M1 Max. Numbers
 reflect one machine and one run; re-run them yourself for your hardware.
@@ -35,7 +41,7 @@ output intent.
       <tbody>
         {data.results.filter((r) => r.doc === doc).map((r) => (
           <tr key={r.engine}>
-            <td>{r.engine}</td>
+            <td>{engineNames[r.engine] ?? r.engine}</td>
             <td>{fmt(r.reqPerSec)}</td>
             <td>{ms(r.p50Ms)}</td>
             <td>{ms(r.p99Ms)}</td>
@@ -51,20 +57,20 @@ output intent.
 ## What the numbers say
 
 - **Throughput.** pdf-ua-api is fastest across the small, medium, and mixed
-  large accessible-output runs in this result set. Gotenberg Chromium is included
-  as a non-PDF/UA rendering baseline and remains useful for raw browser-output
-  comparison.
+  large accessible-output runs in this result set. Gotenberg Chromium and
+  Gotenberg LibreOffice are included as non-PDF/UA rendering baselines and remain
+  useful for raw output comparison.
 - **Accessibility.** Every pdf-ua-api output passes PDF/UA-1 validation. With
   `embedColorProfile=true`, the normal API output also passes PDF/A-3a.
   WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
   document but is flagged as non-compliant on the more complex ones. Gotenberg
-  Chromium output is included as a rendering baseline, not as a PDF/UA engine.
+  output is included as a rendering baseline, not as a PDF/UA engine.
 - **File size.** pdf-ua-api produces larger files — but not because WeasyPrint
   skips font embedding. The engines embed the same subsetted *Liberation Sans*.
   The normal pdf-ua-api default packs an ICC color profile, a PDF/A output intent,
   **and** a full accessibility tag tree into one file. The benchmark disables the
   color profile for pdf-ua-api so the size column compares accessible output mode
-  against WeasyPrint's `pdf/ua-1` mode while showing where Chromium-only output
+  against WeasyPrint's `pdf/ua-1` mode while showing where Gotenberg output
   lands. Re-run with
   `PDF_UA_EMBED_COLOR_PROFILE=true` to measure the combined archival accessible
   output.
@@ -72,11 +78,12 @@ output intent.
 ## Methodology
 
 All engines run as HTTP services in Docker and receive the exact same HTML per
-document. Gotenberg receives it as a multipart `index.html` upload with
-`preferCssPageSize=true` and `printBackground=true`. A warmup phase precedes
-measurement so cold-start does not skew results — disclosed, not hidden.
-pdf-ua-api's rate limiter is disabled for the run so the load test measures raw
-engine throughput.
+document. Gotenberg Chromium receives it as a multipart `index.html` upload with
+`preferCssPageSize=true` and `printBackground=true`. Gotenberg LibreOffice
+receives it as a multipart `document.html` upload through the LibreOffice
+conversion route. A warmup phase precedes measurement so cold-start does not skew
+results — disclosed, not hidden. pdf-ua-api's rate limiter is disabled for the
+run so the load test measures raw engine throughput.
 
 The corpus has three document shapes: a small text document, a medium invoice
 with tables, and a large mixed report with paragraphs, figures, callouts, and a

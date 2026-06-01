@@ -3,6 +3,7 @@
 Reproducible Docker benchmark comparing `pdf-ua-api`,
 [WeasyPrint](https://weasyprint.org/), and
 [Gotenberg Chromium](https://gotenberg.dev/docs/convert-with-chromium/convert-html-to-pdf)
+plus [Gotenberg LibreOffice](https://gotenberg.dev/docs/convert-with-libreoffice/convert-to-pdf)
 on HTML→PDF conversion.
 
 ## What it measures
@@ -14,9 +15,10 @@ on HTML→PDF conversion.
 - **File size** — output PDF byte size.
 
 WeasyPrint runs in its best accessibility mode (`pdf/ua-1` variant). Gotenberg
-runs the Chromium HTML converter with CSS page sizes and print backgrounds
-enabled. A warmup phase precedes measurement so cold-start does not skew the
-comparison — this is disclosed, not hidden.
+is measured through both its Chromium HTML converter and its LibreOffice
+converter. Chromium gets CSS page sizes and print backgrounds enabled. A warmup
+phase precedes measurement so cold-start does not skew the comparison — this is
+disclosed, not hidden.
 
 The corpus covers three shapes: a small text document, a medium invoice with
 tables, and a large mixed report with paragraphs, figures, callouts, and a
@@ -43,8 +45,10 @@ Results are written to `results/latest.json`, which the docs page renders.
 - Identical HTML input per document; corpus uses CSS all engines support.
 - The containers ship Liberation Sans, so the engines embed the same subsetted
   typeface and file size isn't skewed by font choice.
-- Gotenberg receives the same HTML as an `index.html` multipart upload, with
-  `preferCssPageSize=true` and `printBackground=true`.
+- Gotenberg Chromium receives the same HTML as an `index.html` multipart upload,
+  with `preferCssPageSize=true` and `printBackground=true`.
+- Gotenberg LibreOffice receives the same HTML as a `document.html` multipart
+  upload through the LibreOffice conversion route.
 - pdf-ua-api's rate limiter is disabled (`RATE_LIMIT_ENABLED=false`) so the load
   test measures raw engine throughput; the comparison engines have no limiter, so
   all engines run unthrottled.
@@ -62,6 +66,6 @@ tagged), but not both at once.
 For the published comparison the runner disables pdf-ua-api's color profile with
 `embedColorProfile=false`, which also skips PDF/A conformance setup and leaves
 PDF/UA tagging enabled. That compares pdf-ua-api and WeasyPrint in their
-accessible output mode while showing where Chromium-only rendering lands. Set
+accessible output mode while showing where Gotenberg rendering lands. Set
 `PDF_UA_EMBED_COLOR_PROFILE=true` to measure pdf-ua-api's default combined
 PDF/A + PDF/UA output instead.

@@ -20,7 +20,20 @@ ENGINES = {
     },
     "gotenberg-chromium": {
         "base": os.environ.get("GOTENBERG", "http://gotenberg:3000"),
-        "kind": "gotenberg",
+        "kind": "multipart",
+        "endpoint": "/forms/chromium/convert/html",
+        "filename": "index.html",
+        "fields": {
+            "preferCssPageSize": "true",
+            "printBackground": "true",
+        },
+    },
+    "gotenberg-libreoffice": {
+        "base": os.environ.get("GOTENBERG", "http://gotenberg:3000"),
+        "kind": "multipart",
+        "endpoint": "/forms/libreoffice/convert",
+        "filename": "document.html",
+        "fields": {},
     },
 }
 VALIDATOR = os.environ.get("PDF_UA_API", "http://pdf-ua-api:8080")
@@ -68,11 +81,11 @@ def warmup_json(base: str, payload: bytes) -> None:
                    headers={"Content-Type": "application/json"})
 
 
-def warmup_gotenberg(base: str, payload: bytes, content_type: str) -> None:
+def warmup_multipart(base: str, endpoint: str, payload: bytes, content_type: str) -> None:
     with httpx.Client(timeout=60) as c:
         for _ in range(WARMUP):
             c.post(
-                f"{base}/forms/chromium/convert/html",
+                f"{base}{endpoint}",
                 content=payload,
                 headers={"Content-Type": content_type},
             )
@@ -88,11 +101,16 @@ def run_oha_json(base: str, payload_file: Path) -> dict:
     return parse_oha(json.loads(out.stdout))
 
 
-def run_oha_gotenberg(base: str, payload_file: Path, content_type: str) -> dict:
+def run_oha_multipart(
+    base: str,
+    endpoint: str,
+    payload_file: Path,
+    content_type: str,
+) -> dict:
     cmd = [
         "oha", "--no-tui", "--json", "-z", DURATION, "-c", str(CONCURRENCY),
         "-m", "POST", "-T", content_type, "-D", str(payload_file),
-        f"{base}/forms/chromium/convert/html",
+        f"{base}{endpoint}",
     ]
     out = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return parse_oha(json.loads(out.stdout))
@@ -105,9 +123,9 @@ def convert_once_json(base: str, payload: bytes) -> bytes:
     return r.content
 
 
-def convert_once_gotenberg(base: str, payload: bytes, content_type: str) -> bytes:
+def convert_once_multipart(base: str, endpoint: str, payload: bytes, content_type: str) -> bytes:
     r = httpx.post(
-        f"{base}/forms/chromium/convert/html",
+        f"{base}{endpoint}",
         content=payload,
         headers={"Content-Type": content_type},
         timeout=120,
@@ -123,23 +141,16 @@ def payload_for(engine: str, html: str) -> bytes:
     return json.dumps(payload).encode()
 
 
-def gotenberg_form_data() -> dict:
-    return {
-        "preferCssPageSize": "true",
-        "printBackground": "true",
-    }
-
-
-def gotenberg_payload_for(html: str) -> tuple[bytes, str]:
+def multipart_payload_for(html: str, filename: str, fields: dict[str, str]) -> tuple[bytes, str]:
     content_type = f"multipart/form-data; boundary={MULTIPART_BOUNDARY}"
     parts = [
         (
-            'Content-Disposition: form-data; name="files"; filename="index.html"\r\n'
+            f'Content-Disposition: form-data; name="files"; filename="{filename}"\r\n'
             "Content-Type: text/html\r\n\r\n"
             f"{html}\r\n"
         ),
     ]
-    for key, value in gotenberg_form_data().items():
+    for key, value in fields.items():
         parts.append(f'Content-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n')
 
     body = "".join(f"--{MULTIPART_BOUNDARY}\r\n{part}" for part in parts)
@@ -165,13 +176,17 @@ def main() -> int:
         for engine, config in ENGINES.items():
             base = config["base"]
             print(f"==> {engine} / {doc}", file=sys.stderr)
-            if config["kind"] == "gotenberg":
-                payload, content_type = gotenberg_payload_for(html)
+            if config["kind"] == "multipart":
+                payload, content_type = multipart_payload_for(
+                    html,
+                    config["filename"],
+                    config["fields"],
+                )
                 payload_file = Path(f"/tmp/{doc}-{engine}.multipart")
                 payload_file.write_bytes(payload)
-                warmup_gotenberg(base, payload, content_type)
-                latency = run_oha_gotenberg(base, payload_file, content_type)
-                pdf = convert_once_gotenberg(base, payload, content_type)
+                warmup_multipart(base, config["endpoint"], payload, content_type)
+                latency = run_oha_multipart(base, config["endpoint"], payload_file, content_type)
+                pdf = convert_once_multipart(base, config["endpoint"], payload, content_type)
             else:
                 payload = payload_for(engine, html)
                 payload_file = Path(f"/tmp/{doc}-{engine}.json")
