@@ -3,6 +3,9 @@ title: HTML to PDF
 description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported.
 ---
 
+import HtmlEditorIsland from "../../../components/HtmlEditorIsland.tsx";
+import styledTable from "../../../examples/styled-table.html?raw";
+
 `POST /convert` takes a JSON body with the HTML you want to render and returns a PDF/A-3a
 document with PDF/UA accessibility.
 
@@ -19,6 +22,14 @@ automatically.
 
 If the document already lives at a public URL, use [URL to PDF](/html/url-to-pdf/) instead and
 let the API fetch the HTML for you.
+
+## Try it
+
+Edit the HTML below and render it through `POST /convert` to preview the accessible PDF. The
+editor is the embeddable `HtmlEditor` from the
+[template builder](/templates/builder/) package.
+
+<HtmlEditorIsland initialHtml={styledTable} client:only="react" />
 
 ## Request body
 
