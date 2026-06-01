@@ -1,7 +1,6 @@
 package bambamboole.pdfua.html
 
 import bambamboole.pdfua.fonts.FontFace
-import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.BaseBlockConfig
 import bambamboole.pdfua.template.CustomPageSize

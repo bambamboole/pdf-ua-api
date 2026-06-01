@@ -13,7 +13,8 @@ Guidance for Claude Code when working in this repository.
 
 - `src/main/kotlin/bambamboole/pdfua/Application.kt` defines `main()`, `bootstrap()` (config + DI bindings), the `module()` test aggregator, and the `Route.expensiveRoute` helper (auth + rate-limit envelope).
 - `src/main/kotlin/bambamboole/pdfua/Plugins.kt` exposes `Application.<feature>()` installers for cross-cutting plugins (`logging`, `serialization`, `statusPages`, `cors`, `rateLimit`, `auth`, `swagger`).
-- Each `http/controller/<Feature>.kt` exports both `Route.<feature>Routes()` (Inspektor-annotated, drives the OpenAPI spec) and `Application.<feature>()` (the Ktor module that resolves DI bindings and wires the routes).
+- Each `http/controller/<Feature>.kt` exports both `Route.<feature>Routes()` (annotated with Ktor's runtime `describe {}` OpenAPI DSL) and `Application.<feature>()` (the Ktor module that resolves DI bindings and wires the routes).
+- The OpenAPI spec is assembled at runtime from the routing tree (`bambamboole.pdfua.http.OpenApiSpec`) and served at `/openapi.json`; `docs/openapi/openapi.json` is a committed snapshot regenerated with `./gradlew updateOpenApi`. The `test` task fails if the snapshot is stale (`OpenApiSpecGeneratorTest`). There is no build-time codegen — do not reintroduce a spec-patching task.
 - `src/main/kotlin/bambamboole/pdfua/routes/` contains one route extension per endpoint.
 - `src/main/kotlin/bambamboole/pdfua/services/` contains PDF conversion, validation, asset fetching, image optimization, and image rendering.
 - `src/main/kotlin/bambamboole/pdfua/models/` contains kotlinx-serializable request/response DTOs.
@@ -29,6 +30,7 @@ Guidance for Claude Code when working in this repository.
 - Tests use JUnit Platform through `kotlin.test`; route tests use Ktor `testApplication`.
 - Some conversion tests write generated PDFs or diff images beside fixtures when baselines differ. Review these files before keeping or deleting them.
 - CI runs `./gradlew spotlessCheck detekt --no-daemon` then `./gradlew test --no-daemon`. Run `spotlessCheck` locally before pushing — it's not part of `test`, so it's easy to miss formatting drift otherwise.
+- Regenerate the committed OpenAPI snapshot after changing route `describe {}` metadata: `./gradlew updateOpenApi` (writes `docs/openapi/openapi.json`). `test` verifies it is current.
 
 ## Benchmark
 

@@ -2,17 +2,16 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
-import io.github.tabilzad.ktor.annotations.GenerateOpenApi
-import io.github.tabilzad.ktor.annotations.KtorDescription
-import io.github.tabilzad.ktor.annotations.KtorResponds
-import io.github.tabilzad.ktor.annotations.ResponseEntry
-import io.github.tabilzad.ktor.annotations.Tag
+import bambamboole.pdfua.http.binarySchema
 import io.ktor.http.*
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
 import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
+import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.Serializable
 import org.apache.pdfbox.Loader
 
@@ -28,20 +27,8 @@ fun Application.identify() {
     }
 }
 
-@GenerateOpenApi
-@Tag(["Identification"])
+@OptIn(ExperimentalKtorApi::class)
 fun Route.identifyRoutes() {
-    @KtorDescription(
-        summary = "Identify PDF",
-        description = "Checks whether a PDF was produced by this API and returns its document UUID if found.",
-    )
-    @KtorResponds(
-        [
-            ResponseEntry("200", IdentifyResponse::class, description = "Identification result"),
-            ResponseEntry("400", Nothing::class, description = "PDF content is empty or invalid"),
-            ResponseEntry("500", Nothing::class, description = "Failed to read PDF"),
-        ],
-    )
     post("/identify") {
         val pdfBytes = call.receive<ByteArray>()
         require(pdfBytes.isNotEmpty()) { "PDF content cannot be empty" }
@@ -56,5 +43,21 @@ fun Route.identifyRoutes() {
             }
 
         call.respond(HttpStatusCode.OK, IdentifyResponse(documentId))
+    }.describe {
+        tag("Identification")
+        summary = "Identify PDF"
+        description = "Checks whether a PDF was produced by this API and returns its document UUID if found."
+        requestBody {
+            required = true
+            ContentType.Application.Pdf { schema = binarySchema() }
+        }
+        responses {
+            HttpStatusCode.OK {
+                description = "Identification result"
+                schema = jsonSchema<IdentifyResponse>()
+            }
+            HttpStatusCode.BadRequest { description = "PDF content is empty or invalid" }
+            HttpStatusCode.InternalServerError { description = "Failed to read PDF" }
+        }
     }
 }

@@ -4,14 +4,15 @@ import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.RenderHtmlRequest
+import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
 import bambamboole.pdfua.http.ValidationErrorResponse
+import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.FetchResult
 import bambamboole.pdfua.services.HtmlSourceFetcher
-import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.ValidationCodes
@@ -19,17 +20,19 @@ import bambamboole.pdfua.template.ValidationIssue
 import bambamboole.pdfua.template.serializationIssue
 import bambamboole.pdfua.template.validate
 import com.openhtmltopdf.extend.FSStreamFactory
-import io.github.tabilzad.ktor.annotations.GenerateOpenApi
-import io.github.tabilzad.ktor.annotations.KtorDescription
-import io.github.tabilzad.ktor.annotations.KtorResponds
-import io.github.tabilzad.ktor.annotations.ResponseEntry
-import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.openapi.JsonSchema
+import io.ktor.openapi.JsonType
+import io.ktor.openapi.Operation
+import io.ktor.openapi.ReferenceOr
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
 import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
+import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonElement
@@ -52,7 +55,6 @@ data class RenderRequest(
     val template: Template,
     /** Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables. */
     val data: Map<String, JsonElement> = emptyMap(),
-    val options: RenderOptions = RenderOptions(),
 )
 
 @Serializable
@@ -74,74 +76,118 @@ private fun Throwable.unwrapToSerializationException(): SerializationException? 
     return null
 }
 
-@GenerateOpenApi
-@Tag(["Rendering"])
+@OptIn(ExperimentalKtorApi::class)
 fun Route.renderRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
     uploader: DocumentUploader? = null,
     htmlSourceFetcher: HtmlSourceFetcher? = null,
 ) {
-    @KtorDescription(
-        summary = "Render HTML to PDF",
-        description = "Renders HTML to a PDF/A-3a + PDF/UA document.",
-    )
-    @KtorResponds(
-        [
-            ResponseEntry("200", ByteArray::class, description = "PDF document"),
-            ResponseEntry(
-                "200",
-                RenderPdfResponse::class,
-                description = "Validation result with base64 PDF when Accept is application/json",
-            ),
-            ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
-            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-        ],
-    )
     post("/render/html") {
         renderHtml(pdfProducer, assetResolver, uploader)
+    }.describe {
+        pdfRenderOperation(
+            summary = "Render HTML to PDF",
+            operationDescription =
+                "Renders HTML to a PDF/A-3a + PDF/UA document, or a JSON validation response when " +
+                    "Accept is application/json.",
+            badRequestDescription = "Invalid request, empty HTML, or JSON/upload conflict",
+        ) {
+            requestBody {
+                required = true
+                schema = jsonSchema<RenderHtmlRequest>()
+            }
+        }
     }
 
-    @KtorDescription(
-        summary = "Render a template to PDF",
-        description = "Renders a JSON template to a PDF/A-3a document or JSON validation response.",
-    )
-    @KtorResponds(
-        [
-            ResponseEntry("200", ByteArray::class, description = "PDF document"),
-            ResponseEntry(
-                "200",
-                RenderPdfResponse::class,
-                description = "Validation result with base64 PDF when Accept is application/json",
-            ),
-            ResponseEntry("400", ValidationErrorResponse::class, description = "Invalid template, data, or request"),
-            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-        ],
-    )
     post("/render/template") {
         renderTemplate(pdfProducer, assetResolver, uploader)
+    }.describe {
+        pdfRenderOperation(
+            summary = "Render a template to PDF",
+            operationDescription =
+                "Renders a JSON template to a PDF/A-3a document, or a JSON validation response when " +
+                    "Accept is application/json.",
+            badRequestDescription = "Invalid template, data, request, or JSON/upload conflict",
+        ) {
+            requestBody {
+                required = true
+                schema = renderRequestSchema()
+            }
+        }
     }
 
-    @KtorDescription(
-        summary = "Render a URL to PDF",
-        description = "Fetches the HTML at the given URL and renders it to a PDF or JSON validation response.",
-    )
-    @KtorResponds(
-        [
-            ResponseEntry("200", ByteArray::class, description = "PDF document"),
-            ResponseEntry(
-                "200",
-                RenderPdfResponse::class,
-                description = "Validation result with base64 PDF when Accept is application/json",
-            ),
-            ResponseEntry("400", Nothing::class, description = "Invalid URL or fetch failure"),
-            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-        ],
-    )
     post("/render/url") {
         renderUrl(htmlSourceFetcher, pdfProducer, assetResolver, uploader)
+    }.describe {
+        pdfRenderOperation(
+            summary = "Render a URL to PDF",
+            operationDescription =
+                "Fetches the HTML at the given URL and renders it to a PDF, or a JSON validation " +
+                    "response when Accept is application/json.",
+            badRequestDescription = "Invalid URL, fetch failure, or JSON/upload conflict",
+        ) {
+            requestBody {
+                required = true
+                schema = jsonSchema<RenderUrlRequest>()
+            }
+        }
     }
 }
+
+/**
+ * Shared OpenAPI metadata for the PDF render routes: the `X-Upload-Url` header, the per-route
+ * request body, and the negotiated 200 (PDF or JSON) plus the upload (204/502) responses.
+ */
+@OptIn(ExperimentalKtorApi::class)
+private fun Operation.Builder.pdfRenderOperation(
+    summary: String,
+    operationDescription: String,
+    badRequestDescription: String,
+    configureRequestBody: Operation.Builder.() -> Unit,
+) {
+    tag("Rendering")
+    this.summary = summary
+    this.description = operationDescription
+    uploadUrlHeaderParameter()
+    configureRequestBody()
+    val pdfJsonSchema = jsonSchema<RenderPdfResponse>()
+    responses {
+        HttpStatusCode.OK {
+            description = "PDF document or JSON validation response"
+            ContentType.Application.Pdf { schema = binarySchema() }
+            ContentType.Application.Json { schema = pdfJsonSchema }
+        }
+        HttpStatusCode.BadRequest { description = badRequestDescription }
+        HttpStatusCode.NoContent { description = "PDF uploaded successfully" }
+        HttpStatusCode.BadGateway { description = "Upload target rejected the request or was unreachable" }
+        HttpStatusCode.InternalServerError { description = "Rendering failed" }
+    }
+}
+
+/**
+ * Hand-authored schema for [RenderRequest]; the `template` field references the shared `Template`
+ * component (`TEMPLATE_SCHEMA_REF`), which is the canonical `TemplateJsonSchema` injected into the
+ * spec's components.
+ */
+private fun renderRequestSchema(): JsonSchema =
+    JsonSchema(
+        type = JsonType.OBJECT,
+        properties =
+            mapOf(
+                "data" to
+                    ReferenceOr.Value(
+                        JsonSchema(
+                            type = JsonType.OBJECT,
+                            description =
+                                "Per-block content overrides, keyed by block id. Object for most blocks; " +
+                                    "array of row objects for tables.",
+                        ),
+                    ),
+                "template" to ReferenceOr.Reference(TEMPLATE_SCHEMA_REF),
+            ),
+        required = listOf("template"),
+    )
 
 private suspend fun RoutingContext.renderHtml(
     pdfProducer: String,
@@ -189,19 +235,15 @@ private suspend fun RoutingContext.renderTemplate(
         return
     }
 
-    request.options.baseUrl
-        .takeIf { it.isNotEmpty() }
-        ?.let { validateBaseUrl(it) }
-    val html = TemplateRenderer.render(request.template, request.data, request.options)
+    val html = TemplateRenderer.render(request.template, request.data)
 
     val result =
         PdfRenderer.convertHtmlToPdf(
             html = html,
             producer = pdfProducer,
             assetResolver = assetResolver,
-            baseUrl = request.options.baseUrl,
             attachments = request.template.attachments,
-            options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
+            options = PdfRenderOptions(embedColorProfile = request.template.config.embedColorProfile),
         )
 
     respondPdfOrUpload(result, uploader)

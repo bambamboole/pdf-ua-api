@@ -2,21 +2,20 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
+import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import com.openhtmltopdf.extend.FSStreamFactory
-import io.github.tabilzad.ktor.annotations.GenerateOpenApi
-import io.github.tabilzad.ktor.annotations.KtorDescription
-import io.github.tabilzad.ktor.annotations.KtorResponds
-import io.github.tabilzad.ktor.annotations.ResponseEntry
-import io.github.tabilzad.ktor.annotations.Tag
 import io.ktor.http.*
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
 import io.ktor.server.plugins.di.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
+import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -38,23 +37,11 @@ fun Application.renderImage() {
     }
 }
 
-@GenerateOpenApi
-@Tag(["Rendering"])
+@OptIn(ExperimentalKtorApi::class)
 fun Route.renderImageRoutes(
     assetResolver: FSStreamFactory? = null,
     uploader: DocumentUploader? = null,
 ) {
-    @KtorDescription(
-        summary = "Render HTML to image",
-        description = "Renders HTML to a PNG or JPEG image. Returns the image binary.",
-    )
-    @KtorResponds(
-        [
-            ResponseEntry("200", ByteArray::class, description = "Rendered image"),
-            ResponseEntry("400", Nothing::class, description = "Invalid request"),
-            ResponseEntry("500", Nothing::class, description = "Rendering failed"),
-        ],
-    )
     post("/render") {
         val request = call.receive<RenderImageRequest>()
         require(request.html.isNotBlank()) { "HTML content cannot be empty" }
@@ -86,6 +73,26 @@ fun Route.renderImageRoutes(
             documentId = null,
             uploader = uploader,
         )
+    }.describe {
+        tag("Rendering")
+        summary = "Render HTML to image"
+        description = "Renders HTML to a PNG or JPEG image, or uploads it when X-Upload-Url is provided."
+        uploadUrlHeaderParameter()
+        requestBody {
+            required = true
+            schema = jsonSchema<RenderImageRequest>()
+        }
+        responses {
+            HttpStatusCode.OK {
+                description = "Rendered image"
+                ContentType.Image.PNG { schema = binarySchema() }
+                ContentType.Image.JPEG { schema = binarySchema() }
+            }
+            HttpStatusCode.BadRequest { description = "Invalid request or upload URL" }
+            HttpStatusCode.NoContent { description = "Image uploaded successfully" }
+            HttpStatusCode.BadGateway { description = "Upload target rejected the request or was unreachable" }
+            HttpStatusCode.InternalServerError { description = "Rendering failed" }
+        }
     }
 }
 

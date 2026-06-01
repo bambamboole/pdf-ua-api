@@ -22,7 +22,7 @@ class TemplateDeserializationTest {
         assertEquals(PresetPageSize(PageFormat.A4, Orientation.PORTRAIT), request.template.config.page.size)
         assertEquals("de_DE", request.template.config.page.locale)
         assertIs<TextBlock>(request.template.rows[0].blocks[0])
-        assertEquals("Document", request.options.title)
+        assertEquals("Document", request.template.config.title)
         assertEquals(emptyMap(), request.data)
     }
 

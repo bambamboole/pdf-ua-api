@@ -26,7 +26,7 @@ class TemplateFixtureTest {
             assertTrue(dir.exists() && dir.isDirectory, "Fixture not found: ${dir.absolutePath}")
 
             val request = json.decodeFromString(RenderRequest.serializer(), File(dir, "input.json").readText())
-            val actual = TemplateRenderer.render(request.template, request.data, request.options)
+            val actual = TemplateRenderer.render(request.template, request.data)
 
             val expectedFile = File(dir, "expected.html")
             if (System.getenv("UPDATE_FIXTURES") == "1" || !expectedFile.exists()) {

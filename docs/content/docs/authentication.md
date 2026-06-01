@@ -11,8 +11,8 @@ active at a time:
 3. **Public** — when neither is configured, the API is open.
 
 JWT takes precedence over the API key when both are configured. Authentication guards the
-rendering, validation, and identification endpoints; `/health`, the template schema,
-and the API docs stay public. Failed or missing credentials return `401`.
+rendering, validation, and identification endpoints; `/health` and the API docs stay
+public. Failed or missing credentials return `401`.
 
 ## API KEY
 
@@ -82,5 +82,4 @@ curl -i -X POST http://localhost:8080/render/html \
 # HTTP/1.1 401 Unauthorized
 ```
 
-The public endpoints (`/health`, the template schema, and the API docs) stay reachable without
-credentials.
+The public endpoints (`/health` and the API docs) stay reachable without credentials.

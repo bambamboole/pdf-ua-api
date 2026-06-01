@@ -6,27 +6,24 @@ description: The shape of a template — rows and blocks.
 import TemplateEditorIsland from "../../../components/TemplateEditorIsland.tsx";
 import structure from "../../../examples/templates/structure.json?raw";
 
-A template is rendered with `POST /render/template`. The request body has three top-level
+A template is rendered with `POST /render/template`. The request body has two top-level
 fields:
 
 - **`template`** — the document definition (required). See its fields below.
 - **`data`** — per-block content overrides keyed by block id. Use this to render the same
   template with different content.
-- **`options`** — runtime rendering options:
-  - `title` — the PDF document title.
-  - `baseUrl` — base URL for resolving relative asset references inside the template.
-  - `embedColorProfile` — defaults to `true`; set to `false` only when you need
-    PDF/UA output without the PDF/A color profile, for example benchmark size
-    comparisons.
 
 The `template` object is built from these fields:
 
 - **`version`** — schema version of the template format.
-- **`config`** — document-wide settings, with two sub-objects:
+- **`config`** — document-wide settings:
+  - `title` — the PDF document title (required by PDF/UA). Defaults to `Document`.
   - `page` — `size`, `locale`, `margins`, `pageNumbers`, optional `background`, and
     repeating `footer` rows.
   - `typography` — default font `family`, `size`, `weight`, `align`, and `color`. Inherited
     by every block unless overridden on the block's own `config.typography`.
+  - `embedColorProfile` — defaults to `true`; set to `false` only when you need PDF/UA
+    output without the PDF/A color profile, for example benchmark size comparisons.
 - **`fonts`** — optional map of custom font families to load by URL. See
   [External Fonts](/templates/external-fonts/).
 - **`attachments`** — optional PDF/A-3 file attachments embedded into the output.
