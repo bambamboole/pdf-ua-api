@@ -10,11 +10,15 @@ large files through your application and is handy for serverless callers.
 ## How it works
 
 Send an `X-Upload-Url` header containing a presigned **PUT** URL on any generating endpoint —
-`POST /convert`, `POST /render/url`, `POST /render/template`, or `POST /render`. The API then
+`POST /render/html`, `POST /render/url`, `POST /render/template`, or `POST /render`. The API then
 `PUT`s the result to that URL with the correct `Content-Type` (`application/pdf`, or
 `image/png` / `image/jpeg` for `/render`) and replies `204 No Content` with an empty body. For
 PDFs the `X-Document-UUID` response header is still set, so you can correlate the stored
 file.
+
+On PDF render endpoints, do not send `Accept: application/json` with `X-Upload-Url`; JSON
+negotiation returns the PDF inline as base64 and is only available when the API response body
+carries the result. The image `/render` endpoint does not have a JSON validation response mode.
 
 You generate the presigned URL yourself (for example with the AWS SDK's `put_object` presigner),
 so the API never needs storage credentials — it only performs the upload.
@@ -22,7 +26,7 @@ so the API never needs storage credentials — it only performs the upload.
 ## Example
 
 ```bash
-curl -i -X POST http://localhost:8080/convert \
+curl -i -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -H "X-Upload-Url: https://my-bucket.s3.amazonaws.com/out.pdf?X-Amz-Algorithm=...&X-Amz-Signature=..." \
   -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}'

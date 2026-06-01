@@ -25,7 +25,7 @@ The JSON body accepts these fields:
 | Field | Default | Meaning |
 |---|---|---|
 | `url` | — | The `http` or `https` URL to fetch (required) |
-| `attachments` | — | Optional PDF/A-3 file attachments to embed in the output, identical to `/convert` |
+| `attachments` | — | Optional PDF/A-3 file attachments to embed in the output, identical to `/render/html` |
 | `embedColorProfile` | `true` | Embed the ICC output intent and produce PDF/A-3a + PDF/UA output. Set to `false` only when you explicitly need PDF/UA output without the PDF/A color profile. |
 
 ## How it works
@@ -39,7 +39,7 @@ The API performs three steps in order:
   `text/html` or `application/xhtml+xml`. The declared `charset` is honoured when decoding the
   body; missing or unknown charsets fall back to UTF-8.
 - **Render.** Hands the decoded HTML to the same PDF/A-3a + PDF/UA pipeline used by
-  `POST /convert`, with the fetched URL as the rendering base URL.
+  `POST /render/html`, with the fetched URL as the rendering base URL.
 
 ## HTML & CSS support
 
@@ -51,7 +51,7 @@ matrix applies:
   rendering produce empty or skeletal output.
 
 Use this endpoint for static and server-rendered pages. For SPAs, render to HTML first with
-your own tooling and call `POST /convert` instead.
+your own tooling and call `POST /render/html` instead.
 
 ## Security
 
@@ -82,7 +82,8 @@ The fetcher shares the existing asset configuration:
 
 ## Responses
 
-- **`200 OK`** — the rendered PDF as `application/pdf`.
+- **`200 OK`** — the rendered PDF as `application/pdf`, or `{ validation, pdf }` when you send
+  `Accept: application/json`. JSON negotiation cannot be combined with `X-Upload-Url`.
 - **`400 Bad Request`** — the URL is missing, malformed, blocked by the SSRF guard, returned
   a non-2xx status, exceeded the size cap, or did not return HTML. The response body contains
   an `error` field with the reason.

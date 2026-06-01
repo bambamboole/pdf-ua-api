@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.module
 import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.template.FileAttachment
@@ -22,9 +22,9 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
- * Tests for the /convert endpoint, including visual regression testing using fixtures.
+ * Tests for the /render/html endpoint, including visual regression testing using fixtures.
  */
-class ConvertRoutesTest {
+class RenderHtmlConversionRoutesTest {
     companion object {
         /**
          * Helper function to test a single fixture for visual regression.
@@ -43,25 +43,25 @@ class ConvertRoutesTest {
             val inputHtml = File(fixtureDir, "input.html").readText()
             val expectedPdfFile = File(fixtureDir, "expected.pdf")
 
-            // Step 1: Convert HTML to PDF
-            val convertResponse =
-                client.post("/convert") {
+            // Step 1: Render HTML to PDF
+            val renderResponse =
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(inputHtml)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(inputHtml)))
                 }
 
             assertEquals(
                 HttpStatusCode.OK,
-                convertResponse.status,
-                "Fixture '$fixtureName': Convert endpoint should return 200 OK",
+                renderResponse.status,
+                "Fixture '$fixtureName': Render HTML endpoint should return 200 OK",
             )
             assertEquals(
                 ContentType.Application.Pdf,
-                convertResponse.contentType(),
+                renderResponse.contentType(),
                 "Fixture '$fixtureName': Response should be a PDF",
             )
 
-            val actualPdfBytes = convertResponse.readRawBytes()
+            val actualPdfBytes = renderResponse.readRawBytes()
             assertTrue(
                 actualPdfBytes.isNotEmpty(),
                 "Fixture '$fixtureName': PDF should not be empty",
@@ -127,7 +127,7 @@ class ConvertRoutesTest {
 
         private fun getSourceFixturesDir(): File {
             val fixturesUrl =
-                ConvertRoutesTest::class.java.classLoader.getResource("fixtures/html")
+                RenderHtmlConversionRoutesTest::class.java.classLoader.getResource("fixtures/html")
                     ?: fail("fixtures/html directory not found in classpath")
 
             val buildFixturesDir = File(fixturesUrl.toURI())
@@ -141,7 +141,7 @@ class ConvertRoutesTest {
     // ========================================
 
     @Test
-    fun testConvertEndpointWithValidHTML() =
+    fun testRenderHtmlEndpointWithValidHTML() =
         testApplication {
             application {
                 module()
@@ -149,7 +149,7 @@ class ConvertRoutesTest {
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"$htmlContent"}""")
                 }
@@ -166,7 +166,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointEmbedsColorProfileByDefault() =
+    fun testRenderHtmlEndpointEmbedsColorProfileByDefault() =
         testApplication {
             application { module() }
 
@@ -183,9 +183,9 @@ class ConvertRoutesTest {
                 """.trimIndent()
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(htmlContent)))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -210,7 +210,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointCanOmitColorProfileForPdfUaOnlyOutput() =
+    fun testRenderHtmlEndpointCanOmitColorProfileForPdfUaOnlyOutput() =
         testApplication {
             application { module() }
 
@@ -226,11 +226,11 @@ class ConvertRoutesTest {
                 </html>
                 """.trimIndent()
 
-            val request = ConvertRequest(html = htmlContent, embedColorProfile = false)
+            val request = RenderHtmlRequest(html = htmlContent, embedColorProfile = false)
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), request))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -255,14 +255,14 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithEmptyHTML() =
+    fun testRenderHtmlEndpointWithEmptyHTML() =
         testApplication {
             application {
                 module()
             }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":""}""")
                 }
@@ -272,14 +272,14 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithInvalidJSON() =
+    fun testRenderHtmlEndpointWithInvalidJSON() =
         testApplication {
             application {
                 module()
             }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"invalid": "json structure"}""")
                 }
@@ -288,12 +288,12 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointReturnsDocumentUUID() =
+    fun testRenderHtmlEndpointReturnsDocumentUUID() =
         testApplication {
             application { module() }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"<html><body><h1>Test</h1></body></html>"}""")
                 }
@@ -312,7 +312,7 @@ class ConvertRoutesTest {
     // ========================================
 
     @Test
-    fun testConvertEndpointWithValidApiKey() =
+    fun testRenderHtmlEndpointWithValidApiKey() =
         testApplication {
             environment {
                 config = MapApplicationConfig("api.key" to "test-api-key")
@@ -323,7 +323,7 @@ class ConvertRoutesTest {
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer test-api-key")
                     setBody("""{"html":"$htmlContent"}""")
@@ -339,7 +339,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithInvalidApiKey() =
+    fun testRenderHtmlEndpointWithInvalidApiKey() =
         testApplication {
             environment {
                 config = MapApplicationConfig("api.key" to "test-api-key")
@@ -350,7 +350,7 @@ class ConvertRoutesTest {
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer wrong-key")
                     setBody("""{"html":"$htmlContent"}""")
@@ -360,7 +360,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithoutApiKeyWhenAuthEnabled() =
+    fun testRenderHtmlEndpointWithoutApiKeyWhenAuthEnabled() =
         testApplication {
             environment {
                 config = MapApplicationConfig("api.key" to "test-api-key")
@@ -371,7 +371,7 @@ class ConvertRoutesTest {
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"$htmlContent"}""")
                 }
@@ -380,7 +380,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithMalformedAuthorizationHeader() =
+    fun testRenderHtmlEndpointWithMalformedAuthorizationHeader() =
         testApplication {
             environment {
                 config = MapApplicationConfig("api.key" to "test-api-key")
@@ -391,7 +391,7 @@ class ConvertRoutesTest {
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "InvalidFormat test-api-key")
                     setBody("""{"html":"$htmlContent"}""")
@@ -405,15 +405,15 @@ class ConvertRoutesTest {
     // ========================================
 
     @Test
-    fun testConvertEndpointWithBaseUrl() =
+    fun testRenderHtmlEndpointWithBaseUrl() =
         testApplication {
             application { module() }
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent, "https://example.com")))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(htmlContent, "https://example.com")))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -421,13 +421,13 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointRejectsFileBaseUrl() =
+    fun testRenderHtmlEndpointRejectsFileBaseUrl() =
         testApplication {
             application { module() }
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"$htmlContent","baseUrl":"file:///etc/passwd"}""")
                 }
@@ -437,13 +437,13 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointRejectsJavascriptBaseUrl() =
+    fun testRenderHtmlEndpointRejectsJavascriptBaseUrl() =
         testApplication {
             application { module() }
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"$htmlContent","baseUrl":"javascript:alert(1)"}""")
                 }
@@ -452,13 +452,13 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertEndpointWithoutBaseUrl() =
+    fun testRenderHtmlEndpointWithoutBaseUrl() =
         testApplication {
             application { module() }
 
             val htmlContent = "<html><body><h1>Test</h1></body></html>"
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody("""{"html":"$htmlContent"}""")
                 }
@@ -531,7 +531,7 @@ class ConvertRoutesTest {
     // ========================================
 
     @Test
-    fun testConvertWithFontFaceDeclaration() =
+    fun testRenderHtmlWithFontFaceDeclaration() =
         testApplication {
             application { module() }
 
@@ -561,9 +561,9 @@ class ConvertRoutesTest {
                 """.trimIndent()
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(html)))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -585,7 +585,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertWithUnreachableFontUrl() =
+    fun testRenderHtmlWithUnreachableFontUrl() =
         testApplication {
             application { module() }
 
@@ -613,9 +613,9 @@ class ConvertRoutesTest {
                 """.trimIndent()
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(html)))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -631,7 +631,7 @@ class ConvertRoutesTest {
     // ========================================
 
     @Test
-    fun testConvertWithXmlAttachment() =
+    fun testRenderHtmlWithXmlAttachment() =
         testApplication {
             application { module() }
 
@@ -649,7 +649,7 @@ class ConvertRoutesTest {
             val base64Xml = Base64.getEncoder().encodeToString(xmlContent.toByteArray())
 
             val request =
-                ConvertRequest(
+                RenderHtmlRequest(
                     html = html,
                     attachments =
                         listOf(
@@ -664,9 +664,9 @@ class ConvertRoutesTest {
                 )
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), request))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -692,7 +692,7 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertWithMultipleAttachments() =
+    fun testRenderHtmlWithMultipleAttachments() =
         testApplication {
             application { module() }
 
@@ -700,7 +700,7 @@ class ConvertRoutesTest {
             <meta name="subject" content="Multi"/></head><body><h1>Test</h1></body></html>"""
 
             val request =
-                ConvertRequest(
+                RenderHtmlRequest(
                     html = html,
                     attachments =
                         listOf(
@@ -720,9 +720,9 @@ class ConvertRoutesTest {
                 )
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), request))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -740,12 +740,12 @@ class ConvertRoutesTest {
         }
 
     @Test
-    fun testConvertWithInvalidBase64Attachment() =
+    fun testRenderHtmlWithInvalidBase64Attachment() =
         testApplication {
             application { module() }
 
             val request =
-                ConvertRequest(
+                RenderHtmlRequest(
                     html = "<html><body><h1>Test</h1></body></html>",
                     attachments =
                         listOf(
@@ -754,21 +754,21 @@ class ConvertRoutesTest {
                 )
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), request))
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
-    fun testConvertWithInvalidRelationship() =
+    fun testRenderHtmlWithInvalidRelationship() =
         testApplication {
             application { module() }
 
             val request =
-                ConvertRequest(
+                RenderHtmlRequest(
                     html = "<html><body><h1>Test</h1></body></html>",
                     attachments =
                         listOf(
@@ -782,9 +782,9 @@ class ConvertRoutesTest {
                 )
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), request))
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)

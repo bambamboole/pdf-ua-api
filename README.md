@@ -35,21 +35,25 @@ open http://localhost:8080/api-docs
 
 Full schemas and examples live in the [API reference](https://pdf-ua-api.bambamboole.com/api). A short tour:
 
-| Endpoint              | Purpose                                                      |
-|-----------------------|--------------------------------------------------------------|
-| `POST /convert`              | HTML → PDF/A-3a (binary PDF)                          |
-| `POST /convert-and-validate` | HTML → PDF/A-3a + veraPDF validation in one call      |
-| `POST /render/template`      | JSON template → PDF/A-3a (binary PDF)                 |
-| `POST /render`               | HTML → PNG/JPEG image                                 |
-| `POST /validate`             | Validate an existing PDF against PDF/A-3a + PDF/UA-1  |
-| `POST /identify`             | Check whether a PDF was produced by this API          |
-| `GET  /schema`               | JSON Schema (Draft 2020-12) for `/render/template`    |
-| `GET  /health`               | Liveness probe                                        |
+| Endpoint                | Purpose                                                     |
+|-------------------------|-------------------------------------------------------------|
+| `POST /render/html`     | HTML → PDF/A-3a (binary PDF)                                |
+| `POST /render/url`      | URL → PDF/A-3a (binary PDF)                                 |
+| `POST /render/template` | JSON template → PDF/A-3a (binary PDF)                       |
+| `POST /render`          | HTML → PNG/JPEG image                                       |
+| `POST /validate`        | Validate an existing PDF against PDF/A-3a + PDF/UA-1        |
+| `POST /identify`        | Check whether a PDF was produced by this API                |
+| `GET  /schema`          | JSON Schema (Draft 2020-12) for `/render/template`          |
+| `GET  /health`          | Liveness probe                                              |
+
+PDF render endpoints return `application/pdf` by default. Send `Accept: application/json` to
+receive `{ "validation": ..., "pdf": "..." }` with the PDF base64-encoded; JSON negotiation cannot
+be combined with `X-Upload-Url`.
 
 ### Quick example
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"}' \
   --output output.pdf
@@ -85,7 +89,7 @@ For full compliance, include these meta tags:
 | Variable           | Default          | Description                                                                                                     |
 |--------------------|------------------|-----------------------------------------------------------------------------------------------------------------|
 | `PORT`             | `8080`           | HTTP server port                                                                                                |
-| `API_KEY`          | (none)           | Optional API key (Bearer token). When set, all conversion and validation endpoints require authentication       |
+| `API_KEY`          | (none)           | Optional API key (Bearer token). When set, protected API endpoints require authentication                       |
 | `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
@@ -115,7 +119,7 @@ docker run -p 8080:8080 \
 
 ## Authentication
 
-The API supports two optional authentication modes — API key (Bearer token) and JWT (RS256 via JWKS). When either is configured, the conversion and validation endpoints require auth; `/health` remains public. See the [Authentication guide](https://pdf-ua-api.bambamboole.com/authentication) for JWT setup.
+The API supports two optional authentication modes — API key (Bearer token) and JWT (RS256 via JWKS). When either is configured, rendering, validation, and identification endpoints require auth; `/health` remains public. See the [Authentication guide](https://pdf-ua-api.bambamboole.com/authentication) for JWT setup.
 
 ### Running with Authentication
 
@@ -128,8 +132,8 @@ docker run -p 8080:8080 -e API_KEY=your-secret-key bambamboole/pdf-ua-api:latest
 When authentication is enabled, include the API key as a Bearer token:
 
 ```bash
-# Convert HTML to PDF with authentication
-curl -X POST http://localhost:8080/convert \
+# Render HTML to PDF with authentication
+curl -X POST http://localhost:8080/render/html \
   -H "Authorization: Bearer your-secret-key" \
   -H "Content-Type: application/json" \
   -d '{"html":"<html><body><h1>Hello</h1></body></html>"}' \

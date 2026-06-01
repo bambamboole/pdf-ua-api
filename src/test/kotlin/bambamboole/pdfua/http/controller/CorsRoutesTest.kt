@@ -17,7 +17,7 @@ class CorsRoutesTest {
             application { module() }
 
             val response =
-                client.options("/convert") {
+                client.options("/render/html") {
                     header(HttpHeaders.Origin, "http://localhost:4321")
                     header(HttpHeaders.AccessControlRequestMethod, "POST")
                 }
@@ -32,7 +32,7 @@ class CorsRoutesTest {
             application { module() }
 
             val response =
-                client.options("/convert") {
+                client.options("/render/html") {
                     header(HttpHeaders.Origin, "http://evil.test")
                     header(HttpHeaders.AccessControlRequestMethod, "POST")
                 }
@@ -46,7 +46,7 @@ class CorsRoutesTest {
             application { module() }
 
             val response =
-                client.options("/convert") {
+                client.options("/render/html") {
                     header(HttpHeaders.Origin, "http://localhost:4321")
                     header(HttpHeaders.AccessControlRequestMethod, "POST")
                 }

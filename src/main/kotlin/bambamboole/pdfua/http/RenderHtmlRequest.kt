@@ -4,7 +4,7 @@ import bambamboole.pdfua.template.FileAttachment
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ConvertRequest(
+data class RenderHtmlRequest(
     val html: String,
     val baseUrl: String? = null,
     val attachments: List<FileAttachment>? = null,

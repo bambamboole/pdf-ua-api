@@ -99,7 +99,7 @@ PDF/A-3a output.
 
 <CardGrid>
   <Card title="From HTML" icon="document">
-    Send a complete HTML document to `POST /convert`. Best when you already produce markup or use a
+    Send a complete HTML document to `POST /render/html`. Best when you already produce markup or use a
     templating engine. [HTML to PDF →](/html/html-to-pdf/)
   </Card>
   <Card title="From a URL" icon="external">
@@ -127,8 +127,12 @@ docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
 Then convert your first document:
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"}' \
   --output output.pdf
 ```
+
+PDF render endpoints return `application/pdf` unless you explicitly send `Accept: application/json`,
+which returns `{ validation, pdf }` with the PDF base64-encoded. That JSON response mode cannot be
+combined with `X-Upload-Url`.

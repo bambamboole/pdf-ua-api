@@ -11,7 +11,6 @@ import bambamboole.pdfua.css.safeCssColor
 import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.pdf.BackgroundObjectDrawer
-import bambamboole.pdfua.services.RenderOptions
 import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.Block
 import bambamboole.pdfua.template.BlockConfig
@@ -58,7 +57,6 @@ object TemplateRenderer {
     fun render(
         template: Template,
         data: Map<String, JsonElement> = emptyMap(),
-        options: RenderOptions = RenderOptions(),
     ): String {
         check(template.version == 1) { "Unsupported template version: ${template.version}" }
 
@@ -101,7 +99,7 @@ object TemplateRenderer {
 
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
         val rowsHtml = template.rows.map { renderRow(it) }
-        return wrapDocument(footerHtml, rowsHtml, template, css, options).serialize()
+        return wrapDocument(footerHtml, rowsHtml, template, css).serialize()
     }
 
     private fun emitPositioningCss(
@@ -172,7 +170,6 @@ object TemplateRenderer {
         rowsHtml: List<Html>,
         template: Template,
         css: CssRegistry,
-        options: RenderOptions,
     ): Html {
         val page = template.config.page
         val lang = page.locale.substringBefore('_')
@@ -187,7 +184,7 @@ object TemplateRenderer {
                     raw("\n")
                     voidTag("meta", "charset" to "UTF-8")
                     raw("\n")
-                    tag("title") { text(options.title) }
+                    tag("title") { text(template.config.title) }
                     raw("\n")
                     tag("style") { raw("\n$style\n") }
                     raw("\n")

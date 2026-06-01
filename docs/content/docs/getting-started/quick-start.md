@@ -20,11 +20,11 @@ and with rate limiting enabled — see [Authentication](/authentication/) and
 
 ## Convert your first PDF
 
-Send a complete HTML document to `POST /convert`. The response body is the binary PDF, so write
+Send a complete HTML document to `POST /render/html`. The response body is the binary PDF, so write
 it straight to a file with `--output`:
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -d '{"html":"<html lang=\"en\"><head><title>Hello</title></head><body><h1>Hello PDF</h1></body></html>"}' \
   --output output.pdf
@@ -32,6 +32,10 @@ curl -X POST http://localhost:8080/convert \
 
 Open `output.pdf` and you have an accessible PDF/A-3a document. Always include a `lang` attribute
 and a `<title>` — both are required for the accessibility tags to be generated.
+
+PDF render endpoints return `application/pdf` by default. If you send `Accept: application/json`,
+the response is `{ validation, pdf }` with the PDF base64-encoded; that mode cannot be combined
+with `X-Upload-Url`.
 
 ## Next steps
 

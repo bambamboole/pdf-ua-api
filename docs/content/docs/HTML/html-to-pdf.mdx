@@ -6,11 +6,11 @@ description: Convert HTML to accessible PDF/A-3a, and what HTML/CSS is supported
 import HtmlEditorIsland from "../../../components/HtmlEditorIsland.tsx";
 import styledTable from "../../../examples/styled-table.html?raw";
 
-`POST /convert` takes a JSON body with the HTML you want to render and returns a PDF/A-3a
+`POST /render/html` takes a JSON body with the HTML you want to render and returns a PDF/A-3a
 document with PDF/UA accessibility.
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}' \
   --output out.pdf
@@ -25,7 +25,7 @@ let the API fetch the HTML for you.
 
 ## Try it
 
-Edit the HTML below and render it through `POST /convert` to preview the accessible PDF. The
+Edit the HTML below and render it through `POST /render/html` to preview the accessible PDF. The
 editor is the embeddable `HtmlEditor` from the
 [template builder](/templates/builder/) package.
 
@@ -41,6 +41,12 @@ The JSON body accepts these fields:
 | `baseUrl` | — | Optional base URL used to resolve relative `<img>`, `<link>`, and `<script>` references inside the HTML |
 | `attachments` | — | Optional PDF/A-3 file attachments to embed in the output |
 | `embedColorProfile` | `true` | Embed the ICC output intent and produce PDF/A-3a + PDF/UA output. Set to `false` only when you explicitly need PDF/UA output without the PDF/A color profile, for example benchmark size comparisons. |
+
+## Response format
+
+By default, `POST /render/html` returns the PDF body as `application/pdf`. Send
+`Accept: application/json` to get `{ validation, pdf }`, where `validation` is the veraPDF result
+and `pdf` is the base64-encoded PDF. JSON negotiation cannot be combined with `X-Upload-Url`.
 
 ## HTML & CSS support
 

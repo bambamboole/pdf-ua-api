@@ -31,8 +31,8 @@ class JwtAuthTest {
             )
         }
 
-    private suspend fun ApplicationTestBuilder.postConvert(authHeader: String?) =
-        client.post("/convert") {
+    private suspend fun ApplicationTestBuilder.postRenderHtml(authHeader: String?) =
+        client.post("/render/html") {
             contentType(ContentType.Application.Json)
             authHeader?.let { header(HttpHeaders.Authorization, it) }
             setBody("""{"html":"$html"}""")
@@ -44,7 +44,7 @@ class JwtAuthTest {
             environment { config = jwtConfig() }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.token(issuer)}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.token(issuer)}")
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals(ContentType.Application.Pdf, response.contentType())
         }
@@ -55,7 +55,7 @@ class JwtAuthTest {
             environment { config = jwtConfig() }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.tokenWithWrongSignature(issuer)}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.tokenWithWrongSignature(issuer)}")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -66,7 +66,7 @@ class JwtAuthTest {
             application { module(JwtTestSupport.jwkProvider) }
 
             val expired = JwtTestSupport.token(issuer, expiresAt = Date(System.currentTimeMillis() - 1_000))
-            val response = postConvert("Bearer $expired")
+            val response = postRenderHtml("Bearer $expired")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -76,7 +76,7 @@ class JwtAuthTest {
             environment { config = jwtConfig() }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.token("https://evil.test")}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.token("https://evil.test")}")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -86,7 +86,7 @@ class JwtAuthTest {
             environment { config = jwtConfig(withAudience = true) }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.token(issuer)}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.token(issuer)}")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -96,7 +96,7 @@ class JwtAuthTest {
             environment { config = jwtConfig(withAudience = true) }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.token(issuer, audience = "other")}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.token(issuer, audience = "other")}")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -106,7 +106,7 @@ class JwtAuthTest {
             environment { config = jwtConfig(withAudience = true) }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("Bearer ${JwtTestSupport.token(issuer, audience = audience)}")
+            val response = postRenderHtml("Bearer ${JwtTestSupport.token(issuer, audience = audience)}")
             assertEquals(HttpStatusCode.OK, response.status)
         }
 
@@ -116,7 +116,7 @@ class JwtAuthTest {
             environment { config = jwtConfig() }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert(null)
+            val response = postRenderHtml(null)
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -126,7 +126,7 @@ class JwtAuthTest {
             environment { config = jwtConfig() }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val response = postConvert("InvalidFormat some-token")
+            val response = postRenderHtml("InvalidFormat some-token")
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
@@ -143,10 +143,10 @@ class JwtAuthTest {
             }
             application { module(JwtTestSupport.jwkProvider) }
 
-            val validJwt = postConvert("Bearer ${JwtTestSupport.token(issuer)}")
+            val validJwt = postRenderHtml("Bearer ${JwtTestSupport.token(issuer)}")
             assertEquals(HttpStatusCode.OK, validJwt.status)
 
-            val rawApiKey = postConvert("Bearer test-api-key")
+            val rawApiKey = postRenderHtml("Bearer test-api-key")
             assertEquals(HttpStatusCode.Unauthorized, rawApiKey.status)
         }
 }

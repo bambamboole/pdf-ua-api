@@ -1,6 +1,6 @@
 package bambamboole.pdfua
 
-import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.RenderHtmlRequest
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -27,10 +27,10 @@ class ApplicationConfigTest {
             val html =
                 """<!DOCTYPE html><html lang="en"><head><title>Test</title><meta name="subject" content="Test"/></head><body><h1>Test</h1></body></html>"""
 
-            val requestBody = Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(html))
+            val requestBody = Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(html))
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     setBody(requestBody)
                 }

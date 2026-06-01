@@ -36,6 +36,10 @@ ENGINES = {
         "fields": {},
     },
 }
+JSON_ENDPOINTS = {
+    "pdf-ua-api": "/render/html",
+    "weasyprint": "/convert",
+}
 VALIDATOR = os.environ.get("PDF_UA_API", "http://pdf-ua-api:8080")
 CONCURRENCY = int(os.environ.get("CONCURRENCY", "20"))
 DURATION = os.environ.get("DURATION", "30s")
@@ -74,10 +78,14 @@ def gotenberg_version(base: str) -> str:
         return "n/a"
 
 
-def warmup_json(base: str, payload: bytes) -> None:
+def engine_url(engine: str, base: str) -> str:
+    return f"{base}{JSON_ENDPOINTS[engine]}"
+
+
+def warmup_json(engine: str, base: str, payload: bytes) -> None:
     with httpx.Client(timeout=60) as c:
         for _ in range(WARMUP):
-            c.post(f"{base}/convert", content=payload,
+            c.post(engine_url(engine, base), content=payload,
                    headers={"Content-Type": "application/json"})
 
 
@@ -91,11 +99,11 @@ def warmup_multipart(base: str, endpoint: str, payload: bytes, content_type: str
             )
 
 
-def run_oha_json(base: str, payload_file: Path) -> dict:
+def run_oha_json(engine: str, base: str, payload_file: Path) -> dict:
     cmd = [
         "oha", "--no-tui", "--json", "-z", DURATION, "-c", str(CONCURRENCY),
         "-m", "POST", "-T", "application/json", "-D", str(payload_file),
-        f"{base}/convert",
+        engine_url(engine, base),
     ]
     out = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return parse_oha(json.loads(out.stdout))
@@ -116,8 +124,8 @@ def run_oha_multipart(
     return parse_oha(json.loads(out.stdout))
 
 
-def convert_once_json(base: str, payload: bytes) -> bytes:
-    r = httpx.post(f"{base}/convert", content=payload,
+def convert_once_json(engine: str, base: str, payload: bytes) -> bytes:
+    r = httpx.post(engine_url(engine, base), content=payload,
                    headers={"Content-Type": "application/json"}, timeout=120)
     r.raise_for_status()
     return r.content
@@ -191,9 +199,9 @@ def main() -> int:
                 payload = payload_for(engine, html)
                 payload_file = Path(f"/tmp/{doc}-{engine}.json")
                 payload_file.write_bytes(payload)
-                warmup_json(base, payload)
-                latency = run_oha_json(base, payload_file)
-                pdf = convert_once_json(base, payload)
+                warmup_json(engine, base, payload)
+                latency = run_oha_json(engine, base, payload_file)
+                pdf = convert_once_json(engine, base, payload)
             compliance = validate(pdf)
             results.append({
                 "doc": doc, "engine": engine,

@@ -12,13 +12,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class RateLimitRoutesTest {
-    private val blankConvertBody = """{"html":""}"""
+    private val blankRenderHtmlBody = """{"html":""}"""
 
-    private suspend fun ApplicationTestBuilder.postConvert(forwardedFor: String? = null) =
-        client.post("/convert") {
+    private suspend fun ApplicationTestBuilder.postRenderHtml(forwardedFor: String? = null) =
+        client.post("/render/html") {
             contentType(ContentType.Application.Json)
             forwardedFor?.let { header("X-Forwarded-For", it) }
-            setBody(blankConvertBody)
+            setBody(blankRenderHtmlBody)
         }
 
     @Test
@@ -34,10 +34,10 @@ class RateLimitRoutesTest {
             }
             application { module() }
 
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.1").status)
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.1").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.1").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.1").status)
 
-            val limited = postConvert("10.0.0.1")
+            val limited = postRenderHtml("10.0.0.1")
             assertEquals(HttpStatusCode.TooManyRequests, limited.status)
             assertNotNull(limited.headers[HttpHeaders.RetryAfter], "429 response must include Retry-After")
         }
@@ -55,11 +55,11 @@ class RateLimitRoutesTest {
             }
             application { module() }
 
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.1").status)
-            assertEquals(HttpStatusCode.TooManyRequests, postConvert("10.0.0.1").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.1").status)
+            assertEquals(HttpStatusCode.TooManyRequests, postRenderHtml("10.0.0.1").status)
 
             // A different IP still has its full budget.
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.2").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.2").status)
         }
 
     @Test
@@ -75,11 +75,11 @@ class RateLimitRoutesTest {
             }
             application { module() }
 
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.1").status)
-            assertEquals(HttpStatusCode.BadRequest, postConvert("10.0.0.2").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.1").status)
+            assertEquals(HttpStatusCode.BadRequest, postRenderHtml("10.0.0.2").status)
 
             // Fresh IP, but the global bucket is exhausted.
-            assertEquals(HttpStatusCode.TooManyRequests, postConvert("10.0.0.3").status)
+            assertEquals(HttpStatusCode.TooManyRequests, postRenderHtml("10.0.0.3").status)
         }
 
     @Test
@@ -95,7 +95,7 @@ class RateLimitRoutesTest {
             application { module() }
 
             repeat(5) {
-                assertEquals(HttpStatusCode.BadRequest, postConvert().status)
+                assertEquals(HttpStatusCode.BadRequest, postRenderHtml().status)
             }
         }
 

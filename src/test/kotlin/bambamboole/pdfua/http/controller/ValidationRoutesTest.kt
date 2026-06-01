@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.module
 import bambamboole.pdfua.pdf.PdfValidator
@@ -22,7 +22,7 @@ class ValidationRoutesTest {
 
         /**
          * Helper function to test PDF/A validation for a single fixture.
-         * Validates the expected.pdf baseline directly (generation is tested in ConvertRoutesTest).
+         * Validates the expected.pdf baseline directly (generation is tested in RenderHtmlConversionRoutesTest).
          */
         private suspend fun ApplicationTestBuilder.testFixtureValidation(fixtureName: String) {
             println("\n=== Testing fixture validation: $fixtureName ===")
@@ -36,7 +36,7 @@ class ValidationRoutesTest {
             val expectedPdfFile = File(fixtureDir, "expected.pdf")
             assertTrue(
                 expectedPdfFile.exists(),
-                "Fixture '$fixtureName': expected.pdf not found. Run ConvertRoutesTest to generate baselines.",
+                "Fixture '$fixtureName': expected.pdf not found. Run RenderHtmlConversionRoutesTest to generate baselines.",
             )
 
             val expectedValidation =
@@ -164,14 +164,14 @@ class ValidationRoutesTest {
                 </html>
                 """.trimIndent()
 
-            val convertResponse =
-                client.post("/convert") {
+            val renderResponse =
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(htmlContent)))
                 }
 
-            assertEquals(HttpStatusCode.OK, convertResponse.status)
-            val pdfBytes = convertResponse.readRawBytes()
+            assertEquals(HttpStatusCode.OK, renderResponse.status)
+            val pdfBytes = renderResponse.readRawBytes()
 
             // Validate the generated PDF via the API endpoint
             val validateResponse =
@@ -214,14 +214,14 @@ class ValidationRoutesTest {
                 </html>
                 """.trimIndent()
 
-            val convertResponse =
-                client.post("/convert") {
+            val renderResponse =
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(htmlContent)))
                 }
 
-            assertEquals(HttpStatusCode.OK, convertResponse.status)
-            val pdfBytes = convertResponse.readRawBytes()
+            assertEquals(HttpStatusCode.OK, renderResponse.status)
+            val pdfBytes = renderResponse.readRawBytes()
 
             // Validate the PDF
             val validationResult = PdfValidator.validatePdf(pdfBytes)
@@ -259,15 +259,15 @@ class ValidationRoutesTest {
                 </html>
                 """.trimIndent()
 
-            val convertResponse =
-                client.post("/convert") {
+            val renderResponse =
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header(HttpHeaders.Authorization, "Bearer test-api-key")
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(htmlContent)))
                 }
 
-            assertEquals(HttpStatusCode.OK, convertResponse.status)
-            val pdfBytes = convertResponse.readRawBytes()
+            assertEquals(HttpStatusCode.OK, renderResponse.status)
+            val pdfBytes = renderResponse.readRawBytes()
 
             // Validate with valid API key
             val validateResponse =
