@@ -148,6 +148,8 @@ private suspend fun RoutingContext.renderHtml(
     assetResolver: FSStreamFactory?,
     uploader: DocumentUploader?,
 ) {
+    if (rejectPdfJsonUploadConflict()) return
+
     val request = call.receive<RenderHtmlRequest>()
     require(request.html.isNotBlank()) { "HTML content cannot be empty" }
 
@@ -177,6 +179,8 @@ private suspend fun RoutingContext.renderTemplate(
     assetResolver: FSStreamFactory?,
     uploader: DocumentUploader?,
 ) {
+    if (rejectPdfJsonUploadConflict()) return
+
     val request = receiveRenderRequest() ?: return
     val issues = request.template.validate(request.data)
     if (issues.isNotEmpty()) {
@@ -221,6 +225,8 @@ private suspend fun RoutingContext.renderUrl(
     assetResolver: FSStreamFactory?,
     uploader: DocumentUploader?,
 ) {
+    if (rejectPdfJsonUploadConflict()) return
+
     val fetcher =
         htmlSourceFetcher ?: run {
             call.respond(

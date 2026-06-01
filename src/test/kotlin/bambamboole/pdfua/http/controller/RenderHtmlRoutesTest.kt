@@ -97,6 +97,23 @@ class RenderHtmlRoutesTest {
         }
 
     @Test
+    fun renderHtmlRejectsJsonAcceptWithUploadUrl() =
+        testApplication {
+            application { renderHtmlModule() }
+
+            val response =
+                client.post("/render/html") {
+                    contentType(ContentType.Application.Json)
+                    accept(ContentType.Application.Json)
+                    header("X-Upload-Url", "https://bucket.example.com/out.pdf")
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertTrue(response.bodyAsText().contains("cannot be combined"))
+        }
+
+    @Test
     fun oldConvertEndpointReturnsNotFound() =
         testApplication {
             application { renderHtmlModule() }

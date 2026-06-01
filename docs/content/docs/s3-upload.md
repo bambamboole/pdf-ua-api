@@ -16,8 +16,9 @@ Send an `X-Upload-Url` header containing a presigned **PUT** URL on any generati
 PDFs the `X-Document-UUID` response header is still set, so you can correlate the stored
 file.
 
-Do not send `Accept: application/json` with `X-Upload-Url`; JSON negotiation returns the PDF inline
-as base64 and is only available when the API response body carries the result.
+On PDF render endpoints, do not send `Accept: application/json` with `X-Upload-Url`; JSON
+negotiation returns the PDF inline as base64 and is only available when the API response body
+carries the result. The image `/render` endpoint does not have a JSON validation response mode.
 
 You generate the presigned URL yourself (for example with the AWS SDK's `put_object` presigner),
 so the API never needs storage credentials — it only performs the upload.

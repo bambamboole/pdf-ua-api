@@ -73,16 +73,9 @@ suspend fun RoutingContext.respondPdfOrUpload(
     result: PdfResult,
     uploader: DocumentUploader?,
 ) {
-    val uploadUrl = call.request.header(UPLOAD_URL_HEADER)?.takeIf { it.isNotBlank() }
     val wantsJson = call.request.acceptItems().prefersExplicitJson()
 
-    if (wantsJson && uploadUrl != null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            mapOf("error" to "Accept: application/json cannot be combined with X-Upload-Url"),
-        )
-        return
-    }
+    if (rejectPdfJsonUploadConflict()) return
 
     if (wantsJson) {
         call.response.header("X-Document-UUID", result.documentId)
@@ -103,6 +96,17 @@ suspend fun RoutingContext.respondPdfOrUpload(
         documentId = result.documentId,
         uploader = uploader,
     )
+}
+
+internal suspend fun RoutingContext.rejectPdfJsonUploadConflict(): Boolean {
+    val uploadUrl = call.request.header(UPLOAD_URL_HEADER)?.takeIf { it.isNotBlank() }
+    if (!call.request.acceptItems().prefersExplicitJson() || uploadUrl == null) return false
+
+    call.respond(
+        HttpStatusCode.BadRequest,
+        mapOf("error" to "Accept: application/json cannot be combined with X-Upload-Url"),
+    )
+    return true
 }
 
 private fun List<HeaderValue>.prefersExplicitJson(): Boolean {

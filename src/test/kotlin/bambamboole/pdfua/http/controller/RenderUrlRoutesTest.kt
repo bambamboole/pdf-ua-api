@@ -49,9 +49,11 @@ class RenderUrlRoutesTest {
         private val body: ByteArray,
     ) {
         val server: HttpServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        var requests: Int = 0
 
         fun start() {
             server.createContext("/page") { exchange: HttpExchange ->
+                requests += 1
                 contentType?.let { exchange.responseHeaders.add("Content-Type", it) }
                 if (body.isEmpty()) {
                     exchange.sendResponseHeaders(statusCode, -1)
@@ -112,6 +114,29 @@ class RenderUrlRoutesTest {
 
                 val pdfBytes = Base64.getDecoder().decode(body.getValue("pdf").jsonPrimitive.content)
                 assertTrue(pdfBytes.size > 5 && String(pdfBytes, 0, 5, Charsets.US_ASCII) == "%PDF-")
+            } finally {
+                target.stop()
+            }
+        }
+
+    @Test
+    fun renderUrlRejectsJsonAcceptWithUploadUrlBeforeFetching() =
+        testApplication {
+            val target = CapturingHtmlServer(200, "text/html; charset=UTF-8", sampleHtml.toByteArray())
+            target.start()
+            application { renderUrlModule(permissiveFetcher()) }
+            try {
+                val response =
+                    client.post("/render/url") {
+                        contentType(ContentType.Application.Json)
+                        accept(ContentType.Application.Json)
+                        header("X-Upload-Url", "https://bucket.example.com/out.pdf")
+                        setBody("""{"url":"http://127.0.0.1:${target.port}/page"}""")
+                    }
+
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+                assertTrue(response.bodyAsText().contains("cannot be combined"))
+                assertEquals(0, target.requests)
             } finally {
                 target.stop()
             }

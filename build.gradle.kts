@@ -183,6 +183,18 @@ val patchOpenApi by tasks.registering {
 
         @Suppress("UNCHECKED_CAST")
         val paths = spec["paths"] as MutableMap<String, MutableMap<String, MutableMap<String, Any?>>>
+        val completeSpecPaths =
+            setOf(
+                "/health",
+                "/identify",
+                "/render",
+                "/render/html",
+                "/render/template",
+                "/render/url",
+                "/schema",
+                "/validate",
+            )
+        val isCompleteSpec = completeSpecPaths.all(paths::containsKey)
 
         @Suppress("UNCHECKED_CAST")
         val schemas =
@@ -254,6 +266,11 @@ val patchOpenApi by tasks.registering {
             paths[path]?.get(method)
                 ?: error("OpenAPI spec is missing required operation $method $path")
 
+        fun operationOrNull(
+            path: String,
+            method: String,
+        ): MutableMap<String, Any?>? = paths[path]?.get(method)
+
         @Suppress("UNCHECKED_CAST")
         fun responses(
             path: String,
@@ -278,6 +295,22 @@ val patchOpenApi by tasks.registering {
         ) {
             response(path, method, "200")["content"] =
                 contentTypes.associateWith { mapOf("schema" to binarySchema()) }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        fun setOptionalBinaryResponse(
+            path: String,
+            method: String,
+            contentTypes: List<String>,
+        ) {
+            val operation = operationOrNull(path, method) ?: return
+            val responses =
+                operation["responses"] as? MutableMap<String, Any?>
+                    ?: error("OpenAPI spec is missing responses for $method $path")
+            val response =
+                responses["200"] as? MutableMap<String, Any?>
+                    ?: error("OpenAPI spec is missing 200 response for $method $path")
+            response["content"] = contentTypes.associateWith { mapOf("schema" to binarySchema()) }
         }
 
         fun setRenderPdfResponse(
@@ -368,23 +401,28 @@ val patchOpenApi by tasks.registering {
         schemas.putIfAbsent(renderRequestSchemaName, renderRequestSchema())
         setRequestBody("/render/template", "post", renderRequestSchemaName)
         setUploadDocs("/render/template", "post", "PDF uploaded successfully")
-        setBinaryResponse("/render", "post", listOf("image/png", "image/jpeg"))
-        response("/render", "post", "400")["description"] = "Invalid request or upload URL"
-        setUploadDocs("/render", "post", "Image uploaded successfully")
+        setOptionalBinaryResponse("/render", "post", listOf("image/png", "image/jpeg"))
+        operationOrNull("/render", "post")?.let {
+            response("/render", "post", "400")["description"] = "Invalid request or upload URL"
+            setUploadDocs("/render", "post", "Image uploaded successfully")
+        }
 
-        val schemaGet = operation("/schema", "get")
-        schemaGet["description"] =
-            "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. " +
-            "The response is a JSON Schema document describing the Template type accepted " +
-            "by /render/template, with builder metadata under x-pdfUa."
-        response("/schema", "get", "200").apply {
-            this["content"] =
-                mapOf("application/json" to mapOf("schema" to mapOf("type" to "object")))
+        operationOrNull("/schema", "get")?.let { schemaGet ->
+            schemaGet["description"] =
+                "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. " +
+                "The response is a JSON Schema document describing the Template type accepted " +
+                "by /render/template, with builder metadata under x-pdfUa."
+            response("/schema", "get", "200").apply {
+                this["content"] =
+                    mapOf("application/json" to mapOf("schema" to mapOf("type" to "object")))
+            }
         }
 
         val rendered = JsonOutput.prettyPrint(JsonOutput.toJson(spec))
         file.writeText(rendered)
-        docsCopy.asFile.also { it.parentFile.mkdirs() }.writeText(rendered)
+        if (isCompleteSpec) {
+            docsCopy.asFile.also { it.parentFile.mkdirs() }.writeText(rendered)
+        }
     }
 }
 
