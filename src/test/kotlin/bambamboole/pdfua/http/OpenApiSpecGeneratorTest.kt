@@ -4,7 +4,6 @@ import bambamboole.pdfua.http.controller.healthRoutes
 import bambamboole.pdfua.http.controller.identifyRoutes
 import bambamboole.pdfua.http.controller.renderImageRoutes
 import bambamboole.pdfua.http.controller.renderRoutes
-import bambamboole.pdfua.http.controller.templateSchemaRoutes
 import bambamboole.pdfua.http.controller.validationRoutes
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -28,7 +27,6 @@ class OpenApiSpecGeneratorTest {
         openApiSpec(SPEC_VERSION)
         routing {
             healthRoutes()
-            templateSchemaRoutes()
             renderRoutes()
             validationRoutes()
             renderImageRoutes()

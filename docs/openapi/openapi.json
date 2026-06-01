@@ -37,31 +37,6 @@
                 }
             }
         },
-        "/schema": {
-            "get": {
-                "tags": [
-                    "Rendering"
-                ],
-                "summary": "Get the template schema",
-                "description": "Canonical JSON Schema (Draft 2020-12) for the template rendering payload. The response is a JSON Schema document describing the Template type accepted by /render/template, with builder metadata under x-pdfUa.",
-                "responses": {
-                    "200": {
-                        "description": "Template JSON Schema",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Template"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/render/html": {
             "post": {
                 "tags": [

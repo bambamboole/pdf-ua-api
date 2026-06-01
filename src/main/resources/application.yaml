@@ -12,7 +12,6 @@ ktor:
       - bambamboole.pdfua.PluginsKt.auth
       - bambamboole.pdfua.PluginsKt.swagger
       - bambamboole.pdfua.http.controller.HealthKt.health
-      - bambamboole.pdfua.http.controller.TemplateSchemaKt.templateSchema
       - bambamboole.pdfua.http.controller.RenderKt.render
       - bambamboole.pdfua.http.controller.ValidationKt.validation
       - bambamboole.pdfua.http.controller.RenderImageKt.renderImage

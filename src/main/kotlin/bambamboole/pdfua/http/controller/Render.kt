@@ -169,7 +169,8 @@ private fun Operation.Builder.pdfRenderOperation(
 
 /**
  * Hand-authored schema for [RenderRequest]; the `template` field references the shared `Template`
- * component (`TEMPLATE_SCHEMA_REF`), the same schema served by `GET /schema`.
+ * component (`TEMPLATE_SCHEMA_REF`), which is the canonical `TemplateJsonSchema` injected into the
+ * spec's components.
  */
 private fun renderRequestSchema(): JsonSchema =
     JsonSchema(

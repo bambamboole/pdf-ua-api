@@ -5,7 +5,6 @@ import bambamboole.pdfua.http.controller.health
 import bambamboole.pdfua.http.controller.identify
 import bambamboole.pdfua.http.controller.render
 import bambamboole.pdfua.http.controller.renderImage
-import bambamboole.pdfua.http.controller.templateSchema
 import bambamboole.pdfua.http.controller.validation
 import bambamboole.pdfua.image.ImageRenderer
 import bambamboole.pdfua.pdf.PdfRenderer
@@ -143,7 +142,6 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
     auth()
     swagger()
     health()
-    templateSchema()
     render()
     validation()
     renderImage()
