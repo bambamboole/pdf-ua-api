@@ -15,6 +15,9 @@ fields:
 - **`options`** — runtime rendering options:
   - `title` — the PDF document title.
   - `baseUrl` — base URL for resolving relative asset references inside the template.
+  - `embedColorProfile` — defaults to `true`; set to `false` only when you need
+    PDF/UA output without the PDF/A color profile, for example benchmark size
+    comparisons.
 
 The `template` object is built from these fields:
 

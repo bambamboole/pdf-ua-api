@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class RenderOptions(
     val title: String = "Document",
     val baseUrl: String = "",
+    val embedColorProfile: Boolean = true,
 )

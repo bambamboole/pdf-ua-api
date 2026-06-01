@@ -3,6 +3,7 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
@@ -62,6 +63,7 @@ fun Route.convertRoutes(
                 assetResolver = assetResolver,
                 baseUrl = baseUrl,
                 attachments = request.attachments,
+                options = PdfRenderOptions(embedColorProfile = request.embedColorProfile),
             )
 
         respondDocumentOrUpload(

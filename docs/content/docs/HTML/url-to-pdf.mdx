@@ -26,6 +26,7 @@ The JSON body accepts these fields:
 |---|---|---|
 | `url` | — | The `http` or `https` URL to fetch (required) |
 | `attachments` | — | Optional PDF/A-3 file attachments to embed in the output, identical to `/convert` |
+| `embedColorProfile` | `true` | Embed the ICC output intent and produce PDF/A-3a + PDF/UA output. Set to `false` only when you explicitly need PDF/UA output without the PDF/A color profile. |
 
 ## How it works
 

@@ -8,4 +8,5 @@ data class ConvertRequest(
     val html: String,
     val baseUrl: String? = null,
     val attachments: List<FileAttachment>? = null,
+    val embedColorProfile: Boolean = true,
 )

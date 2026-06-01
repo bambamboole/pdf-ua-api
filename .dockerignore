@@ -3,6 +3,8 @@
 .idea/
 build/
 node_modules/
+benchmark/results/
+prefa/
 
 # IDE
 *.iml

@@ -166,6 +166,95 @@ class ConvertRoutesTest {
         }
 
     @Test
+    fun testConvertEndpointEmbedsColorProfileByDefault() =
+        testApplication {
+            application { module() }
+
+            val htmlContent =
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <title>Color Profile Default</title>
+                    <meta name="subject" content="Default color profile" />
+                </head>
+                <body><h1>Test</h1><p>Default archival output.</p></body>
+                </html>
+                """.trimIndent()
+
+            val response =
+                client.post("/convert") {
+                    contentType(ContentType.Application.Json)
+                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(htmlContent)))
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val pdfBytes = response.readRawBytes()
+
+            Loader.loadPDF(pdfBytes).use { document ->
+                assertTrue(
+                    document.documentCatalog.outputIntents.isNotEmpty(),
+                    "Default PDF/A output should include an ICC output intent",
+                )
+            }
+
+            val validation = PdfValidator.validatePdf(pdfBytes)
+            assertTrue(
+                validation.profiles.any { it.profile == "PDF/A-3a" && it.isCompliant },
+                "Default output should remain PDF/A-3a compliant",
+            )
+            assertTrue(
+                validation.profiles.any { it.profile == "PDF/UA-1" && it.isCompliant },
+                "Default output should remain PDF/UA-1 compliant",
+            )
+        }
+
+    @Test
+    fun testConvertEndpointCanOmitColorProfileForPdfUaOnlyOutput() =
+        testApplication {
+            application { module() }
+
+            val htmlContent =
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <title>PDF UA Only</title>
+                    <meta name="subject" content="No output intent" />
+                </head>
+                <body><h1>Test</h1><p>Accessible output without PDF/A color profile.</p></body>
+                </html>
+                """.trimIndent()
+
+            val request = ConvertRequest(html = htmlContent, embedColorProfile = false)
+            val response =
+                client.post("/convert") {
+                    contentType(ContentType.Application.Json)
+                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val pdfBytes = response.readRawBytes()
+
+            Loader.loadPDF(pdfBytes).use { document ->
+                assertTrue(
+                    document.documentCatalog.outputIntents.isEmpty(),
+                    "embedColorProfile=false should omit the ICC output intent",
+                )
+            }
+
+            val validation = PdfValidator.validatePdf(pdfBytes)
+            assertTrue(
+                validation.profiles.any { it.profile == "PDF/UA-1" && it.isCompliant },
+                "Output without a color profile should remain PDF/UA-1 compliant",
+            )
+            assertTrue(
+                validation.profiles.any { it.profile == "PDF/A-3a" && !it.isCompliant },
+                "Output without a color profile should not claim PDF/A-3a compliance",
+            )
+        }
+
+    @Test
     fun testConvertEndpointWithEmptyHTML() =
         testApplication {
             application {

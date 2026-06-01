@@ -54,6 +54,39 @@ class ConvertAndValidateRoutesTest {
         }
 
     @Test
+    fun testConvertAndValidateWithoutColorProfileReportsPdfUaOnlyCompliance() =
+        testApplication {
+            application { module() }
+
+            val htmlContent =
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <title>PDF UA Only</title>
+                    <meta name="subject" content="No color profile" />
+                </head>
+                <body><h1>Hello</h1><p>Test content</p></body>
+                </html>
+                """.trimIndent()
+
+            val request = ConvertRequest(html = htmlContent, embedColorProfile = false)
+            val response =
+                client.post("/convert-and-validate") {
+                    contentType(ContentType.Application.Json)
+                    setBody(Json.encodeToString(ConvertRequest.serializer(), request))
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val result = Json.decodeFromString<ConvertAndValidateResponse>(response.bodyAsText())
+
+            assertTrue(result.validation.profiles.any { it.profile == "PDF/UA-1" && it.isCompliant })
+            assertTrue(result.validation.profiles.any { it.profile == "PDF/A-3a" && !it.isCompliant })
+            assertTrue(result.pdf.isNotEmpty())
+        }
+
+    @Test
     fun testConvertAndValidateWithEmptyHTML() =
         testApplication {
             application { module() }

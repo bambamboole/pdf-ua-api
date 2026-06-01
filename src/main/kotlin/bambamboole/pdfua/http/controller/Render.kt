@@ -4,6 +4,7 @@ import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.ValidationErrorResponse
+import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
@@ -56,6 +57,7 @@ data class RenderRequest(
 data class RenderUrlRequest(
     val url: String,
     val attachments: List<FileAttachment>? = null,
+    val embedColorProfile: Boolean = true,
 )
 
 private const val SERIALIZATION_CAUSE_UNWRAP_DEPTH = 4
@@ -70,9 +72,21 @@ private fun Throwable.unwrapToSerializationException(): SerializationException? 
     return null
 }
 
+@Suppress("TooGenericExceptionCaught") // intentional: any deserialization error -> structured ValidationErrorResponse
+private suspend fun RoutingContext.receiveRenderRequestOrRespond(): RenderRequest? =
+    try {
+        call.receive<RenderRequest>()
+    } catch (e: Exception) {
+        val serializationCause = e.unwrapToSerializationException()
+        val issue =
+            serializationCause?.let(::serializationIssue)
+                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
+        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
+        null
+    }
+
 @GenerateOpenApi
 @Tag(["Rendering"])
-@Suppress("TooGenericExceptionCaught") // intentional: any deserialization error → structured ValidationErrorResponse
 fun Route.renderRoutes(
     pdfProducer: String = "pdf-ua-api.com",
     assetResolver: FSStreamFactory? = null,
@@ -91,17 +105,7 @@ fun Route.renderRoutes(
         ],
     )
     post("/render/template") {
-        val request: RenderRequest =
-            try {
-                call.receive<RenderRequest>()
-            } catch (e: Exception) {
-                val serializationCause = e.unwrapToSerializationException()
-                val issue =
-                    serializationCause?.let(::serializationIssue)
-                        ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
-                call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
-                return@post
-            }
+        val request = receiveRenderRequestOrRespond() ?: return@post
 
         val issues = request.template.validate(request.data)
         if (issues.isNotEmpty()) {
@@ -121,6 +125,7 @@ fun Route.renderRoutes(
                 assetResolver = assetResolver,
                 baseUrl = request.options.baseUrl,
                 attachments = request.template.attachments,
+                options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
             )
 
         respondDocumentOrUpload(
@@ -157,6 +162,7 @@ fun Route.renderRoutes(
         respondRenderedUrl(
             result = fetcher.fetch(request.url),
             attachments = request.attachments,
+            embedColorProfile = request.embedColorProfile,
             pdfProducer = pdfProducer,
             assetResolver = assetResolver,
             uploader = uploader,
@@ -167,6 +173,7 @@ fun Route.renderRoutes(
 private suspend fun RoutingContext.respondRenderedUrl(
     result: FetchResult,
     attachments: List<FileAttachment>?,
+    embedColorProfile: Boolean,
     pdfProducer: String,
     assetResolver: FSStreamFactory?,
     uploader: DocumentUploader?,
@@ -184,6 +191,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
                     assetResolver = assetResolver,
                     baseUrl = result.finalUrl,
                     attachments = attachments,
+                    options = PdfRenderOptions(embedColorProfile = embedColorProfile),
                 )
             respondDocumentOrUpload(
                 bytes = pdfResult.bytes,

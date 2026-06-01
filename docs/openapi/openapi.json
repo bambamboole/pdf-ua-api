@@ -350,6 +350,9 @@
                     },
                     "html": {
                         "type": "string"
+                    },
+                    "embedColorProfile": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -646,6 +649,9 @@
                     },
                     "url": {
                         "type": "string"
+                    },
+                    "embedColorProfile": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -660,6 +666,9 @@
                     },
                     "title": {
                         "type": "string"
+                    },
+                    "embedColorProfile": {
+                        "type": "boolean"
                     }
                 }
             },

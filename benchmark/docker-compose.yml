@@ -17,6 +17,16 @@ services:
     ports:
       - "8081:8080"
 
+  gotenberg:
+    image: gotenberg/gotenberg:8-chromium
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
   runner:
     build: ./runner
     profiles: ["run"]
@@ -25,13 +35,17 @@ services:
         condition: service_healthy
       weasyprint:
         condition: service_healthy
+      gotenberg:
+        condition: service_healthy
     environment:
       PDF_UA_API: "http://pdf-ua-api:8080"
       WEASYPRINT: "http://weasyprint:8080"
+      GOTENBERG: "http://gotenberg:3000"
       CONCURRENCY: "${CONCURRENCY:-20}"
       DURATION: "${DURATION:-30s}"
       WARMUP: "${WARMUP:-50}"
       RUN_DATE: "${RUN_DATE:-unknown}"
+      PDF_UA_EMBED_COLOR_PROFILE: "${PDF_UA_EMBED_COLOR_PROFILE:-false}"
     volumes:
       - ./corpus:/corpus:ro
       - ./results:/results

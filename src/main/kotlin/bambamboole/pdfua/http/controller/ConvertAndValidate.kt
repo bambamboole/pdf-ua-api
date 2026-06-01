@@ -4,6 +4,7 @@ import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.ConvertRequest
 import bambamboole.pdfua.http.ValidationResponse
+import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.AssetResolver
@@ -72,6 +73,7 @@ fun Route.convertAndValidateRoutes(
                 assetResolver = assetResolver,
                 baseUrl = baseUrl,
                 attachments = request.attachments,
+                options = PdfRenderOptions(embedColorProfile = request.embedColorProfile),
             )
         val validation = PdfValidator.validatePdf(result.bytes)
         val pdfBase64 = Base64.getEncoder().encodeToString(result.bytes)

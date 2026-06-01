@@ -10,8 +10,9 @@ down:
 	docker compose down
 
 benchmark:
-	docker compose up -d --build pdf-ua-api weasyprint
-	RUN_DATE=$$(date +%F) docker compose run --rm --build runner
+	docker compose up -d --build pdf-ua-api weasyprint gotenberg
+	docker compose build runner
+	RUN_DATE=$$(date +%F) docker compose run --rm runner
 	docker compose down
 
 clean:

@@ -10,17 +10,29 @@ import httpx
 from parse import parse_oha, parse_validation
 
 ENGINES = {
-    "pdf-ua-api": os.environ.get("PDF_UA_API", "http://pdf-ua-api:8080"),
-    "weasyprint": os.environ.get("WEASYPRINT", "http://weasyprint:8080"),
+    "pdf-ua-api": {
+        "base": os.environ.get("PDF_UA_API", "http://pdf-ua-api:8080"),
+        "kind": "json",
+    },
+    "weasyprint": {
+        "base": os.environ.get("WEASYPRINT", "http://weasyprint:8080"),
+        "kind": "json",
+    },
+    "gotenberg-chromium": {
+        "base": os.environ.get("GOTENBERG", "http://gotenberg:3000"),
+        "kind": "gotenberg",
+    },
 }
 VALIDATOR = os.environ.get("PDF_UA_API", "http://pdf-ua-api:8080")
 CONCURRENCY = int(os.environ.get("CONCURRENCY", "20"))
 DURATION = os.environ.get("DURATION", "30s")
 WARMUP = int(os.environ.get("WARMUP", "50"))
 RUN_DATE = os.environ.get("RUN_DATE", "unknown")
+PDF_UA_EMBED_COLOR_PROFILE = os.environ.get("PDF_UA_EMBED_COLOR_PROFILE", "false").lower() == "true"
 CORPUS = Path("/corpus")
 RESULTS = Path("/results")
 DOCS = ["small", "medium", "large"]
+MULTIPART_BOUNDARY = "----pdfUaBenchmarkBoundary"
 
 
 def wait_healthy(base: str, timeout: int = 120) -> None:
@@ -42,14 +54,31 @@ def engine_version(base: str) -> str:
         return "n/a"
 
 
-def warmup(base: str, payload: bytes) -> None:
+def gotenberg_version(base: str) -> str:
+    try:
+        return httpx.get(f"{base}/version", timeout=5).text.strip()
+    except httpx.HTTPError:
+        return "n/a"
+
+
+def warmup_json(base: str, payload: bytes) -> None:
     with httpx.Client(timeout=60) as c:
         for _ in range(WARMUP):
             c.post(f"{base}/convert", content=payload,
                    headers={"Content-Type": "application/json"})
 
 
-def run_oha(base: str, payload_file: Path) -> dict:
+def warmup_gotenberg(base: str, payload: bytes, content_type: str) -> None:
+    with httpx.Client(timeout=60) as c:
+        for _ in range(WARMUP):
+            c.post(
+                f"{base}/forms/chromium/convert/html",
+                content=payload,
+                headers={"Content-Type": content_type},
+            )
+
+
+def run_oha_json(base: str, payload_file: Path) -> dict:
     cmd = [
         "oha", "--no-tui", "--json", "-z", DURATION, "-c", str(CONCURRENCY),
         "-m", "POST", "-T", "application/json", "-D", str(payload_file),
@@ -59,11 +88,63 @@ def run_oha(base: str, payload_file: Path) -> dict:
     return parse_oha(json.loads(out.stdout))
 
 
-def convert_once(base: str, payload: bytes) -> bytes:
+def run_oha_gotenberg(base: str, payload_file: Path, content_type: str) -> dict:
+    cmd = [
+        "oha", "--no-tui", "--json", "-z", DURATION, "-c", str(CONCURRENCY),
+        "-m", "POST", "-T", content_type, "-D", str(payload_file),
+        f"{base}/forms/chromium/convert/html",
+    ]
+    out = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return parse_oha(json.loads(out.stdout))
+
+
+def convert_once_json(base: str, payload: bytes) -> bytes:
     r = httpx.post(f"{base}/convert", content=payload,
                    headers={"Content-Type": "application/json"}, timeout=120)
     r.raise_for_status()
     return r.content
+
+
+def convert_once_gotenberg(base: str, payload: bytes, content_type: str) -> bytes:
+    r = httpx.post(
+        f"{base}/forms/chromium/convert/html",
+        content=payload,
+        headers={"Content-Type": content_type},
+        timeout=120,
+    )
+    r.raise_for_status()
+    return r.content
+
+
+def payload_for(engine: str, html: str) -> bytes:
+    payload = {"html": html}
+    if engine == "pdf-ua-api":
+        payload["embedColorProfile"] = PDF_UA_EMBED_COLOR_PROFILE
+    return json.dumps(payload).encode()
+
+
+def gotenberg_form_data() -> dict:
+    return {
+        "preferCssPageSize": "true",
+        "printBackground": "true",
+    }
+
+
+def gotenberg_payload_for(html: str) -> tuple[bytes, str]:
+    content_type = f"multipart/form-data; boundary={MULTIPART_BOUNDARY}"
+    parts = [
+        (
+            'Content-Disposition: form-data; name="files"; filename="index.html"\r\n'
+            "Content-Type: text/html\r\n\r\n"
+            f"{html}\r\n"
+        ),
+    ]
+    for key, value in gotenberg_form_data().items():
+        parts.append(f'Content-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n')
+
+    body = "".join(f"--{MULTIPART_BOUNDARY}\r\n{part}" for part in parts)
+    body += f"--{MULTIPART_BOUNDARY}--\r\n"
+    return body.encode(), content_type
 
 
 def validate(pdf: bytes) -> dict:
@@ -74,21 +155,30 @@ def validate(pdf: bytes) -> dict:
 
 
 def main() -> int:
-    for base in ENGINES.values():
-        wait_healthy(base)
+    for engine in ENGINES.values():
+        wait_healthy(engine["base"])
 
     results = []
     for doc in DOCS:
         html = (CORPUS / f"{doc}.html").read_text()
-        payload = json.dumps({"html": html}).encode()
-        payload_file = Path(f"/tmp/{doc}.json")
-        payload_file.write_bytes(payload)
 
-        for engine, base in ENGINES.items():
+        for engine, config in ENGINES.items():
+            base = config["base"]
             print(f"==> {engine} / {doc}", file=sys.stderr)
-            warmup(base, payload)
-            latency = run_oha(base, payload_file)
-            pdf = convert_once(base, payload)
+            if config["kind"] == "gotenberg":
+                payload, content_type = gotenberg_payload_for(html)
+                payload_file = Path(f"/tmp/{doc}-{engine}.multipart")
+                payload_file.write_bytes(payload)
+                warmup_gotenberg(base, payload, content_type)
+                latency = run_oha_gotenberg(base, payload_file, content_type)
+                pdf = convert_once_gotenberg(base, payload, content_type)
+            else:
+                payload = payload_for(engine, html)
+                payload_file = Path(f"/tmp/{doc}-{engine}.json")
+                payload_file.write_bytes(payload)
+                warmup_json(base, payload)
+                latency = run_oha_json(base, payload_file)
+                pdf = convert_once_json(base, payload)
             compliance = validate(pdf)
             results.append({
                 "doc": doc, "engine": engine,
@@ -104,7 +194,9 @@ def main() -> int:
             "concurrency": CONCURRENCY,
             "duration": DURATION,
             "warmupRequests": WARMUP,
-            "weasyprintVersion": engine_version(ENGINES["weasyprint"]),
+            "pdfUaEmbedColorProfile": PDF_UA_EMBED_COLOR_PROFILE,
+            "weasyprintVersion": engine_version(ENGINES["weasyprint"]["base"]),
+            "gotenbergVersion": gotenberg_version(ENGINES["gotenberg-chromium"]["base"]),
         },
         "results": results,
     }

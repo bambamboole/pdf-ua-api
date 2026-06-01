@@ -29,6 +29,10 @@ data class PdfResult(
     val documentId: String,
 )
 
+data class PdfRenderOptions(
+    val embedColorProfile: Boolean = true,
+)
+
 object PdfRenderer {
     private val logger = LoggerFactory.getLogger(PdfRenderer::class.java)
     private val w3cDom = W3CDom()
@@ -61,6 +65,7 @@ object PdfRenderer {
         assetResolver: FSStreamFactory? = null,
         baseUrl: String = "",
         attachments: List<FileAttachment>? = null,
+        options: PdfRenderOptions = PdfRenderOptions(),
     ): PdfResult {
         if (html.isBlank()) {
             throw IllegalArgumentException("HTML content cannot be empty")
@@ -77,7 +82,7 @@ object PdfRenderer {
         val pdfBytes =
             ByteArrayOutputStream(512 * 1024).use { outputStream ->
                 val builder = PdfRendererBuilder()
-                configurePdfUA(builder, html)
+                configurePdfUA(builder, html, options)
                 builder.withProducer(producer)
                 if (assetResolver != null) {
                     builder.useHttpStreamImplementation(assetResolver)
@@ -180,8 +185,11 @@ object PdfRenderer {
     private fun configurePdfUA(
         builder: PdfRendererBuilder,
         html: String,
+        options: PdfRenderOptions,
     ) {
-        builder.useColorProfile(colorProfileBytes)
+        if (options.embedColorProfile) {
+            builder.useColorProfile(colorProfileBytes)
+        }
 
         BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
             val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }
@@ -196,7 +204,9 @@ object PdfRenderer {
         }
 
         builder.usePdfUaAccessibility(true)
-        builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_A)
+        if (options.embedColorProfile) {
+            builder.usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_3_A)
+        }
         builder.useObjectDrawerFactory(backgroundObjectDrawerFactory())
     }
 
