@@ -20,7 +20,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Validation result with base64 PDF when Accept is application/json",
+                        "description": "PDF document or JSON validation response",
                         "content": {
                             "application/pdf": {
                                 "schema": {
@@ -48,10 +48,16 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid request or empty HTML"
+                        "description": "Invalid request or JSON/upload conflict"
                     },
                     "500": {
                         "description": "Rendering failed"
+                    },
+                    "204": {
+                        "description": "PDF uploaded successfully"
+                    },
+                    "502": {
+                        "description": "Upload target rejected the request or was unreachable"
                     }
                 },
                 "requestBody": {
@@ -63,7 +69,18 @@
                             }
                         }
                     }
-                }
+                },
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "required": false,
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/render/template": {
@@ -75,7 +92,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Validation result with base64 PDF when Accept is application/json",
+                        "description": "PDF document or JSON validation response",
                         "content": {
                             "application/pdf": {
                                 "schema": {
@@ -103,7 +120,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid template, data, or request",
+                        "description": "Invalid request or JSON/upload conflict",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -114,6 +131,12 @@
                     },
                     "500": {
                         "description": "Rendering failed"
+                    },
+                    "204": {
+                        "description": "PDF uploaded successfully"
+                    },
+                    "502": {
+                        "description": "Upload target rejected the request or was unreachable"
                     }
                 },
                 "parameters": [
@@ -121,11 +144,22 @@
                         "name": "X-Upload-Url",
                         "in": "header",
                         "required": false,
+                        "description": "Presigned PUT URL that receives the generated document.",
                         "schema": {
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderRequest"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/render/url": {
@@ -137,7 +171,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Validation result with base64 PDF when Accept is application/json",
+                        "description": "PDF document or JSON validation response",
                         "content": {
                             "application/pdf": {
                                 "schema": {
@@ -165,10 +199,16 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid URL or fetch failure"
+                        "description": "Invalid request or JSON/upload conflict"
                     },
                     "500": {
                         "description": "Rendering failed"
+                    },
+                    "204": {
+                        "description": "PDF uploaded successfully"
+                    },
+                    "502": {
+                        "description": "Upload target rejected the request or was unreachable"
                     }
                 },
                 "requestBody": {
@@ -180,7 +220,18 @@
                             }
                         }
                     }
-                }
+                },
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "required": false,
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/render": {
@@ -209,10 +260,16 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid request"
+                        "description": "Invalid request or upload URL"
                     },
                     "500": {
                         "description": "Rendering failed"
+                    },
+                    "204": {
+                        "description": "Image uploaded successfully"
+                    },
+                    "502": {
+                        "description": "Upload target rejected the request or was unreachable"
                     }
                 },
                 "requestBody": {
@@ -224,7 +281,18 @@
                             }
                         }
                     }
-                }
+                },
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "required": false,
+                        "description": "Presigned PUT URL that receives the generated document.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/health": {
@@ -755,6 +823,34 @@
                 "required": [
                     "isString",
                     "content"
+                ]
+            },
+            "bambamboole.pdfua.http.controller.RenderRequest": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "description": "Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables.",
+                        "additionalProperties": true
+                    },
+                    "options": {
+                        "type": "object",
+                        "properties": {
+                            "baseUrl": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "template": {
+                        "type": "object",
+                        "description": "Template document to render. See GET /schema for the canonical template schema."
+                    }
+                },
+                "required": [
+                    "template"
                 ]
             }
         },

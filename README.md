@@ -89,7 +89,7 @@ For full compliance, include these meta tags:
 | Variable           | Default          | Description                                                                                                     |
 |--------------------|------------------|-----------------------------------------------------------------------------------------------------------------|
 | `PORT`             | `8080`           | HTTP server port                                                                                                |
-| `API_KEY`          | (none)           | Optional API key (Bearer token). When set, all conversion and validation endpoints require authentication       |
+| `API_KEY`          | (none)           | Optional API key (Bearer token). When set, protected API endpoints require authentication                       |
 | `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
@@ -119,7 +119,7 @@ docker run -p 8080:8080 \
 
 ## Authentication
 
-The API supports two optional authentication modes — API key (Bearer token) and JWT (RS256 via JWKS). When either is configured, the conversion and validation endpoints require auth; `/health` remains public. See the [Authentication guide](https://pdf-ua-api.bambamboole.com/authentication) for JWT setup.
+The API supports two optional authentication modes — API key (Bearer token) and JWT (RS256 via JWKS). When either is configured, rendering, validation, and identification endpoints require auth; `/health` remains public. See the [Authentication guide](https://pdf-ua-api.bambamboole.com/authentication) for JWT setup.
 
 ### Running with Authentication
 
