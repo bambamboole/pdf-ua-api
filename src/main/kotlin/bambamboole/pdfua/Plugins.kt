@@ -137,7 +137,7 @@ fun Application.swagger() {
                 )
             info =
                 OpenApiInfo(
-                    title = "PDF API",
+                    title = "PDF/UA API",
                     version = version,
                     description =
                         "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and veraPDF validation",

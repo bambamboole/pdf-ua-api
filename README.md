@@ -43,8 +43,8 @@ Full schemas and examples live in the [API reference](https://pdf-ua-api.bambamb
 | `POST /render`          | HTML → PNG/JPEG image                                       |
 | `POST /validate`        | Validate an existing PDF against PDF/A-3a + PDF/UA-1        |
 | `POST /identify`        | Check whether a PDF was produced by this API                |
-| `GET  /schema`          | JSON Schema (Draft 2020-12) for `/render/template`          |
 | `GET  /health`          | Liveness probe                                              |
+| `GET  /openapi.json`    | OpenAPI 3.1 spec; Swagger UI at `/api-docs`                  |
 
 PDF render endpoints return `application/pdf` by default. Send `Accept: application/json` to
 receive `{ "validation": ..., "pdf": "..." }` with the PDF base64-encoded; JSON negotiation cannot
@@ -55,7 +55,7 @@ be combined with `X-Upload-Url`.
 ```bash
 curl -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
-  -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"}' \
+  -d '{"html":"<html lang=\"en\"><head><title>Hello World</title></head><body><h1>Hello World</h1></body></html>"}' \
   --output output.pdf
 ```
 
@@ -136,7 +136,7 @@ When authentication is enabled, include the API key as a Bearer token:
 curl -X POST http://localhost:8080/render/html \
   -H "Authorization: Bearer your-secret-key" \
   -H "Content-Type: application/json" \
-  -d '{"html":"<html><body><h1>Hello</h1></body></html>"}' \
+  -d '{"html":"<html lang=\"en\"><head><title>Hello</title></head><body><h1>Hello</h1></body></html>"}' \
   --output output.pdf
 
 # Validate PDF with authentication
@@ -233,4 +233,4 @@ PDF_PRODUCER=dev-build \
 
 ## License
 
-This project is a proof-of-concept implementation.
+Released under the [MIT License](LICENSE).

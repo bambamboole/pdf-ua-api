@@ -205,15 +205,6 @@ object PdfValidator {
         }
     }
 
-    @Suppress("TooGenericExceptionCaught") // defensive boundary: any failure becomes `false`
-    fun isPdfCompliant(pdfBytes: ByteArray): Boolean =
-        try {
-            validatePdf(pdfBytes).isCompliant
-        } catch (e: Exception) {
-            logger.error("Validation check failed: ${e.message}")
-            false
-        }
-
     private fun buildFailure(
         assertion: TestAssertion,
         profileName: String,

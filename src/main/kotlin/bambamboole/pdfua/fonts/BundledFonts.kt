@@ -59,8 +59,6 @@ object BundledFonts {
         }
     }
 
-    fun loadBytes(font: Font): ByteArray = fontBytes[font] ?: throw IllegalStateException("Bundled font not registered: ${font.path}")
-
     fun fontBytesForHtml(html: String): Map<Font, ByteArray> {
         val referencedFamilies = referencedFamilies(html)
         return fontBytes.filterKeys { font ->

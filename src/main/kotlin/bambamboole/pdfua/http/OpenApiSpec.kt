@@ -21,7 +21,7 @@ import kotlinx.serialization.json.jsonObject
 
 const val BEARER_SECURITY_SCHEME = "bearerAuth"
 
-/** Name and `$ref` of the shared template schema component referenced by `/render/template` and `/schema`. */
+/** Name and `$ref` of the shared template schema component referenced by `/render/template`. */
 const val TEMPLATE_SCHEMA_COMPONENT = "Template"
 const val TEMPLATE_SCHEMA_REF = "#/components/schemas/$TEMPLATE_SCHEMA_COMPONENT"
 
@@ -44,7 +44,7 @@ fun Application.buildOpenApiDocument(version: String): OpenApiDoc {
         OpenApiDoc.build {
             info =
                 OpenApiInfo(
-                    title = "PDF API",
+                    title = "PDF/UA API",
                     version = version,
                     description =
                         "HTML to PDF/A-3a conversion API with PDF/UA accessibility support and " +
@@ -60,7 +60,7 @@ fun Application.buildOpenApiDocument(version: String): OpenApiDoc {
  * Serializes an assembled document to JSON, injecting [TemplateJsonSchema] as the shared `Template`
  * component. The schema is injected as raw JSON because it is a self-contained JSON Schema document
  * (`$schema`/`$id`/`$defs`) that Ktor's typed [JsonSchema] model cannot represent without losing its
- * `$defs`. Both `/render/template` and `/schema` `$ref` this component.
+ * `$defs`. The `/render/template` request body `$ref`s this component.
  */
 fun serializeOpenApiDoc(doc: OpenApiDoc): String {
     val root = specJson.parseToJsonElement(specJson.encodeToString(doc)).jsonObject
