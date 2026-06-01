@@ -1,6 +1,7 @@
 package bambamboole.pdfua.pdf
 
 import bambamboole.pdfua.fonts.BundledFonts
+import bambamboole.pdfua.fonts.useBundledFontsFor
 import bambamboole.pdfua.hyphenation.LocaleAwareHyphenator
 import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
@@ -191,17 +192,7 @@ object PdfRenderer {
             builder.useColorProfile(colorProfileBytes)
         }
 
-        BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
-            val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }
-            builder.useFont(
-                fontSupplier,
-                config.family,
-                config.weight,
-                config.style.toRendererStyle(),
-                true,
-                EnumSet.of(FSFontUseCase.FALLBACK_FINAL),
-            )
-        }
+        builder.useBundledFontsFor(html, fallbackFinal = true)
 
         builder.usePdfUaAccessibility(true)
         if (options.embedColorProfile) {
@@ -213,11 +204,5 @@ object PdfRenderer {
     private fun backgroundObjectDrawerFactory(): DefaultObjectDrawerFactory =
         DefaultObjectDrawerFactory().apply {
             registerDrawer(BackgroundObjectDrawer.OBJECT_TYPE, BackgroundObjectDrawer)
-        }
-
-    private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
-        when (this) {
-            BundledFonts.FontStyle.Normal -> RendererFontStyle.NORMAL
-            BundledFonts.FontStyle.Italic -> RendererFontStyle.ITALIC
         }
 }

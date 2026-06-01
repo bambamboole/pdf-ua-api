@@ -3,9 +3,9 @@ package bambamboole.pdfua.http.controller
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
+import bambamboole.pdfua.http.ErrorResponse
 import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
-import bambamboole.pdfua.http.ValidationErrorResponse
 import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
@@ -231,7 +231,7 @@ private suspend fun RoutingContext.renderTemplate(
     val request = receiveRenderRequest() ?: return
     val issues = request.template.validate(request.data)
     if (issues.isNotEmpty()) {
-        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = issues))
+        call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "validation_failed", issues = issues))
         return
     }
 
@@ -258,7 +258,7 @@ private suspend fun RoutingContext.receiveRenderRequest(): RenderRequest? =
         val issue =
             serializationCause?.let(::serializationIssue)
                 ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
-        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
+        call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "validation_failed", issues = listOf(issue)))
         null
     }
 
@@ -274,7 +274,7 @@ private suspend fun RoutingContext.renderUrl(
         htmlSourceFetcher ?: run {
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("error" to "URL rendering is not configured"),
+                ErrorResponse("URL rendering is not configured"),
             )
             return
         }
@@ -300,7 +300,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
 ) {
     when (result) {
         is FetchResult.Failure -> {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to result.message))
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse(result.message))
         }
 
         is FetchResult.Success -> {

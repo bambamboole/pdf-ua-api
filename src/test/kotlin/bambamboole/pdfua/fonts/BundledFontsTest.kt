@@ -50,14 +50,14 @@ class BundledFontsTest {
 
     @Test
     fun manifestEntriesPointToBundledFontFiles() {
-        assertTrue(BundledFonts.fonts.all { BundledFonts.loadBytes(it).isNotEmpty() })
+        assertTrue(BundledFonts.fonts.all { BundledFonts.fontBytes.getValue(it).isNotEmpty() })
     }
 
     @Test
     fun fontBytesAreCachedCentrally() {
         val font = BundledFonts.fonts.first()
 
-        assertSame(BundledFonts.loadBytes(font), BundledFonts.loadBytes(font))
+        assertSame(BundledFonts.fontBytes.getValue(font), BundledFonts.fontBytes.getValue(font))
     }
 
     @Test

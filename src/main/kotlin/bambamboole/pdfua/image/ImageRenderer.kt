@@ -1,6 +1,7 @@
 package bambamboole.pdfua.image
 
 import bambamboole.pdfua.fonts.BundledFonts
+import bambamboole.pdfua.fonts.useBundledFontsFor
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.java2d.api.BufferedImagePageProcessor
@@ -64,10 +65,7 @@ object ImageRenderer {
         builder.useFastMode()
         builder.useEnvironmentFonts(false)
 
-        BundledFonts.fontBytesForHtml(html).forEach { (config, bytes) ->
-            val fontSupplier = FSSupplier<InputStream> { ByteArrayInputStream(bytes) }
-            builder.useFont(fontSupplier, config.family, config.weight, config.style.toRendererStyle(), true)
-        }
+        builder.useBundledFontsFor(html)
 
         if (assetResolver != null) {
             builder.useHttpStreamImplementation(assetResolver)
@@ -100,10 +98,4 @@ object ImageRenderer {
             out.toByteArray()
         }
     }
-
-    private fun BundledFonts.FontStyle.toRendererStyle(): RendererFontStyle =
-        when (this) {
-            BundledFonts.FontStyle.Normal -> RendererFontStyle.NORMAL
-            BundledFonts.FontStyle.Italic -> RendererFontStyle.ITALIC
-        }
 }

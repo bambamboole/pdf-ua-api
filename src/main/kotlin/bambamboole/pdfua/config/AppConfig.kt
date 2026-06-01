@@ -15,7 +15,6 @@ data class AppConfig(
     val pdfProducer: String,
     val maxRequestSizeBytes: Long,
     val logLevel: LogLevel,
-    val logFormat: String,
     val assetTimeoutMs: Long,
     val assetMaxSizeBytes: Long,
     val assetAllowedDomains: Set<String>,
@@ -33,7 +32,6 @@ data class AppConfig(
     private object Defaults {
         const val PDF_PRODUCER = "pdf-ua-api.com"
         const val MAX_REQUEST_SIZE_BYTES: Long = 10L * 1024 * 1024
-        const val LOG_FORMAT = "text"
         const val ASSET_TIMEOUT_MS: Long = 60_000
         const val ASSET_MAX_SIZE_BYTES: Long = 50L * 1024 * 1024
         const val TRUST_PRIVATE_HOSTS = true
@@ -55,7 +53,6 @@ data class AppConfig(
                 pdfProducer = config.required("pdf.producer", Defaults.PDF_PRODUCER),
                 maxRequestSizeBytes = config.long("pdf.maxRequestSize", Defaults.MAX_REQUEST_SIZE_BYTES),
                 logLevel = config.logLevel("logging.level", LogLevel.INFO),
-                logFormat = config.required("logging.format", Defaults.LOG_FORMAT),
                 assetTimeoutMs = config.long("assets.timeout", Defaults.ASSET_TIMEOUT_MS),
                 assetMaxSizeBytes = config.long("assets.maxSize", Defaults.ASSET_MAX_SIZE_BYTES),
                 assetAllowedDomains = parseCsvSet(config.optional("assets.allowedDomains")),
