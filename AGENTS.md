@@ -12,7 +12,7 @@ Instructions for coding agents working in this repository.
 ## Repository Map
 
 - `src/main/kotlin/bambamboole/pdfua/Application.kt`: Ktor app setup, dependency wiring, auth, route registration.
-- `src/main/kotlin/bambamboole/pdfua/routes/`: endpoint definitions for `/`, `/health`, `/convert`, `/validate`, `/convert-and-validate`, `/render`, `/identify`.
+- `src/main/kotlin/bambamboole/pdfua/routes/`: endpoint definitions for `/`, `/health`, `/validate`, `/render`, `/identify`.
 - `src/main/kotlin/bambamboole/pdfua/services/`: conversion, validation, image rendering, asset resolution, and image optimization logic.
 - `src/main/kotlin/bambamboole/pdfua/config/`: environment-backed app configuration and log-level mapping.
 - `src/main/kotlin/bambamboole/pdfua/models/`: kotlinx serialization DTOs.
