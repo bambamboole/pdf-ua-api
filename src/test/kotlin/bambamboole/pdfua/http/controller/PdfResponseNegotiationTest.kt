@@ -55,8 +55,7 @@ class PdfResponseNegotiationTest {
             .followRedirects(HttpClient.Redirect.NEVER)
             .build()
 
-    private fun permissiveUploader() =
-        DocumentUploader(httpClient = httpClient(), timeoutMs = 5000, validateUrl = { _, _ -> })
+    private fun permissiveUploader() = DocumentUploader(httpClient = httpClient(), timeoutMs = 5000, validateUrl = { _, _ -> })
 
     private class CapturingServer {
         val server: HttpServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
