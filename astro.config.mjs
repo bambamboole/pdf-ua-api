@@ -3,6 +3,7 @@ import starlight from "@astrojs/starlight";
 import react from "@astrojs/react";
 import starlightOpenAPI, {openAPISidebarGroups} from "starlight-openapi";
 import tailwindcss from "@tailwindcss/vite";
+import remarkGfm from "remark-gfm";
 
 // Served at the root of the custom domain, so the base is "/" unless an explicit
 // BASE_PATH is provided. `||` guards against an empty string from CI's configure-pages.
@@ -14,6 +15,9 @@ export default defineConfig({
     site,
     base,
     srcDir: './docs',
+    markdown: {
+        remarkPlugins: [remarkGfm],
+    },
     integrations: [
         starlight({
             title: "PDF UA API",
