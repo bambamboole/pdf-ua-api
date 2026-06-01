@@ -73,19 +73,6 @@ private fun Throwable.unwrapToSerializationException(): SerializationException? 
     return null
 }
 
-@Suppress("TooGenericExceptionCaught") // intentional: any deserialization error -> structured ValidationErrorResponse
-private suspend fun RoutingContext.receiveRenderRequestOrRespond(): RenderRequest? =
-    try {
-        call.receive<RenderRequest>()
-    } catch (e: Exception) {
-        val serializationCause = e.unwrapToSerializationException()
-        val issue =
-            serializationCause?.let(::serializationIssue)
-                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
-        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
-        null
-    }
-
 @GenerateOpenApi
 @Tag(["Rendering"])
 fun Route.renderRoutes(
@@ -101,97 +88,148 @@ fun Route.renderRoutes(
     @KtorResponds(
         [
             ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry(
+                "200",
+                RenderPdfResponse::class,
+                description = "Validation result with base64 PDF when Accept is application/json",
+            ),
             ResponseEntry("400", Nothing::class, description = "Invalid request or empty HTML"),
             ResponseEntry("500", Nothing::class, description = "Rendering failed"),
         ],
     )
     post("/render/html") {
-        val request = call.receive<RenderHtmlRequest>()
-        require(request.html.isNotBlank()) { "HTML content cannot be empty" }
-
-        val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
-
-        val result =
-            PdfRenderer.convertHtmlToPdf(
-                html = request.html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = baseUrl,
-                attachments = request.attachments,
-            )
-
-        respondPdfOrUpload(result, uploader)
+        renderHtml(pdfProducer, assetResolver, uploader)
     }
 
     @KtorDescription(
         summary = "Render a template to PDF",
-        description = "Renders a JSON template (with optional per-block data overrides) to a PDF/A-3a document.",
+        description = "Renders a JSON template to a PDF/A-3a document or JSON validation response.",
     )
     @KtorResponds(
         [
             ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry(
+                "200",
+                RenderPdfResponse::class,
+                description = "Validation result with base64 PDF when Accept is application/json",
+            ),
             ResponseEntry("400", ValidationErrorResponse::class, description = "Invalid template, data, or request"),
             ResponseEntry("500", Nothing::class, description = "Rendering failed"),
         ],
     )
     post("/render/template") {
-        val request = receiveRenderRequestOrRespond() ?: return@post
-
-        val issues = request.template.validate(request.data)
-        if (issues.isNotEmpty()) {
-            call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = issues))
-            return@post
-        }
-
-        request.options.baseUrl
-            .takeIf { it.isNotEmpty() }
-            ?.let { validateBaseUrl(it) }
-        val html = TemplateRenderer.render(request.template, request.data, request.options)
-
-        val result =
-            PdfRenderer.convertHtmlToPdf(
-                html = html,
-                producer = pdfProducer,
-                assetResolver = assetResolver,
-                baseUrl = request.options.baseUrl,
-                attachments = request.template.attachments,
-                options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
-            )
-
-        respondPdfOrUpload(result, uploader)
+        renderTemplate(pdfProducer, assetResolver, uploader)
     }
 
     @KtorDescription(
         summary = "Render a URL to PDF",
-        description = "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
+        description = "Fetches the HTML at the given URL and renders it to a PDF or JSON validation response.",
     )
     @KtorResponds(
         [
             ResponseEntry("200", ByteArray::class, description = "PDF document"),
+            ResponseEntry(
+                "200",
+                RenderPdfResponse::class,
+                description = "Validation result with base64 PDF when Accept is application/json",
+            ),
             ResponseEntry("400", Nothing::class, description = "Invalid URL or fetch failure"),
             ResponseEntry("500", Nothing::class, description = "Rendering failed"),
         ],
     )
     post("/render/url") {
-        val fetcher =
-            htmlSourceFetcher ?: run {
-                call.respond(
-                    HttpStatusCode.InternalServerError,
-                    mapOf("error" to "URL rendering is not configured"),
-                )
-                return@post
-            }
-        val request = call.receive<RenderUrlRequest>()
-        require(request.url.isNotBlank()) { "url cannot be empty" }
-        respondRenderedUrl(
-            result = fetcher.fetch(request.url),
-            attachments = request.attachments,
-            embedColorProfile = request.embedColorProfile,
-            pdfProducer = pdfProducer,
-            assetResolver = assetResolver,
-            uploader = uploader,
-        )
+        renderUrl(htmlSourceFetcher, pdfProducer, assetResolver, uploader)
     }
+}
+
+private suspend fun RoutingContext.renderHtml(
+    pdfProducer: String,
+    assetResolver: FSStreamFactory?,
+    uploader: DocumentUploader?,
+) {
+    val request = call.receive<RenderHtmlRequest>()
+    require(request.html.isNotBlank()) { "HTML content cannot be empty" }
+
+    val baseUrl = request.baseUrl?.also { validateBaseUrl(it) } ?: ""
+    val result =
+        PdfRenderer.convertHtmlToPdf(
+            html = request.html,
+            producer = pdfProducer,
+            assetResolver = assetResolver,
+            baseUrl = baseUrl,
+            attachments = request.attachments,
+        )
+
+    respondPdfOrUpload(result, uploader)
+}
+
+private suspend fun RoutingContext.renderTemplate(
+    pdfProducer: String,
+    assetResolver: FSStreamFactory?,
+    uploader: DocumentUploader?,
+) {
+    val request = receiveRenderRequest() ?: return
+    val issues = request.template.validate(request.data)
+    if (issues.isNotEmpty()) {
+        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = issues))
+        return
+    }
+
+    request.options.baseUrl
+        .takeIf { it.isNotEmpty() }
+        ?.let { validateBaseUrl(it) }
+    val html = TemplateRenderer.render(request.template, request.data, request.options)
+
+    val result =
+        PdfRenderer.convertHtmlToPdf(
+            html = html,
+            producer = pdfProducer,
+            assetResolver = assetResolver,
+            baseUrl = request.options.baseUrl,
+            attachments = request.template.attachments,
+            options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
+        )
+
+    respondPdfOrUpload(result, uploader)
+}
+
+@Suppress("TooGenericExceptionCaught")
+private suspend fun RoutingContext.receiveRenderRequest(): RenderRequest? =
+    try {
+        call.receive<RenderRequest>()
+    } catch (e: Exception) {
+        val serializationCause = e.unwrapToSerializationException()
+        val issue =
+            serializationCause?.let(::serializationIssue)
+                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
+        call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(issues = listOf(issue)))
+        null
+    }
+
+private suspend fun RoutingContext.renderUrl(
+    htmlSourceFetcher: HtmlSourceFetcher?,
+    pdfProducer: String,
+    assetResolver: FSStreamFactory?,
+    uploader: DocumentUploader?,
+) {
+    val fetcher =
+        htmlSourceFetcher ?: run {
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                mapOf("error" to "URL rendering is not configured"),
+            )
+            return
+        }
+    val request = call.receive<RenderUrlRequest>()
+    require(request.url.isNotBlank()) { "url cannot be empty" }
+    respondRenderedUrl(
+        result = fetcher.fetch(request.url),
+        attachments = request.attachments,
+        embedColorProfile = request.embedColorProfile,
+        pdfProducer = pdfProducer,
+        assetResolver = assetResolver,
+        uploader = uploader,
+    )
 }
 
 private suspend fun RoutingContext.respondRenderedUrl(
