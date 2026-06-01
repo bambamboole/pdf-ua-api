@@ -5,6 +5,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.cos.COSName
 import java.util.Base64
@@ -43,6 +46,35 @@ class RenderRoutesTest {
                     .startsWith("%PDF-"),
             )
             assertNotNull(response.headers["X-Document-UUID"])
+        }
+
+    @Test
+    fun rendersTemplateWithJsonAcceptReturnsValidationAndPdf() =
+        testApplication {
+            application { module() }
+
+            val body =
+                """
+                {"template":{"version":1,"rows":[
+                  {"blocks":[{"type":"text","id":"intro","text":"Hello from a template"}]}
+                ]}}
+                """.trimIndent()
+
+            val response =
+                client.post("/render/template") {
+                    contentType(ContentType.Application.Json)
+                    accept(ContentType.Application.Json)
+                    setBody(body)
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(ContentType.Application.Json, response.contentType()?.withoutParameters())
+            val responseBody = Json.parseToJsonElement(response.bodyAsText()).jsonObject
+            assertTrue("validation" in responseBody)
+            assertTrue("pdf" in responseBody)
+
+            val pdf = Base64.getDecoder().decode(responseBody.getValue("pdf").jsonPrimitive.content)
+            assertTrue(pdf.size > 5 && String(pdf, 0, 5, Charsets.US_ASCII) == "%PDF-")
         }
 
     @Test

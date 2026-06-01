@@ -158,13 +158,7 @@ fun Route.renderRoutes(
                 options = PdfRenderOptions(embedColorProfile = request.options.embedColorProfile),
             )
 
-        respondDocumentOrUpload(
-            bytes = result.bytes,
-            contentType = ContentType.Application.Pdf,
-            fileName = "output.pdf",
-            documentId = result.documentId,
-            uploader = uploader,
-        )
+        respondPdfOrUpload(result, uploader)
     }
 
     @KtorDescription(
@@ -223,13 +217,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
                     attachments = attachments,
                     options = PdfRenderOptions(embedColorProfile = embedColorProfile),
                 )
-            respondDocumentOrUpload(
-                bytes = pdfResult.bytes,
-                contentType = ContentType.Application.Pdf,
-                fileName = "output.pdf",
-                documentId = pdfResult.documentId,
-                uploader = uploader,
-            )
+            respondPdfOrUpload(pdfResult, uploader)
         }
     }
 }
