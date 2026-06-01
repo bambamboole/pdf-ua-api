@@ -161,6 +161,7 @@ private suspend fun RoutingContext.renderHtml(
             assetResolver = assetResolver,
             baseUrl = baseUrl,
             attachments = request.attachments,
+            options = PdfRenderOptions(embedColorProfile = request.embedColorProfile),
         )
 
     respondPdfOrUpload(result, uploader)
