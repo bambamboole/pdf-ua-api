@@ -2,7 +2,6 @@ package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
 import bambamboole.pdfua.expensiveRoute
-import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.ErrorResponse
 import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
@@ -13,12 +12,11 @@ import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.FetchResult
 import bambamboole.pdfua.services.HtmlSourceFetcher
+import bambamboole.pdfua.services.TemplatePdfRenderResult
+import bambamboole.pdfua.services.TemplatePdfRenderService
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.Template
-import bambamboole.pdfua.template.ValidationCodes
-import bambamboole.pdfua.template.ValidationIssue
-import bambamboole.pdfua.template.serializationIssue
-import bambamboole.pdfua.template.validate
+import bambamboole.pdfua.template.toJsonValidationIssue
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.ktor.http.*
 import io.ktor.openapi.JsonSchema
@@ -34,7 +32,6 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
 
@@ -63,18 +60,6 @@ data class RenderUrlRequest(
     val attachments: List<FileAttachment>? = null,
     val embedColorProfile: Boolean = true,
 )
-
-private const val SERIALIZATION_CAUSE_UNWRAP_DEPTH = 4
-
-private fun Throwable.unwrapToSerializationException(): SerializationException? {
-    var current: Throwable? = this
-    repeat(SERIALIZATION_CAUSE_UNWRAP_DEPTH) {
-        val candidate = current
-        if (candidate is SerializationException) return candidate
-        current = candidate?.cause
-    }
-    return null
-}
 
 @OptIn(ExperimentalKtorApi::class)
 fun Route.renderRoutes(
@@ -229,24 +214,15 @@ private suspend fun RoutingContext.renderTemplate(
     if (rejectPdfJsonUploadConflict()) return
 
     val request = receiveRenderRequest() ?: return
-    val issues = request.template.validate(request.data)
-    if (issues.isNotEmpty()) {
-        call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "validation_failed", issues = issues))
-        return
+    when (val result = TemplatePdfRenderService(pdfProducer, assetResolver).render(request.template, request.data)) {
+        is TemplatePdfRenderResult.Success -> {
+            respondPdfOrUpload(result.pdf, uploader)
+        }
+
+        is TemplatePdfRenderResult.ValidationFailed -> {
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "validation_failed", issues = result.issues))
+        }
     }
-
-    val html = TemplateRenderer.render(request.template, request.data)
-
-    val result =
-        PdfRenderer.convertHtmlToPdf(
-            html = html,
-            producer = pdfProducer,
-            assetResolver = assetResolver,
-            attachments = request.template.attachments,
-            options = PdfRenderOptions(embedColorProfile = request.template.config.embedColorProfile),
-        )
-
-    respondPdfOrUpload(result, uploader)
 }
 
 @Suppress("TooGenericExceptionCaught")
@@ -254,10 +230,7 @@ private suspend fun RoutingContext.receiveRenderRequest(): RenderRequest? =
     try {
         call.receive<RenderRequest>()
     } catch (e: Exception) {
-        val serializationCause = e.unwrapToSerializationException()
-        val issue =
-            serializationCause?.let(::serializationIssue)
-                ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, e.message ?: "Invalid request body")
+        val issue = e.toJsonValidationIssue("Invalid request body")
         call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "validation_failed", issues = listOf(issue)))
         null
     }

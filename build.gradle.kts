@@ -115,9 +115,14 @@ dependencies {
     implementation(libs.ktorServerOpenApi)
     implementation(libs.ktorOpenApiSchema)
 
+    // MCP
+    implementation(libs.mcpKotlinServer)
+
     // Testing
     testImplementation(ktorLibs.server.testHost)
     testImplementation(libs.kotlinTest)
+    testImplementation(libs.mcpKotlinClient)
+    testImplementation(libs.mcpKotlinTesting)
 }
 
 application {

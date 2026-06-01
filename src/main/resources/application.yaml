@@ -16,6 +16,7 @@ ktor:
       - bambamboole.pdfua.http.controller.ValidationKt.validation
       - bambamboole.pdfua.http.controller.RenderImageKt.renderImage
       - bambamboole.pdfua.http.controller.IdentifyKt.identify
+      - bambamboole.pdfua.mcp.PdfUaMcpServerKt.mcpServer
 
 api:
   key: "$API_KEY:"

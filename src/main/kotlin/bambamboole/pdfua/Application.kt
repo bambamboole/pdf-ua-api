@@ -7,6 +7,7 @@ import bambamboole.pdfua.http.controller.render
 import bambamboole.pdfua.http.controller.renderImage
 import bambamboole.pdfua.http.controller.validation
 import bambamboole.pdfua.image.ImageRenderer
+import bambamboole.pdfua.mcp.mcpServer
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfValidator
 import bambamboole.pdfua.services.AssetResolver
@@ -146,6 +147,7 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
     validation()
     renderImage()
     identify()
+    mcpServer()
 }
 
 private const val JWKS_CACHE_SIZE = 10L

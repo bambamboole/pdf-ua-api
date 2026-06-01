@@ -16,6 +16,7 @@ spotless = "8.5.1"
 detekt = "2.0.0-alpha.3"
 ktlint = "1.8.0"
 ktorOpenApi = "3.5.0"
+mcpKotlin = "0.12.0"
 
 [libraries]
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
@@ -44,6 +45,11 @@ kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotli
 # OpenAPI generation
 ktorServerOpenApi = { module = "io.ktor:ktor-server-openapi", version.ref = "ktorOpenApi" }
 ktorOpenApiSchema = { module = "io.ktor:ktor-openapi-schema", version.ref = "ktorOpenApi" }
+
+# MCP
+mcpKotlinClient = { module = "io.modelcontextprotocol:kotlin-sdk-client", version.ref = "mcpKotlin" }
+mcpKotlinServer = { module = "io.modelcontextprotocol:kotlin-sdk-server", version.ref = "mcpKotlin" }
+mcpKotlinTesting = { module = "io.modelcontextprotocol:kotlin-sdk-testing", version.ref = "mcpKotlin" }
 
 # veraPDF Validation
 verapdfValidation = { module = "org.verapdf:validation-model", version.ref = "verapdf" }

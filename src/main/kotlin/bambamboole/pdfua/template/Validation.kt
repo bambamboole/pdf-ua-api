@@ -87,6 +87,21 @@ fun serializationIssue(e: SerializationException): ValidationIssue {
     )
 }
 
+private const val SERIALIZATION_CAUSE_UNWRAP_DEPTH = 4
+
+/**
+ * Maps a deserialization failure to a [ValidationIssue]: a [SerializationException] found within the
+ * first few causes is described via [serializationIssue]; otherwise the throwable's message is
+ * reported as [ValidationCodes.INVALID_JSON].
+ */
+fun Throwable.toJsonValidationIssue(fallbackMessage: String = "Invalid JSON payload"): ValidationIssue =
+    generateSequence(this) { it.cause }
+        .take(SERIALIZATION_CAUSE_UNWRAP_DEPTH)
+        .filterIsInstance<SerializationException>()
+        .firstOrNull()
+        ?.let(::serializationIssue)
+        ?: ValidationIssue("$", ValidationCodes.INVALID_JSON, message ?: fallbackMessage)
+
 internal fun requireObject(
     value: JsonElement,
     path: ValidationPath,
