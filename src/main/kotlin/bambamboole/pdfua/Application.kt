@@ -1,8 +1,6 @@
 package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.http.controller.convert
-import bambamboole.pdfua.http.controller.convertAndValidate
 import bambamboole.pdfua.http.controller.health
 import bambamboole.pdfua.http.controller.identify
 import bambamboole.pdfua.http.controller.render
@@ -146,10 +144,8 @@ fun Application.module(jwkProvider: JwkProvider? = null) {
     swagger()
     health()
     templateSchema()
-    convert()
     render()
     validation()
-    convertAndValidate()
     renderImage()
     identify()
 }

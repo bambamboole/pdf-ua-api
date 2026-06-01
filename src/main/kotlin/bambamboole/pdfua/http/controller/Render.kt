@@ -33,6 +33,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonElement
+import java.net.URI
 
 fun Application.render() {
     val config: AppConfig by dependencies
@@ -161,6 +162,14 @@ private suspend fun RoutingContext.renderHtml(
         )
 
     respondPdfOrUpload(result, uploader)
+}
+
+internal fun validateBaseUrl(baseUrl: String) {
+    val uri = URI.create(baseUrl)
+    val scheme = uri.scheme?.lowercase()
+    require(scheme == "http" || scheme == "https") {
+        "baseUrl must use http or https scheme, got: $scheme"
+    }
 }
 
 private suspend fun RoutingContext.renderTemplate(

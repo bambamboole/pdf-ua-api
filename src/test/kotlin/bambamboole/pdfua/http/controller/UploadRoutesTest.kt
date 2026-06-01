@@ -1,6 +1,6 @@
 package bambamboole.pdfua.http.controller
 
-import bambamboole.pdfua.http.ConvertRequest
+import bambamboole.pdfua.http.RenderHtmlRequest
 import bambamboole.pdfua.services.DocumentUploader
 import com.sun.net.httpserver.HttpServer
 import io.ktor.client.request.*
@@ -19,9 +19,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private fun Application.convertModule(uploader: DocumentUploader?) {
+private fun Application.renderPdfModule(uploader: DocumentUploader?) {
     install(ContentNegotiation) { json() }
-    routing { convertRoutes(uploader = uploader) }
+    routing { renderRoutes(uploader = uploader) }
 }
 
 private fun Application.renderImageModule(uploader: DocumentUploader?) {
@@ -63,16 +63,16 @@ class UploadRoutesTest {
     }
 
     @Test
-    fun convertWithUploadUrlReturns204AndUploadsPdf() =
+    fun renderHtmlWithUploadUrlReturns204AndUploadsPdf() =
         testApplication {
             val target = CapturingServer().apply { start("/upload") }
-            application { convertModule(permissiveUploader()) }
+            application { renderPdfModule(permissiveUploader()) }
             try {
                 val response =
-                    client.post("/convert") {
+                    client.post("/render/html") {
                         contentType(ContentType.Application.Json)
                         header("X-Upload-Url", "http://127.0.0.1:${target.port}/upload")
-                        setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(validHtml)))
+                        setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
                     }
 
                 assertEquals(HttpStatusCode.NoContent, response.status)
@@ -107,13 +107,13 @@ class UploadRoutesTest {
     @Test
     fun blockedUploadUrlReturns400() =
         testApplication {
-            application { convertModule(DocumentUploader(httpClient = httpClient(), timeoutMs = 5000)) }
+            application { renderPdfModule(DocumentUploader(httpClient = httpClient(), timeoutMs = 5000)) }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header("X-Upload-Url", "http://10.0.0.1/upload")
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(validHtml)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -122,13 +122,13 @@ class UploadRoutesTest {
     @Test
     fun uploadUrlWhenFeatureDisabledReturns400() =
         testApplication {
-            application { convertModule(null) }
+            application { renderPdfModule(null) }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
                     header("X-Upload-Url", "https://bucket.example.com/upload")
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(validHtml)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -136,14 +136,14 @@ class UploadRoutesTest {
         }
 
     @Test
-    fun convertWithoutUploadUrlReturnsPdfInline() =
+    fun renderHtmlWithoutUploadUrlReturnsPdfInline() =
         testApplication {
-            application { convertModule(permissiveUploader()) }
+            application { renderPdfModule(permissiveUploader()) }
 
             val response =
-                client.post("/convert") {
+                client.post("/render/html") {
                     contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(ConvertRequest.serializer(), ConvertRequest(validHtml)))
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)

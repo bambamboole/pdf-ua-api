@@ -10,5 +10,3 @@ data class RenderHtmlRequest(
     val attachments: List<FileAttachment>? = null,
     val embedColorProfile: Boolean = true,
 )
-
-typealias ConvertRequest = RenderHtmlRequest

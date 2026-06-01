@@ -95,4 +95,32 @@ class RenderHtmlRoutesTest {
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertTrue(response.bodyAsText().contains("HTML content cannot be empty"))
         }
+
+    @Test
+    fun oldConvertEndpointReturnsNotFound() =
+        testApplication {
+            application { renderHtmlModule() }
+
+            val response =
+                client.post("/convert") {
+                    contentType(ContentType.Application.Json)
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
+                }
+
+            assertEquals(HttpStatusCode.NotFound, response.status)
+        }
+
+    @Test
+    fun oldConvertAndValidateEndpointReturnsNotFound() =
+        testApplication {
+            application { renderHtmlModule() }
+
+            val response =
+                client.post("/convert-and-validate") {
+                    contentType(ContentType.Application.Json)
+                    setBody(Json.encodeToString(RenderHtmlRequest.serializer(), RenderHtmlRequest(validHtml)))
+                }
+
+            assertEquals(HttpStatusCode.NotFound, response.status)
+        }
 }
