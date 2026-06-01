@@ -48,10 +48,10 @@ output intent.
 
 ## What the numbers say
 
-- **Throughput.** pdf-ua-api is fastest on the small and medium accessible-output
-  runs and remains much faster than WeasyPrint on the large document. Gotenberg
-  Chromium is included as a non-PDF/UA rendering baseline and is competitive on
-  raw large-document rendering.
+- **Throughput.** pdf-ua-api is fastest across the small, medium, and mixed
+  large accessible-output runs in this result set. Gotenberg Chromium is included
+  as a non-PDF/UA rendering baseline and remains useful for raw browser-output
+  comparison.
 - **Accessibility.** Every pdf-ua-api output passes PDF/UA-1 validation. With
   `embedColorProfile=true`, the normal API output also passes PDF/A-3a.
   WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
@@ -75,6 +75,11 @@ document. Gotenberg receives it as a multipart `index.html` upload with
 measurement so cold-start does not skew results — disclosed, not hidden.
 pdf-ua-api's rate limiter is disabled for the run so the load test measures raw
 engine throughput.
+
+The corpus has three document shapes: a small text document, a medium invoice
+with tables, and a large mixed report with paragraphs, figures, callouts, and a
+limited number of tables. The large fixture intentionally avoids being a pure
+table stress test.
 
 The containers ship Liberation Sans, so the engines embed the same typeface and
 file size isn't skewed by font choice. Throughput and latency come from

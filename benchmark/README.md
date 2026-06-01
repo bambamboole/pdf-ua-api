@@ -18,6 +18,11 @@ runs the Chromium HTML converter with CSS page sizes and print backgrounds
 enabled. A warmup phase precedes measurement so cold-start does not skew the
 comparison — this is disclosed, not hidden.
 
+The corpus covers three shapes: a small text document, a medium invoice with
+tables, and a large mixed report with paragraphs, figures, callouts, and a
+limited number of tables. The large document is not intended to be a pure table
+stress test.
+
 ## Run it
 
 ```bash
