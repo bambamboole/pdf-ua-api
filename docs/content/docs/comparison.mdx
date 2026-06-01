@@ -1,0 +1,140 @@
+---
+title: Comparison
+description: Compare pdf-ua-api with Gotenberg Chromium and WeasyPrint on compliance, inputs, rendering model, and benchmark results.
+---
+
+import data from "../../../benchmark/results/latest.json";
+
+export const docs = [...new Set(data.results.map((r) => r.doc))];
+export const fmt = (n) => (n == null ? "—" : Math.round(n).toLocaleString());
+export const ms = (n) => (n == null ? "—" : `${n} ms`);
+export const kb = (b) => (b == null ? "—" : `${(b / 1024).toFixed(1)} KB`);
+
+pdf-ua-api focuses on accessible, validated PDF generation. Gotenberg is a
+general Docker conversion API around Chromium, LibreOffice, and PDF engines.
+WeasyPrint is a Python/CLI renderer built around HTML, CSS, and paged-media
+document layout.
+
+## Feature matrix
+
+| Capability | pdf-ua-api | Gotenberg | WeasyPrint |
+| --- | --- | --- | --- |
+| Primary fit | Accessible HTML, URL, and JSON-template PDF generation with validation built into the same API. | Broad document-conversion service for teams that want a ready Docker API. The docs describe a multipart API so you do not manage Chromium, LibreOffice, or fonts yourself. | Python library and CLI for HTML/CSS documents such as reports, invoices, tickets, books, letters, and posters. |
+| Deployment model | JVM/Ktor HTTP API, Docker-friendly, with optional API-key auth, rate limiting, OpenTelemetry, and S3 upload. | Docker-based HTTP API. Requests are `multipart/form-data` and return generated PDFs. | Library/CLI embedded in Python workflows. It is not a hosted HTTP service unless you wrap it yourself. |
+| HTML and URL input | `/convert` accepts HTML, `/render/url` fetches a remote page, and `/render/template` renders structured template JSON. | Chromium routes support URL, HTML, Markdown, and screenshots. | Accepts HTML from strings, files, URLs, and file-like objects through the CLI/Python API. |
+| Office and non-HTML formats | Not the goal; the API is centered on HTML, URL, and template rendering. | Strong fit: the LibreOffice module accepts Microsoft Office, OpenDocument, plain text, and many other formats. | Not the goal; use HTML/CSS as the source format. |
+| PDF/UA accessibility | Core purpose. Default conversion produces PDF/UA output and can be verified through `/validate`. | Has PDF engine options such as `pdfua=true`, but Chromium output in this benchmark is a rendering baseline and does not pass PDF/UA. Validate your corpus. | Supports PDF/UA variants and tagging options, but the documentation warns that valid output depends on the HTML, CSS, and PDF features used. |
+| PDF/A archival output | Default production behavior embeds the sRGB output intent and emits PDF/A-3a + PDF/UA. `embedColorProfile=false` is available for PDF/UA-only comparisons. | Chromium conversion exposes PDF/A and PDF/UA form fields through PDF engines. PDF/A interaction with post-processing has metadata caveats in the docs. | Supports many PDF variants, including PDF/A and PDF/UA, via `--pdf-variant` / `pdf_variant`. |
+| Validation and diagnostics | Built-in veraPDF validation for PDF/A-3a and PDF/UA-1, plus PDF identification for API-produced documents. | Conversion service first. Validation is not the central product surface. | Generation library first. You validate with external tooling when compliance matters. |
+| Browser fidelity and JavaScript | Uses OpenHTMLToPDF; best for deterministic print-style HTML and template output, not full browser execution. | Strong fit when Chromium behavior matters. Routes include dynamic content waiting, JavaScript handling, cookies, headers, and network controls. | Strong print CSS support, but not a JavaScript/browser runtime. |
+| Templates and structured data | First-class JSON template model with rows, blocks, typography, page config, attachments, schema, docs, and embeddable builder tooling. | No native pdf-ua-api-style template schema; you typically provide prepared HTML/Markdown or office files. | No native service template schema; you usually pair it with your own templating layer. |
+| Headers, footers, and page layout | Controlled through template footer/page configuration or HTML/CSS in OpenHTMLToPDF. | Chromium supports uploaded `header.html` and `footer.html`, but they render in a separate context with asset/CSS limitations. | Strong CSS paged-media model using `@page` for page size, margins, page numbers, and headers. |
+| Attachments and metadata | Supports PDF attachments in template rendering, producer metadata, and document IDs. | PDF engines support metadata and embedded files; LibreOffice routes also include merge, split, watermark, and stamp features. | CLI/API include attachments, XMP metadata, custom metadata, sRGB, PDF forms, and image optimization options. |
+| Security controls for remote assets | Asset fetching is intentionally constrained: blocks private/loopback/link-local destinations by default, supports allow lists and size/time limits. | Provides outbound URL filtering and module-level configuration for browser/LibreOffice fetches. | CLI exposes URL-fetch controls such as timeout, allowed protocols, redirect behavior, and fail-on-HTTP-error. |
+
+## Sources
+
+- [Gotenberg introduction](https://gotenberg.dev/docs/getting-started/introduction):
+  Docker-based conversion API with Chromium, LibreOffice, and fonts managed in
+  the container.
+- [Gotenberg Chromium HTML conversion](https://gotenberg.dev/docs/convert-with-chromium/convert-html-to-pdf):
+  HTML conversion, rendering behavior, PDF engine post-processing, metadata,
+  attachments, PDF/A, PDF/UA, and encryption options.
+- [Gotenberg LibreOffice conversion](https://gotenberg.dev/docs/convert-with-libreoffice/convert-to-pdf):
+  Office/OpenDocument/plain-text conversion and PDF post-processing features.
+- [WeasyPrint common use cases](https://doc.courtbouillon.org/weasyprint/stable/common_use_cases.html):
+  CSS page setup, PDF/A, PDF/UA, Factur-X/ZUGFeRD, and accessibility constraints.
+- [WeasyPrint API reference](https://doc.courtbouillon.org/weasyprint/stable/api_reference.html):
+  CLI and Python API options, PDF variants, attachments, metadata, tags, forms,
+  image optimization, and URL fetching controls.
+
+## Benchmark snapshot
+
+All engines run as HTTP services in Docker, hit with identical load —
+{data.meta.concurrency} concurrent clients for {data.meta.duration}, after
+{data.meta.warmupRequests} warmup requests. Measured {data.meta.date};
+WeasyPrint {data.meta.weasyprintVersion}, running in its `pdf/ua-1`
+accessibility mode; Gotenberg {data.meta.gotenbergVersion}, running its Chromium
+HTML converter.
+pdf-ua-api is run with `embedColorProfile` set to
+**{String(data.meta.pdfUaEmbedColorProfile)}** for this benchmark; the default
+harness value is `false` so file size is compared without pdf-ua-api's PDF/A
+output intent.
+
+{docs.map((doc) => (
+  <div key={doc}>
+    <h3>{doc} document</h3>
+    <table>
+      <thead>
+        <tr><th>Engine</th><th>Req/s</th><th>p50</th><th>p99</th><th>PDF/UA-1</th><th>Size</th></tr>
+      </thead>
+      <tbody>
+        {data.results.filter((r) => r.doc === doc).map((r) => (
+          <tr key={r.engine}>
+            <td>{r.engine}</td>
+            <td>{fmt(r.reqPerSec)}</td>
+            <td>{ms(r.p50Ms)}</td>
+            <td>{ms(r.p99Ms)}</td>
+            <td>{r.pdfUa ? "Pass" : "Fail"}</td>
+            <td>{kb(r.sizeBytes)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+))}
+
+## What the numbers say
+
+- **Throughput.** pdf-ua-api is fastest across the small, medium, and mixed
+  large accessible-output runs in this result set. Gotenberg Chromium is included
+  as a non-PDF/UA rendering baseline and remains useful for raw browser-output
+  comparison.
+- **Accessibility.** Every pdf-ua-api output passes PDF/UA-1 validation. With
+  `embedColorProfile=true`, the normal API output also passes PDF/A-3a.
+  WeasyPrint's `pdf/ua-1` output passes PDF/UA-1 on the simplest
+  document but is flagged as non-compliant on the more complex ones. Gotenberg
+  Chromium output is included as a rendering baseline, not as a PDF/UA engine.
+- **File size.** pdf-ua-api produces larger files — but not because WeasyPrint
+  skips font embedding. The engines embed the same subsetted *Liberation Sans*.
+  The normal pdf-ua-api default packs an ICC color profile, a PDF/A output intent,
+  **and** a full accessibility tag tree into one file. The benchmark disables the
+  color profile for pdf-ua-api so the size column compares accessible output mode
+  against WeasyPrint's `pdf/ua-1` mode while showing where Chromium-only output
+  lands. Re-run with
+  `PDF_UA_EMBED_COLOR_PROFILE=true` to measure the combined archival accessible
+  output.
+
+## Methodology
+
+All engines run as HTTP services in Docker and receive the exact same HTML per
+document. Gotenberg receives it as a multipart `index.html` upload with
+`preferCssPageSize=true` and `printBackground=true`. A warmup phase precedes
+measurement so cold-start does not skew results — disclosed, not hidden.
+pdf-ua-api's rate limiter is disabled for the run so the load test measures raw
+engine throughput.
+
+The corpus has three document shapes: a small text document, a medium invoice
+with tables, and a large mixed report with paragraphs, figures, callouts, and a
+limited number of tables. The large fixture intentionally avoids being a pure
+table stress test.
+
+The containers ship Liberation Sans, so the engines embed the same typeface and
+file size isn't skewed by font choice. Throughput and latency come from
+[`oha`](https://github.com/hatoo/oha). Every output PDF — from **all** engines —
+is validated by pdf-ua-api's own veraPDF `/validate` endpoint, so all are judged
+by the same validator. The default run disables pdf-ua-api's embedded color
+profile for the benchmark request only; the API's normal default remains PDF/A-3a
+and PDF/UA-1 output. File size is the output PDF byte length.
+
+Numbers reflect a single machine and a single run. Re-run them yourself.
+
+## Run it yourself
+
+```bash
+cd benchmark
+make benchmark
+```
+
+The full harness — corpus, services, and runner — lives in
+[`benchmark/`](https://github.com/bambamboole/pdf-ua-api/tree/main/benchmark).
