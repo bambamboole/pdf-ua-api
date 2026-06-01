@@ -28,7 +28,7 @@ docker run -p 8080:8080 \
 Then send it as a Bearer token:
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Authorization: Bearer super-secret-key" \
   -H "Content-Type: application/json" \
   -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}' \
@@ -63,7 +63,7 @@ issuer's public keys, so the container needs network access to it.
 Then send it as a Bearer token:
 
 ```bash
-curl -X POST http://localhost:8080/convert \
+curl -X POST http://localhost:8080/render/html \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"html":"<html lang=\"en\"><head><title>Doc</title></head><body><h1>Hi</h1></body></html>"}' \
@@ -76,7 +76,7 @@ A missing or invalid credential returns `401 Unauthorized` and the request never
 renderer:
 
 ```bash
-curl -i -X POST http://localhost:8080/convert \
+curl -i -X POST http://localhost:8080/render/html \
   -H "Content-Type: application/json" \
   -d '{"html":"<h1>Hi</h1>"}'
 # HTTP/1.1 401 Unauthorized

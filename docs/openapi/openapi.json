@@ -11,21 +11,38 @@
         }
     ],
     "paths": {
-        "/convert": {
+        "/render/html": {
             "post": {
-                "summary": "Convert HTML to PDF",
-                "description": "Converts HTML to a PDF/A-3a compliant document with PDF/UA accessibility. Returns the PDF binary.",
+                "summary": "Render HTML to PDF",
+                "description": "Renders HTML to a PDF/A-3a + PDF/UA document.",
                 "tags": [
-                    "Conversion"
+                    "Rendering"
                 ],
                 "responses": {
                     "200": {
-                        "description": "PDF document",
+                        "description": "Validation result with base64 PDF when Accept is application/json",
                         "content": {
                             "application/pdf": {
                                 "schema": {
                                     "type": "string",
                                     "format": "binary"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "validation": {
+                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
+                                        },
+                                        "pdf": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "validation",
+                                        "pdf"
+                                    ]
                                 }
                             }
                         }
@@ -34,7 +51,7 @@
                         "description": "Invalid request or empty HTML"
                     },
                     "500": {
-                        "description": "Conversion failed"
+                        "description": "Rendering failed"
                     }
                 },
                 "requestBody": {
@@ -42,82 +59,9 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.ConvertRequest"
+                                "$ref": "#/components/schemas/bambamboole.pdfua.http.RenderHtmlRequest"
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/convert-and-validate": {
-            "post": {
-                "summary": "Convert and validate HTML to PDF",
-                "description": "Converts HTML to PDF/A-3a and validates the result. Returns validation results and the base64-encoded PDF.",
-                "tags": [
-                    "Conversion"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Conversion and validation result with base64-encoded PDF",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.ConvertAndValidateResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request"
-                    },
-                    "500": {
-                        "description": "Conversion or validation failed"
-                    }
-                },
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.ConvertRequest"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/health": {
-            "get": {
-                "summary": "Health check",
-                "description": "Returns the health status of the API. Always accessible without authentication.",
-                "tags": [
-                    "Health"
-                ]
-            }
-        },
-        "/identify": {
-            "post": {
-                "summary": "Identify PDF",
-                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
-                "tags": [
-                    "Identification"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Identification result",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.IdentifyResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "PDF content is empty or invalid"
-                    },
-                    "500": {
-                        "description": "Failed to read PDF"
                     }
                 }
             }
@@ -125,18 +69,35 @@
         "/render/template": {
             "post": {
                 "summary": "Render a template to PDF",
-                "description": "Renders a JSON template (with optional per-block data overrides) to a PDF/A-3a document.",
+                "description": "Renders a JSON template to a PDF/A-3a document or JSON validation response.",
                 "tags": [
                     "Rendering"
                 ],
                 "responses": {
                     "200": {
-                        "description": "PDF document",
+                        "description": "Validation result with base64 PDF when Accept is application/json",
                         "content": {
                             "application/pdf": {
                                 "schema": {
                                     "type": "string",
                                     "format": "binary"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "validation": {
+                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
+                                        },
+                                        "pdf": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "validation",
+                                        "pdf"
+                                    ]
                                 }
                             }
                         }
@@ -155,32 +116,50 @@
                         "description": "Rendering failed"
                     }
                 },
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.RenderRequest"
-                            }
+                "parameters": [
+                    {
+                        "name": "X-Upload-Url",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
-                }
+                ]
             }
         },
         "/render/url": {
             "post": {
                 "summary": "Render a URL to PDF",
-                "description": "Fetches the HTML at the given URL and renders it to a PDF/A-3a + PDF/UA document.",
+                "description": "Fetches the HTML at the given URL and renders it to a PDF or JSON validation response.",
                 "tags": [
                     "Rendering"
                 ],
                 "responses": {
                     "200": {
-                        "description": "PDF document",
+                        "description": "Validation result with base64 PDF when Accept is application/json",
                         "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
                             "application/json": {
                                 "schema": {
-                                    "type": "array"
+                                    "type": "object",
+                                    "properties": {
+                                        "validation": {
+                                            "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
+                                        },
+                                        "pdf": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "validation",
+                                        "pdf"
+                                    ]
                                 }
                             }
                         }
@@ -248,6 +227,42 @@
                 }
             }
         },
+        "/health": {
+            "get": {
+                "summary": "Health check",
+                "description": "Returns the health status of the API. Always accessible without authentication.",
+                "tags": [
+                    "Health"
+                ]
+            }
+        },
+        "/identify": {
+            "post": {
+                "summary": "Identify PDF",
+                "description": "Checks whether a PDF was produced by this API and returns its document UUID if found.",
+                "tags": [
+                    "Identification"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Identification result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/bambamboole.pdfua.http.controller.IdentifyResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PDF content is empty or invalid"
+                    },
+                    "500": {
+                        "description": "Failed to read PDF"
+                    }
+                }
+            }
+        },
         "/schema": {
             "get": {
                 "summary": "Get the template schema",
@@ -299,24 +314,6 @@
     },
     "components": {
         "schemas": {
-            "bambamboole.pdfua.fonts.FontFace": {
-                "type": "object",
-                "properties": {
-                    "src": {
-                        "type": "string"
-                    },
-                    "style": {
-                        "type": "string"
-                    },
-                    "weight": {
-                        "type": "string",
-                        "description": "One or more whitespace-separated [FontWeight] values, e.g. \"400\" or \"400 700\"."
-                    }
-                },
-                "required": [
-                    "src"
-                ]
-            },
             "bambamboole.pdfua.http.CategoryResult": {
                 "type": "object",
                 "properties": {
@@ -334,29 +331,6 @@
                     "category",
                     "passedChecks",
                     "failedChecks"
-                ]
-            },
-            "bambamboole.pdfua.http.ConvertRequest": {
-                "type": "object",
-                "properties": {
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
-                        }
-                    },
-                    "baseUrl": {
-                        "type": "string"
-                    },
-                    "html": {
-                        "type": "string"
-                    },
-                    "embedColorProfile": {
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "html"
                 ]
             },
             "bambamboole.pdfua.http.DocumentInfo": {
@@ -463,6 +437,26 @@
                     "totalChecks",
                     "passedChecks",
                     "failedChecks"
+                ]
+            },
+            "bambamboole.pdfua.http.RenderHtmlRequest": {
+                "type": "object",
+                "properties": {
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
+                        }
+                    },
+                    "baseUrl": {
+                        "type": "string"
+                    },
+                    "html": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "html"
                 ]
             },
             "bambamboole.pdfua.http.ValidationErrorResponse": {
@@ -574,21 +568,6 @@
                     "failedChecks"
                 ]
             },
-            "bambamboole.pdfua.http.controller.ConvertAndValidateResponse": {
-                "type": "object",
-                "properties": {
-                    "pdf": {
-                        "type": "string"
-                    },
-                    "validation": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
-                    }
-                },
-                "required": [
-                    "validation",
-                    "pdf"
-                ]
-            },
             "bambamboole.pdfua.http.controller.IdentifyResponse": {
                 "type": "object",
                 "properties": {
@@ -617,25 +596,19 @@
                     "html"
                 ]
             },
-            "bambamboole.pdfua.http.controller.RenderRequest": {
+            "bambamboole.pdfua.http.controller.RenderPdfResponse": {
                 "type": "object",
                 "properties": {
-                    "data": {
-                        "type": "object",
-                        "description": "Per-block content overrides, keyed by block id. Object for most blocks; array of row objects for tables.",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/kotlinx.serialization.json.JsonElement"
-                        }
+                    "pdf": {
+                        "type": "string"
                     },
-                    "options": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.services.RenderOptions"
-                    },
-                    "template": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.Template"
+                    "validation": {
+                        "$ref": "#/components/schemas/bambamboole.pdfua.http.ValidationResponse"
                     }
                 },
                 "required": [
-                    "template"
+                    "validation",
+                    "pdf"
                 ]
             },
             "bambamboole.pdfua.http.controller.RenderUrlRequest": {
@@ -649,189 +622,11 @@
                     },
                     "url": {
                         "type": "string"
-                    },
-                    "embedColorProfile": {
-                        "type": "boolean"
                     }
                 },
                 "required": [
                     "url"
                 ]
-            },
-            "bambamboole.pdfua.services.RenderOptions": {
-                "type": "object",
-                "properties": {
-                    "baseUrl": {
-                        "type": "string"
-                    },
-                    "title": {
-                        "type": "string"
-                    },
-                    "embedColorProfile": {
-                        "type": "boolean"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.BaseBlockConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.Block": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.BlockConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                },
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.DividerBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.HeadingBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.HtmlBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.ImageBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.KeyValueBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacerBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TableBlock"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TextBlock"
-                    }
-                ],
-                "required": [
-                    "config"
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "divider": "#/components/schemas/bambamboole.pdfua.template.DividerBlock",
-                        "heading": "#/components/schemas/bambamboole.pdfua.template.HeadingBlock",
-                        "html": "#/components/schemas/bambamboole.pdfua.template.HtmlBlock",
-                        "image": "#/components/schemas/bambamboole.pdfua.template.ImageBlock",
-                        "key-value": "#/components/schemas/bambamboole.pdfua.template.KeyValueBlock",
-                        "spacer": "#/components/schemas/bambamboole.pdfua.template.SpacerBlock",
-                        "table": "#/components/schemas/bambamboole.pdfua.template.TableBlock",
-                        "text": "#/components/schemas/bambamboole.pdfua.template.TextBlock"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.BlockConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.CustomPageSize": {
-                "type": "object",
-                "properties": {
-                    "height": {
-                        "type": "integer"
-                    },
-                    "width": {
-                        "type": "integer"
-                    }
-                },
-                "required": [
-                    "width",
-                    "height"
-                ]
-            },
-            "bambamboole.pdfua.template.DividerBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.DividerConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.DividerConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "lineColor": {
-                        "type": "string"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "style": {
-                        "type": "string",
-                        "enum": [
-                            "SOLID",
-                            "DASHED",
-                            "DOTTED",
-                            "DOUBLE",
-                            "NONE"
-                        ]
-                    },
-                    "thickness": {
-                        "type": "integer"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
             },
             "bambamboole.pdfua.template.FileAttachment": {
                 "type": "object",
@@ -856,528 +651,6 @@
                     "name",
                     "content"
                 ]
-            },
-            "bambamboole.pdfua.template.HeadingBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.HeadingConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "text": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "text"
-                ]
-            },
-            "bambamboole.pdfua.template.HeadingConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "level": {
-                        "type": "integer"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.HtmlBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.BaseBlockConfig"
-                    },
-                    "html": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "html"
-                ]
-            },
-            "bambamboole.pdfua.template.ImageBlock": {
-                "type": "object",
-                "properties": {
-                    "alt": {
-                        "type": "string"
-                    },
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.ImageConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "src": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "src"
-                ]
-            },
-            "bambamboole.pdfua.template.ImageConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "maxHeight": {
-                        "type": "integer"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.KeyValueBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.KeyValueConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "values": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.KeyValueConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "fields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.KeyValueField"
-                        }
-                    },
-                    "labelWidth": {
-                        "type": "string"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.KeyValueField": {
-                "type": "object",
-                "properties": {
-                    "key": {
-                        "type": "string"
-                    },
-                    "label": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "key",
-                    "label"
-                ]
-            },
-            "bambamboole.pdfua.template.PageBackgroundConfig": {
-                "type": "object",
-                "properties": {
-                    "src": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "AUTO",
-                            "IMAGE",
-                            "PDF"
-                        ]
-                    }
-                },
-                "required": [
-                    "src"
-                ]
-            },
-            "bambamboole.pdfua.template.PageConfig": {
-                "type": "object",
-                "properties": {
-                    "background": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PageBackgroundConfig"
-                    },
-                    "footer": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PageFooterConfig"
-                    },
-                    "locale": {
-                        "type": "string"
-                    },
-                    "margins": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "pageNumbers": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PageNumbersConfig"
-                    },
-                    "size": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PageSize"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.PageFooterConfig": {
-                "type": "object",
-                "properties": {
-                    "repeat": {
-                        "type": "boolean"
-                    },
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.Row"
-                        }
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.PageNumbersConfig": {
-                "type": "object",
-                "properties": {
-                    "enabled": {
-                        "type": "boolean"
-                    },
-                    "position": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.PageSize": {
-                "type": "object",
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.CustomPageSize"
-                    },
-                    {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PresetPageSize"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "bambamboole.pdfua.template.CustomPageSize": "#/components/schemas/bambamboole.pdfua.template.CustomPageSize",
-                        "bambamboole.pdfua.template.PresetPageSize": "#/components/schemas/bambamboole.pdfua.template.PresetPageSize"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.PresetPageSize": {
-                "type": "object",
-                "properties": {
-                    "format": {
-                        "type": "string",
-                        "enum": [
-                            "A3",
-                            "A4",
-                            "A5",
-                            "A6",
-                            "LETTER",
-                            "LEGAL",
-                            "TABLOID"
-                        ]
-                    },
-                    "orientation": {
-                        "type": "string",
-                        "enum": [
-                            "PORTRAIT",
-                            "LANDSCAPE"
-                        ]
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.Row": {
-                "type": "object",
-                "properties": {
-                    "blocks": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.Block"
-                        }
-                    }
-                },
-                "required": [
-                    "blocks"
-                ]
-            },
-            "bambamboole.pdfua.template.SpacerBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacerConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.SpacerConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "height": {
-                        "type": "integer"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.SpacingConfig": {
-                "type": "object",
-                "properties": {
-                    "bottom": {
-                        "type": "integer"
-                    },
-                    "left": {
-                        "type": "integer"
-                    },
-                    "right": {
-                        "type": "integer"
-                    },
-                    "top": {
-                        "type": "integer"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.TableBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TableConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/kotlinx.serialization.json.JsonObject"
-                        }
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.TableColumn": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "key": {
-                        "type": "string"
-                    },
-                    "label": {
-                        "type": "string"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "key",
-                    "label"
-                ]
-            },
-            "bambamboole.pdfua.template.TableConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "columns": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.TableColumn"
-                        }
-                    },
-                    "numberRows": {
-                        "type": "boolean"
-                    },
-                    "spacing": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.SpacingConfig"
-                    },
-                    "style": {
-                        "type": "string",
-                        "enum": [
-                            "STRIPED",
-                            "BORDERED",
-                            "MINIMAL"
-                        ]
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    },
-                    "width": {
-                        "type": "string"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.Template": {
-                "type": "object",
-                "properties": {
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.FileAttachment"
-                        }
-                    },
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TemplateConfig"
-                    },
-                    "fonts": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.fonts.FontFace"
-                        }
-                    },
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/bambamboole.pdfua.template.Row"
-                        }
-                    },
-                    "version": {
-                        "type": "integer"
-                    }
-                },
-                "required": [
-                    "version"
-                ]
-            },
-            "bambamboole.pdfua.template.TemplateConfig": {
-                "type": "object",
-                "properties": {
-                    "page": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.PageConfig"
-                    },
-                    "typography": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.TypographyConfig"
-                    }
-                }
-            },
-            "bambamboole.pdfua.template.TextBlock": {
-                "type": "object",
-                "properties": {
-                    "config": {
-                        "$ref": "#/components/schemas/bambamboole.pdfua.template.BaseBlockConfig"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "text": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "text"
-                ]
-            },
-            "bambamboole.pdfua.template.TypographyConfig": {
-                "type": "object",
-                "properties": {
-                    "align": {
-                        "type": "string",
-                        "enum": [
-                            "LEFT",
-                            "CENTER",
-                            "RIGHT"
-                        ]
-                    },
-                    "color": {
-                        "type": "string"
-                    },
-                    "family": {
-                        "type": "string"
-                    },
-                    "size": {
-                        "type": "integer"
-                    },
-                    "weight": {
-                        "type": "string",
-                        "enum": [
-                            "LIGHT",
-                            "REGULAR",
-                            "MEDIUM",
-                            "SEMI_BOLD",
-                            "BOLD"
-                        ]
-                    }
-                }
             },
             "bambamboole.pdfua.template.ValidationIssue": {
                 "type": "object",

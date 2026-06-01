@@ -186,6 +186,20 @@ val patchOpenApi by tasks.registering {
 
         fun binarySchema() = mapOf("type" to "string", "format" to "binary")
 
+        val validationResponseSchema =
+            mapOf("\$ref" to "#/components/schemas/bambamboole.pdfua.http.ValidationResponse")
+
+        fun renderPdfJsonSchema() =
+            mapOf(
+                "type" to "object",
+                "properties" to
+                    mapOf(
+                        "validation" to validationResponseSchema,
+                        "pdf" to mapOf("type" to "string"),
+                    ),
+                "required" to listOf("validation", "pdf"),
+            )
+
         fun setBinaryResponse(
             path: String,
             method: String,
@@ -198,8 +212,24 @@ val patchOpenApi by tasks.registering {
             response["content"] = contentTypes.associateWith { mapOf("schema" to binarySchema()) }
         }
 
-        setBinaryResponse("/convert", "post", listOf("application/pdf"))
-        setBinaryResponse("/render/template", "post", listOf("application/pdf"))
+        fun setRenderPdfResponse(
+            path: String,
+            method: String,
+        ) {
+            @Suppress("UNCHECKED_CAST")
+            val response =
+                (paths[path]?.get(method)?.get("responses") as? MutableMap<String, Any?>)
+                    ?.get("200") as? MutableMap<String, Any?> ?: return
+            response["content"] =
+                mapOf(
+                    "application/pdf" to mapOf("schema" to binarySchema()),
+                    "application/json" to mapOf("schema" to renderPdfJsonSchema()),
+                )
+        }
+
+        setRenderPdfResponse("/render/html", "post")
+        setRenderPdfResponse("/render/url", "post")
+        setRenderPdfResponse("/render/template", "post")
         setBinaryResponse("/render", "post", listOf("image/png", "image/jpeg"))
 
         @Suppress("UNCHECKED_CAST")
