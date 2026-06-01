@@ -137,7 +137,7 @@
               "style": "striped",
               "numberRows": true,
               "columns": [
-                { "key": "description", "label": "Description", "align": "left", "width": "44%" },
+                { "key": "description", "label": "Description", "align": "left", "width": "39%" },
                 { "key": "quantity", "label": "Qty", "align": "right", "width": "12%" },
                 { "key": "unitPrice", "label": "Unit price", "align": "right", "width": "18%" },
                 { "key": "vatRate", "label": "VAT", "align": "right", "width": "10%" },

@@ -14,14 +14,6 @@ export default function TemplateBuilderIsland({ initialCode }: TemplateBuilderIs
   const apiUrl = resolveDocsApiUrl(import.meta.env.PUBLIC_API_URL);
   const parsed = useMemo(() => parseSafely(initialCode), [initialCode]);
   const moduleState = usePdfUaTemplateBuilder();
-  const examples = useMemo(
-    () =>
-      moduleState.status === "ready"
-        ? { Invoice: moduleState.module.createInvoiceExample() }
-        : undefined,
-    [moduleState],
-  );
-
   if (!parsed.ok) {
     return (
       <div className="pdfua-template-island not-content" role="alert">
@@ -49,7 +41,7 @@ export default function TemplateBuilderIsland({ initialCode }: TemplateBuilderIs
       >
         <div className="pdfua-template-island__stack">
           <div className="pdfua-template-island__pane pdfua-template-island__builder">
-            <Builder examples={examples} />
+            <Builder />
           </div>
           <div className="pdfua-template-island__pane pdfua-template-island__preview">
             <Preview />

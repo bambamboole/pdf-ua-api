@@ -3,11 +3,16 @@
 }
 
 .pdfua-template-island {
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.5;
   margin-block: 1.5rem;
   border: 1px solid var(--sl-color-gray-5);
   background: var(--sl-color-bg);
   overflow: hidden;
+}
+
+.pdfua-template-island .pdfua-template-builder {
+  line-height: 1.5;
 }
 
 .pdfua-template-island__stack {
