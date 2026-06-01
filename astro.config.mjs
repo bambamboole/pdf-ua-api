@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 const base = process.env.BASE_PATH || "/";
 const site = process.env.SITE_URL || "https://pdf-ua-api.bambamboole.com";
 const viteCacheSuffix = process.argv.includes("build") ? "build" : "dev";
+const ogImage = `${site.replace(/\/$/, "")}/og-card.svg`;
 
 export default defineConfig({
     site,
@@ -20,9 +21,51 @@ export default defineConfig({
     },
     integrations: [
         starlight({
-            title: "PDF UA API",
+            title: "PDF/UA API",
+            logo: {
+                light: "./docs/assets/logo.svg",
+                dark: "./docs/assets/logo-dark.svg",
+                replacesTitle: true,
+            },
+            favicon: "/favicon.svg",
             social: [
                 {icon: "github", label: "GitHub", href: "https://github.com/bambamboole/pdf-ua-api"},
+            ],
+            editLink: {
+                baseUrl: "https://github.com/bambamboole/pdf-ua-api/edit/main/",
+            },
+            components: {
+                SocialIcons: "./docs/components/overrides/SocialIcons.astro",
+            },
+            head: [
+                {tag: "meta", attrs: {property: "og:type", content: "website"}},
+                {tag: "meta", attrs: {property: "og:image", content: ogImage}},
+                {tag: "meta", attrs: {name: "twitter:card", content: "summary_large_image"}},
+                {tag: "meta", attrs: {name: "twitter:image", content: ogImage}},
+                {
+                    tag: "script",
+                    attrs: {type: "module"},
+                    content: `
+const svg = document.getElementById("hero-anim");
+if (svg) {
+  const scenes = Array.from(svg.querySelectorAll(".ha-scene"));
+  const badges = svg.querySelector(".ha-badges");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let current = 0;
+  const show = (i) => scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
+  show(0);
+  badges && badges.classList.add("is-active");
+  if (!reduce && scenes.length > 1) {
+    setInterval(() => {
+      badges && badges.classList.remove("is-active");
+      current = (current + 1) % scenes.length;
+      show(current);
+      requestAnimationFrame(() => requestAnimationFrame(() => badges && badges.classList.add("is-active")));
+    }, 4200);
+  }
+}
+`,
+                },
             ],
             customCss: ["./docs/styles/global.css"],
             plugins: [

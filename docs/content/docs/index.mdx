@@ -1,54 +1,134 @@
 ---
-title: PDF UA API
-description: HTTP API for converting HTML to accessible PDF/A-3a and PDF/UA documents.
+title: PDF/UA API
+description: HTTP API for converting HTML, URLs and JSON templates into accessible PDF/A-3a and PDF/UA documents.
+template: splash
+prev: false
+next: false
+hero:
+  title: Accessible PDFs, by the standard.
+  tagline: A small, self-hosted HTTP API that turns HTML, URLs and JSON templates into PDF/A-3a documents with full PDF/UA accessibility — tagged structure, declared language and embedded fonts — in a single container with no external services.
+  actions:
+    - text: Get Started
+      link: /getting-started/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/bambamboole/pdf-ua-api
+      icon: external
+      variant: minimal
+  image:
+    html: |
+      <svg id="hero-anim" viewBox="0 0 880 420" class="hero-anim" role="img" aria-label="Source HTML, JSON templates and URLs converting into accessible, tagged PDF/UA documents" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="ha-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="7" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <rect x="20" y="20" width="360" height="380" rx="14" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+        <rect x="20" y="20" width="360" height="38" rx="14" fill="#334155" />
+        <rect x="20" y="44" width="360" height="14" fill="#334155" />
+        <circle cx="44" cy="39" r="5" fill="#EF4444" />
+        <circle cx="62" cy="39" r="5" fill="#F59E0B" />
+        <circle cx="80" cy="39" r="5" fill="#22C55E" />
+        <g class="ha-arrow">
+          <line x1="392" y1="210" x2="486" y2="210" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M478 202 L490 210 L478 218" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <rect x="500" y="20" width="360" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" />
+
+        <g class="ha-scene" data-scene="0">
+          <text x="104" y="44" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">report.html</text>
+          <g class="ha-rise" style="animation-delay:80ms"><text x="58" y="92" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#7C3AED">&lt;article&gt;</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:160ms"><text x="70" y="118" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#7C3AED">&lt;h1&gt;</tspan><tspan fill="#E2E8F0">Annual Report</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:240ms"><text x="70" y="144" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#7C3AED">&lt;h2&gt;</tspan><tspan fill="#E2E8F0">Summary</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:320ms"><text x="70" y="170" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#7C3AED">&lt;p&gt;</tspan><tspan fill="#E2E8F0">Revenue grew…</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:400ms"><text x="70" y="196" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#7C3AED">&lt;figure </tspan><tspan fill="#38BDF8">aria-label=</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:480ms"><text x="82" y="222" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#F59E0B">"Chart"</tspan><tspan fill="#7C3AED">&gt;</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:560ms"><text x="58" y="248" font-family="ui-monospace, monospace" font-size="13" fill="#7C3AED">&lt;/article&gt;</text></g>
+          <g class="ha-rise" style="animation-delay:560ms"><rect x="524" y="60" width="220" height="26" rx="4" fill="#EFF6FF" /><text x="534" y="78" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1E40AF">Annual Report 2024</text></g>
+          <g class="ha-rise" style="animation-delay:640ms"><text x="534" y="112" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#1E40AF">Executive Summary</text><rect x="524" y="120" width="240" height="1" fill="#DBEAFE" /></g>
+          <g class="ha-rise" style="animation-delay:720ms"><rect x="524" y="132" width="250" height="7" rx="2" fill="#E2E8F0" /><rect x="524" y="146" width="220" height="7" rx="2" fill="#E2E8F0" /><rect x="524" y="160" width="236" height="7" rx="2" fill="#E2E8F0" /></g>
+          <g class="ha-rise" style="animation-delay:800ms"><rect x="540" y="250" width="34" height="60" rx="2" fill="#93C5FD" /><rect x="584" y="226" width="34" height="84" rx="2" fill="#60A5FA" /><rect x="628" y="238" width="34" height="72" rx="2" fill="#3B82F6" /><rect x="672" y="210" width="34" height="100" rx="2" fill="#2563EB" /></g>
+        </g>
+
+        <g class="ha-scene" data-scene="1">
+          <text x="104" y="44" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">invoice.json</text>
+          <g class="ha-rise" style="animation-delay:80ms"><text x="58" y="92" font-family="ui-monospace, monospace" font-size="13" fill="#E2E8F0">{</text></g>
+          <g class="ha-rise" style="animation-delay:160ms"><text x="70" y="118" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"seller"</tspan><tspan fill="#E2E8F0">: { </tspan><tspan fill="#A5D6A7">"ACME Corp."</tspan><tspan fill="#E2E8F0"> },</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:240ms"><text x="70" y="144" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"lineItems"</tspan><tspan fill="#E2E8F0">: [{</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:320ms"><text x="82" y="170" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"desc"</tspan><tspan fill="#E2E8F0">: </tspan><tspan fill="#A5D6A7">"Widget Pro"</tspan><tspan fill="#E2E8F0">,</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:400ms"><text x="82" y="196" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"price"</tspan><tspan fill="#E2E8F0">: </tspan><tspan fill="#F48FB1">49.00</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:480ms"><text x="70" y="222" font-family="ui-monospace, monospace" font-size="13" fill="#E2E8F0">}],</text></g>
+          <g class="ha-rise" style="animation-delay:560ms"><text x="70" y="248" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"total"</tspan><tspan fill="#E2E8F0">: </tspan><tspan fill="#F48FB1">68.00</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:560ms"><text x="534" y="80" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#1E40AF">Invoice</text><text x="764" y="80" font-family="ui-monospace,monospace" font-size="10" fill="#64748B" text-anchor="end">#1042</text></g>
+          <g class="ha-rise" style="animation-delay:640ms"><rect x="524" y="100" width="240" height="22" fill="#EFF6FF" /><text x="534" y="115" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#1E40AF">Description</text><text x="754" y="115" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#1E40AF" text-anchor="end">Amount</text></g>
+          <g class="ha-rise" style="animation-delay:720ms"><text x="534" y="142" font-family="system-ui,sans-serif" font-size="10" fill="#334155">Widget Pro</text><text x="754" y="142" font-family="system-ui,sans-serif" font-size="10" fill="#334155" text-anchor="end">49.00</text><rect x="524" y="150" width="240" height="1" fill="#E2E8F0" /></g>
+          <g class="ha-rise" style="animation-delay:800ms"><text x="534" y="170" font-family="system-ui,sans-serif" font-size="10" fill="#334155">Shipping</text><text x="754" y="170" font-family="system-ui,sans-serif" font-size="10" fill="#334155" text-anchor="end">19.00</text><rect x="524" y="178" width="240" height="1" fill="#E2E8F0" /></g>
+          <g class="ha-rise" style="animation-delay:880ms"><text x="534" y="200" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#1E40AF">Total</text><text x="754" y="200" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#1E40AF" text-anchor="end">68.00</text></g>
+        </g>
+
+        <g class="ha-scene" data-scene="2">
+          <text x="104" y="44" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">request.json</text>
+          <g class="ha-rise" style="animation-delay:80ms"><text x="58" y="92" font-family="ui-monospace, monospace" font-size="13" fill="#E2E8F0">{</text></g>
+          <g class="ha-rise" style="animation-delay:160ms"><text x="70" y="118" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"url"</tspan><tspan fill="#E2E8F0">:</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:240ms"><text x="82" y="144" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#A5D6A7">"https://example.com/</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:320ms"><text x="94" y="170" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#A5D6A7">report"</tspan><tspan fill="#E2E8F0">,</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:400ms"><text x="70" y="196" font-family="ui-monospace, monospace" font-size="13"><tspan fill="#38BDF8">"pdfua"</tspan><tspan fill="#E2E8F0">: </tspan><tspan fill="#F48FB1">true</tspan></text></g>
+          <g class="ha-rise" style="animation-delay:480ms"><text x="58" y="222" font-family="ui-monospace, monospace" font-size="13" fill="#E2E8F0">}</text></g>
+          <g class="ha-rise" style="animation-delay:560ms"><rect x="524" y="58" width="240" height="22" rx="11" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1" /><circle cx="538" cy="69" r="4" fill="#22C55E" /><text x="550" y="73" font-family="ui-monospace,monospace" font-size="9" fill="#64748B">example.com/report</text></g>
+          <g class="ha-rise" style="animation-delay:640ms"><rect x="524" y="96" width="160" height="14" rx="3" fill="#DBEAFE" /></g>
+          <g class="ha-rise" style="animation-delay:720ms"><rect x="524" y="122" width="240" height="7" rx="2" fill="#E2E8F0" /><rect x="524" y="136" width="224" height="7" rx="2" fill="#E2E8F0" /><rect x="524" y="150" width="236" height="7" rx="2" fill="#E2E8F0" /></g>
+          <g class="ha-rise" style="animation-delay:800ms"><rect x="524" y="172" width="240" height="120" rx="4" fill="#EFF6FF" stroke="#DBEAFE" stroke-width="1" /><path d="M540 270 L588 232 L624 256 L676 214 L748 244" fill="none" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></g>
+        </g>
+
+        <g class="ha-badges">
+          <g class="ha-rise" style="animation-delay:980ms"><rect x="524" y="334" width="84" height="20" rx="10" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1" /><text x="566" y="348" font-family="ui-monospace,monospace" font-size="9" fill="#166534" text-anchor="middle">Tagged PDF</text></g>
+          <g class="ha-rise" style="animation-delay:1060ms"><rect x="616" y="334" width="64" height="20" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1" /><text x="648" y="348" font-family="ui-monospace,monospace" font-size="9" fill="#1E40AF" text-anchor="middle">PDF/UA</text></g>
+          <g class="ha-rise ha-check" style="animation-delay:1140ms"><circle cx="828" cy="344" r="12" fill="#22C55E" /><path d="M821 344 L826 349 L835 339" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></g>
+        </g>
+      </svg>
 ---
 
-PDF UA API turns HTML into **PDF/A-3a** documents with full **PDF/UA**
-accessibility — tagged structure, a declared document language, and embedded fonts — so the
-output is both long-term archivable and screen-reader friendly.
-
-On top of raw HTML it offers a structured JSON **template language**: you describe a document as
-rows of typed blocks — text, headings, tables, images, key‑value pairs — and the API handles the
-layout. This keeps content and presentation separate from your application code, which is handy
-for documents like invoices.
-
-Beyond conversion it validates existing PDFs, identifies documents it produced, and
-[renders HTML to images](/html/html-to-image/), all over a small HTTP API that runs as a single
-container with no external services.
+import { Card, CardGrid } from "@astrojs/starlight/components";
 
 ## Three ways to create a PDF
 
-Pick the entry point that matches what you already have:
+Pick the entry point that matches what you already have — all three produce the same accessible
+PDF/A-3a output.
 
-- **From HTML** — send a complete HTML document to `POST /convert`. Best when you already
-  produce markup or use a templating engine. See [HTML to PDF](/html/html-to-pdf/).
-- **From a URL** — send a public URL to `POST /render/url` and the API fetches the HTML for
-  you. Best when the document already lives at a URL — a static site or a server-rendered
-  page. See [URL to PDF](/html/url-to-pdf/).
-- **From a template** — send a JSON template of rows and blocks to `POST /render/template`.
-  Best for structured documents like invoices, where layout and data stay separate. See
-  [Templates](/templates/structure/).
+<CardGrid>
+  <Card title="From HTML" icon="document">
+    Send a complete HTML document to `POST /convert`. Best when you already produce markup or use a
+    templating engine. [HTML to PDF →](/html/html-to-pdf/)
+  </Card>
+  <Card title="From a URL" icon="external">
+    Send a public URL to `POST /render/url` and the API fetches the HTML for you. Best for static
+    sites or server-rendered pages. [URL to PDF →](/html/url-to-pdf/)
+  </Card>
+  <Card title="From a template" icon="list-format">
+    Send a JSON template of rows and typed blocks to `POST /render/template`. Best for structured
+    documents like invoices. [Templates →](/templates/structure/)
+  </Card>
+  <Card title="Validate & verify" icon="approve-check">
+    Check any PDF against PDF/A-3a and PDF/UA-1 with `POST /validate`, or confirm a document came
+    from this API. [Quick Start →](/getting-started/quick-start/)
+  </Card>
+</CardGrid>
 
-All three paths produce the same accessible PDF/A-3a output.
+## Run it in one command
 
-## Highlights
+The API ships as a single container — no databases, no headless browser, no external services.
 
-- HTML → accessible PDF/A-3a conversion
-- Built-in PDF/A & PDF/UA validation
-- Bundled open-source fonts, full CSS 2.1 styling, automatic table pagination
-- Editable [template examples](/templates/structure/) and a visual
-  [template builder](/templates/builder/)
+```bash
+docker run -p 8080:8080 ghcr.io/bambamboole/pdf-ua-api:latest
+```
 
-## Built with
+Then convert your first document:
 
-The API stands on a handful of well-established open-source libraries — follow the links for
-their own documentation:
-
-- <a href="https://ktor.io" target="_blank" rel="noopener">Ktor</a> — the Kotlin HTTP
-  server framework that powers the endpoints.
-- <a href="https://github.com/openhtmltopdf/openhtmltopdf" target="_blank" rel="noopener">OpenHTMLToPDF</a>
-  — renders HTML and CSS to PDF/A and to images.
-- <a href="https://pdfbox.apache.org" target="_blank" rel="noopener">Apache PDFBox</a>
-  — reads and writes the underlying PDF documents.
-- <a href="https://verapdf.org" target="_blank" rel="noopener">veraPDF</a> — validates
-  output against the PDF/A and PDF/UA standards.
+```bash
+curl -X POST http://localhost:8080/convert \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html><head><title>Document</title></head><body><h1>Hello World</h1></body></html>"}' \
+  --output output.pdf
+```

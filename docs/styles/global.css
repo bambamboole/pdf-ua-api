@@ -8,17 +8,17 @@
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 
-  --color-accent-50: oklch(0.97 0.025 191);
-  --color-accent-100: oklch(0.94 0.055 191);
-  --color-accent-200: oklch(0.88 0.095 190);
-  --color-accent-300: oklch(0.8 0.13 189);
-  --color-accent-400: oklch(0.7 0.145 190);
-  --color-accent-500: oklch(0.61 0.145 190);
-  --color-accent-600: oklch(0.52 0.125 193);
-  --color-accent-700: oklch(0.43 0.1 196);
-  --color-accent-800: oklch(0.35 0.075 199);
-  --color-accent-900: oklch(0.29 0.055 202);
-  --color-accent-950: oklch(0.2 0.04 205);
+  --color-accent-50: oklch(0.97 0.02 264);
+  --color-accent-100: oklch(0.93 0.045 264);
+  --color-accent-200: oklch(0.87 0.08 264);
+  --color-accent-300: oklch(0.78 0.13 264);
+  --color-accent-400: oklch(0.68 0.175 264);
+  --color-accent-500: oklch(0.6 0.205 264);
+  --color-accent-600: oklch(0.53 0.215 264);
+  --color-accent-700: oklch(0.46 0.19 265);
+  --color-accent-800: oklch(0.39 0.15 266);
+  --color-accent-900: oklch(0.33 0.11 267);
+  --color-accent-950: oklch(0.22 0.07 268);
 
   --color-gray-50: oklch(0.985 0.004 255);
   --color-gray-100: oklch(0.965 0.006 255);
@@ -36,4 +36,146 @@
 :root {
   --sl-content-width: 64rem;
   --sl-text-5xl: 3.25rem;
+}
+
+/* Our content is wide (64rem). Starlight shows the right "On this page" TOC from
+   72rem, but between 72rem and 90rem it gets clipped off-screen. Hide it in that
+   band and let the content use the full width; it returns at 90rem and up. */
+@media (min-width: 72rem) and (max-width: 89.9375rem) {
+  .right-sidebar-container {
+    display: none;
+  }
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: 100%;
+  }
+}
+
+/* Truly center the nav search: equal side columns, fixed-width middle.
+   Overrides Starlight's content-aligned grid so the search sits dead center.
+   Scoped to the site header (`header > .header`) so code-block frame captions
+   (`figcaption.header`) are not affected. */
+@media (min-width: 50rem) {
+  header > .header {
+    grid-template-columns: 1fr minmax(0, 22rem) 1fr;
+  }
+  header > .header > div:nth-child(2) {
+    justify-content: center;
+  }
+  header > .header > .right-group {
+    justify-self: end;
+  }
+}
+
+/* Header "Help" link (SocialIcons override) */
+.sl-help-link {
+  align-self: center;
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+  color: var(--sl-color-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sl-help-link:hover {
+  color: var(--sl-color-text-accent);
+}
+
+/* Landing page hero animation */
+.hero .hero-html {
+  width: 100%;
+}
+
+/* 40% text / 60% animation, with a larger animation than Starlight's default cap */
+@media (min-width: 50rem) {
+  .hero {
+    grid-template-columns: 4fr 6fr;
+    gap: 4%;
+  }
+
+  .hero > img,
+  .hero > .hero-html {
+    width: 100%;
+    max-width: none;
+  }
+
+  .hero .copy h1 {
+    font-size: clamp(var(--sl-text-2xl), calc(0.25rem + 3.2vw), var(--sl-text-5xl));
+  }
+
+  .hero .tagline {
+    font-size: var(--sl-text-base);
+  }
+}
+
+.hero-anim {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.875rem;
+  background: var(--sl-color-gray-6);
+  padding: 0.75rem;
+}
+
+.ha-scene {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.ha-scene.is-active {
+  opacity: 1;
+}
+
+.ha-rise {
+  opacity: 0;
+}
+
+.ha-scene.is-active .ha-rise,
+.ha-badges.is-active .ha-rise {
+  animation: ha-rise 0.5s ease forwards;
+}
+
+@keyframes ha-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ha-check {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ha-badges.is-active .ha-check {
+  animation:
+    ha-rise 0.5s ease forwards,
+    ha-pop 1.6s ease 1.2s;
+}
+
+@keyframes ha-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ha-scene,
+  .ha-rise,
+  .ha-check {
+    transition: none !important;
+    animation: none !important;
+  }
+  .ha-rise {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

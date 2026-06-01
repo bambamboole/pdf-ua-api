@@ -1,0 +1,15 @@
+---
+// Prepends a text "Help" link (→ GitHub issues) to Starlight's default header
+// social icons, mirroring the prominent Help entry on docs sites like gotenberg.dev.
+import Default from "@astrojs/starlight/components/SocialIcons.astro";
+---
+
+<a
+  class="sl-help-link"
+  href="https://github.com/bambamboole/pdf-ua-api/issues"
+  target="_blank"
+  rel="noopener"
+>
+  Help
+</a>
+<Default><slot /></Default>
