@@ -242,7 +242,7 @@ private fun handleRenderUrl(
 ): CallToolResult =
     withDecodedArguments<RenderUrlRequest>(request) { renderRequest ->
         when (val fetch = fetchUrl(renderRequest.url)) {
-            is FetchResult.Failure -> {
+            is FetchResult.Failed -> {
                 errorResult("fetch_failed", fetch.message)
             }
 
