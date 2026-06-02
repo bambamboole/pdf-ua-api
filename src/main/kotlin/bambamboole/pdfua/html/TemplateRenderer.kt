@@ -58,7 +58,7 @@ object TemplateRenderer {
         template: Template,
         data: Map<String, JsonElement> = emptyMap(),
     ): String {
-        check(template.version == 1) { "Unsupported template version: ${template.version}" }
+        check(template.version == 2) { "Unsupported template version: ${template.version}" }
 
         val css = CssRegistry()
         val page = template.config.page

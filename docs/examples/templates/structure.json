@@ -1,25 +1,60 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
-      "page": { "size": { "format": "A4" }, "locale": "en_US" },
-      "typography": { "family": "Inter", "size": 11 }
+      "page": {
+        "size": {
+          "format": "A4"
+        },
+        "locale": "en_US"
+      },
+      "typography": {
+        "family": "Inter",
+        "size": 11
+      }
     },
     "rows": [
       {
         "blocks": [
-          { "type": "text", "id": "title", "text": "Document title", "config": { "typography": { "size": 24 } } }
+          {
+            "type": "text",
+            "id": "title",
+            "text": "Document title",
+            "config": {
+              "typography": {
+                "size": 24
+              }
+            }
+          }
         ]
       },
       {
         "blocks": [
-          { "type": "text", "id": "intro", "text": "A template is a list of rows, and each row holds one or more blocks. Blocks flow top to bottom; multiple blocks in a row sit side by side." }
+          {
+            "type": "text",
+            "id": "intro",
+            "text": "A template is a list of rows, and each row holds one or more blocks. Blocks flow top to bottom; multiple blocks in a row sit side by side."
+          }
         ]
       },
       {
         "blocks": [
-          { "type": "text", "id": "left", "text": "Left column", "config": { "width": "50%" } },
-          { "type": "text", "id": "right", "text": "Right column", "config": { "width": "50%" } }
+          {
+            "type": "text",
+            "id": "left",
+            "text": "Left column",
+            "config": {
+              "width": "50%"
+            }
+          },
+          {
+            "type": "text",
+            "id": "right",
+            "text": "Right column",
+            "config": {
+              "width": "50%"
+            }
+          }
         ]
       }
     ]

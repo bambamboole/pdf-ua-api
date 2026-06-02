@@ -134,7 +134,7 @@ internal fun nullableStringField(
 fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> =
     buildList {
         val root = ValidationPath().child("template")
-        if (version != 1) {
+        if (version != 2) {
             add(
                 issue(
                     root.child("version"),

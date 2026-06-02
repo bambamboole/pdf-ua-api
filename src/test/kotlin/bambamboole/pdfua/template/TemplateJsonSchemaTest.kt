@@ -19,7 +19,7 @@ class TemplateJsonSchemaTest {
 
         val metadata = schema["x-pdfUa"]!!.jsonObject
         assertEquals("template", metadata["kind"]?.jsonPrimitive?.content)
-        assertEquals("1", metadata["templateVersion"]?.jsonPrimitive?.content)
+        assertEquals("2", metadata["templateVersion"]?.jsonPrimitive?.content)
         assertEquals("/render/template", metadata["renderEndpoint"]?.jsonPrimitive?.content)
         assertEquals(
             listOf("version", "config", "fonts", "attachments", "rows"),

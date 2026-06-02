@@ -42,7 +42,7 @@ class TemplateRendererTest {
     private fun template(
         vararg blocks: bambamboole.pdfua.template.Block,
         config: TemplateConfig = TemplateConfig(),
-    ) = Template(version = 1, config = config, rows = listOf(Row(blocks.toList())))
+    ) = Template(version = 2, config = config, rows = listOf(Row(blocks.toList())))
 
     @Test
     fun rendersTextBlockInsideRowAndDocument() {
@@ -61,7 +61,7 @@ class TemplateRendererTest {
 
     @Test
     fun rendersSpacerWithScopedHeightCss() {
-        val html = TemplateRenderer.render(template(SpacerBlock(height = 12)))
+        val html = TemplateRenderer.render(template(SpacerBlock(height = "12mm")))
 
         assertTrue(html.contains(".block-1 { height: 12mm; }"))
         assertTrue(html.contains("<div class=\"block-1\"></div>"))
@@ -69,7 +69,7 @@ class TemplateRendererTest {
 
     @Test
     fun rendersDividerWithScopedLineCss() {
-        val block = DividerBlock(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED)
+        val block = DividerBlock(thickness = "2pt", lineColor = "#111827", style = DividerStyle.DASHED)
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(html.contains("<div class=\"block-1\"><hr></div>"))
@@ -108,7 +108,7 @@ class TemplateRendererTest {
                         ),
                     ),
             )
-        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", maxHeight = 72)), data)
+        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", maxHeight = "72px")), data)
 
         assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
         assertTrue(html.contains(".block-1 img, .block-1 svg { max-height: 72px; }"))
@@ -175,14 +175,14 @@ class TemplateRendererTest {
 
     @Test
     fun dropsInvalidImageMaxHeightCss() {
-        val html = TemplateRenderer.render(template(ImageBlock(src = "logo.png", maxHeight = -1)))
+        val html = TemplateRenderer.render(template(ImageBlock(src = "logo.png", maxHeight = "-1px")))
 
         assertTrue(!html.contains("max-height: -1px"))
     }
 
     @Test
     fun dividerDropsUnsafeLineCssValuesButKeepsEnumStyle() {
-        val block = DividerBlock(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED)
+        val block = DividerBlock(thickness = "-1pt", lineColor = "red; } body{display:none", style = DividerStyle.DOTTED)
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(!html.contains("display:none"), "unsafe color must not be emitted")
@@ -360,7 +360,7 @@ class TemplateRendererTest {
     @Test
     fun rejectsUnsupportedVersion() {
         assertFailsWith<IllegalStateException> {
-            TemplateRenderer.render(Template(version = 2))
+            TemplateRenderer.render(Template(version = 1))
         }
     }
 
@@ -368,7 +368,7 @@ class TemplateRendererTest {
     fun multiBlockRowPutsSafeWidthOnCellsWithScopedIds() {
         val left = TextBlock(text = "L", config = BaseBlockConfig(width = "60%"))
         val right = TextBlock(text = "R", config = BaseBlockConfig(width = "40%"))
-        val tpl = Template(version = 1, rows = listOf(Row(listOf(left, right))))
+        val tpl = Template(version = 2, rows = listOf(Row(listOf(left, right))))
         val html = TemplateRenderer.render(tpl)
         assertTrue(html.contains("<td style=\"width: 60%;\"><div class=\"block-1\"><p>L</p></div></td>"))
         assertTrue(html.contains("<td style=\"width: 40%;\"><div class=\"block-2\"><p>R</p></div></td>"))
@@ -403,7 +403,7 @@ class TemplateRendererTest {
     fun externalFontEmitsFontFaceAndUsesFamily() {
         val tpl =
             Template(
-                version = 1,
+                version = 2,
                 fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400")),
                 rows = listOf(Row(listOf(TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(family = "Lobster")))))),
             )
@@ -418,7 +418,7 @@ class TemplateRendererTest {
     fun externalFontMultiWeightEmitsOneFontFaceRulePerWeight() {
         val tpl =
             Template(
-                version = 1,
+                version = 2,
                 fonts = mapOf("Lobster" to FontFace(src = "https://cdn.example.com/lobster.ttf", weight = "400 700")),
                 rows = listOf(Row(listOf(TextBlock(text = "x")))),
             )
@@ -495,7 +495,7 @@ class TemplateRendererTest {
     fun dropsUnsafeColorButKeepsValidOne() {
         val malicious = TextBlock(text = "x", config = BaseBlockConfig(typography = TypographyConfig(color = "red; } body{display:none")))
         val ok = TextBlock(text = "y", config = BaseBlockConfig(typography = TypographyConfig(color = "#ff0000", size = 12)))
-        val html = TemplateRenderer.render(Template(version = 1, rows = listOf(Row(listOf(malicious, ok)))))
+        val html = TemplateRenderer.render(Template(version = 2, rows = listOf(Row(listOf(malicious, ok)))))
         assertTrue(!html.contains("display:none"), "unsafe color must be dropped")
         assertTrue(html.contains(".block-2 { font-size: 12pt; color: #ff0000; }"))
     }

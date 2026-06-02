@@ -30,7 +30,7 @@ class SerializationIssueTest {
             assertFailsWith<SerializationException> {
                 json.decodeFromString(
                     RenderRequest.serializer(),
-                    """{"template":{"version":1},"weirdRoot":true}""",
+                    """{"template":{"version":2},"weirdRoot":true}""",
                 )
             }
         val issue = serializationIssue(e)
@@ -53,7 +53,7 @@ class SerializationIssueTest {
             assertFailsWith<SerializationException> {
                 json.decodeFromString(
                     RenderRequest.serializer(),
-                    """{"template":{"version":1,"rows":[{"blocks":[{"type":"nope"}]}]}}""",
+                    """{"template":{"version":2,"rows":[{"blocks":[{"type":"nope"}]}]}}""",
                 )
             }
         val issue = serializationIssue(e)

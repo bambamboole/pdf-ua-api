@@ -54,7 +54,7 @@ data class PageConfig(
 @Serializable
 data class PageNumbersConfig(
     @SchemaBoolDefault(false) val enabled: Boolean = false,
-    val position: Align = Align.CENTER,
+    @SchemaEnumDefault("center") val position: Align = Align.CENTER,
 )
 
 @Serializable
@@ -74,7 +74,7 @@ data class PageBackgroundConfig(
     @SchemaDescription("HTTP, HTTPS, or base64 data URI for an image or PDF page background.")
     @SchemaMinLength(1)
     val src: String,
-    val type: PageBackgroundType = PageBackgroundType.AUTO,
+    @SchemaEnumDefault("auto") val type: PageBackgroundType = PageBackgroundType.AUTO,
 )
 
 @Serializable
@@ -114,11 +114,15 @@ data class SpacingConfig(
 @SerialName("BlockConfig")
 @SchemaTsType("{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }")
 data class BaseBlockConfig(
+    @SchemaGroup(SchemaGroups.STYLE)
     val typography: TypographyConfig? = null,
+    @SchemaGroup(SchemaGroups.LAYOUT)
     val spacing: SpacingConfig? = null,
     @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
+    @SchemaGroup(SchemaGroups.LAYOUT)
     val width: String? = null,
     @SchemaDescription("Horizontal placement of this block within its row cell.")
+    @SchemaGroup(SchemaGroups.LAYOUT)
     val align: Align? = null,
 )
 

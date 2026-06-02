@@ -1,9 +1,16 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
-      "page": { "size": { "format": "A4" }, "locale": "en_US" },
-      "typography": { "family": "Inter" }
+      "page": {
+        "size": {
+          "format": "A4"
+        },
+        "locale": "en_US"
+      },
+      "typography": {
+        "family": "Inter"
+      }
     },
     "fonts": {
       "Lobster": {
@@ -13,8 +20,30 @@
       }
     },
     "rows": [
-      { "blocks": [ { "type": "text", "id": "title", "text": "Special Offer", "config": { "typography": { "family": "Lobster", "size": 36 } } } ] },
-      { "blocks": [ { "type": "text", "id": "body", "text": "Everything else uses the bundled Inter body font." } ] }
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "id": "title",
+            "text": "Special Offer",
+            "config": {
+              "typography": {
+                "family": "Lobster",
+                "size": 36
+              }
+            }
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "id": "body",
+            "text": "Everything else uses the bundled Inter body font."
+          }
+        ]
+      }
     ]
   }
 }

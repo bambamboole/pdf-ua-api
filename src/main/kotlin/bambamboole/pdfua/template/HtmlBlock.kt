@@ -10,7 +10,7 @@ import kotlinx.serialization.json.JsonElement
 data class HtmlBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    val html: String,
+    @SchemaGroup(SchemaGroups.CONTENT) val html: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = copy(html = values.string("html") ?: html)

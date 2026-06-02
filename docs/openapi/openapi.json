@@ -781,7 +781,7 @@
                 "properties": {
                     "version": {
                         "type": "integer",
-                        "const": 1
+                        "const": 2
                     },
                     "config": {
                         "$ref": "#/$defs/templateConfig"
@@ -932,7 +932,8 @@
                                 "default": false
                             },
                             "position": {
-                                "$ref": "#/$defs/align"
+                                "$ref": "#/$defs/align",
+                                "default": "center"
                             }
                         },
                         "additionalProperties": false
@@ -956,7 +957,8 @@
                                 "minLength": 1
                             },
                             "type": {
-                                "$ref": "#/$defs/pageBackgroundType"
+                                "$ref": "#/$defs/pageBackgroundType",
+                                "default": "auto"
                             }
                         },
                         "required": [
@@ -1044,7 +1046,8 @@
                                     {
                                         "type": "null"
                                     }
-                                ]
+                                ],
+                                "group": "style"
                             },
                             "spacing": {
                                 "oneOf": [
@@ -1054,14 +1057,16 @@
                                     {
                                         "type": "null"
                                     }
-                                ]
+                                ],
+                                "group": "layout"
                             },
                             "width": {
                                 "type": [
                                     "string",
                                     "null"
                                 ],
-                                "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                                "description": "CSS width for this block, such as 50%, 80mm, or auto.",
+                                "group": "layout"
                             },
                             "align": {
                                 "type": [
@@ -1074,7 +1079,8 @@
                                     "center",
                                     "right",
                                     null
-                                ]
+                                ],
+                                "group": "layout"
                             }
                         },
                         "additionalProperties": false,
@@ -1096,17 +1102,21 @@
                                 "description": "Stable block identifier used for runtime data overrides."
                             },
                             "thickness": {
-                                "type": "integer",
-                                "default": 1,
-                                "minimum": 0.0
+                                "type": "string",
+                                "description": "Rule thickness as a CSS length, such as 1pt or 2px.",
+                                "default": "1pt",
+                                "group": "style"
                             },
                             "lineColor": {
                                 "type": "string",
                                 "pattern": "^#[0-9A-Fa-f]{3,8}$",
-                                "default": "#d1d5db"
+                                "default": "#d1d5db",
+                                "group": "style"
                             },
                             "style": {
-                                "$ref": "#/$defs/dividerStyle"
+                                "$ref": "#/$defs/dividerStyle",
+                                "default": "solid",
+                                "group": "style"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1133,13 +1143,15 @@
                                 "description": "Stable block identifier used for runtime data overrides."
                             },
                             "text": {
-                                "type": "string"
+                                "type": "string",
+                                "group": "content"
                             },
                             "level": {
                                 "type": "integer",
                                 "default": 2,
                                 "minimum": 1.0,
-                                "maximum": 6.0
+                                "maximum": 6.0,
+                                "group": "content"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1167,7 +1179,8 @@
                                 "description": "Stable block identifier used for runtime data overrides."
                             },
                             "html": {
-                                "type": "string"
+                                "type": "string",
+                                "group": "content"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1196,17 +1209,20 @@
                             },
                             "src": {
                                 "type": "string",
-                                "description": "Public image URL, SVG markup, or uploaded image data URL."
+                                "description": "Public image URL, SVG markup, or uploaded image data URL.",
+                                "group": "content"
                             },
                             "alt": {
                                 "type": "string",
                                 "description": "Alternative text for screen readers and PDF accessibility.",
-                                "default": ""
+                                "default": "",
+                                "group": "content"
                             },
                             "maxHeight": {
-                                "type": "integer",
-                                "default": 60,
-                                "minimum": 1.0
+                                "type": "string",
+                                "description": "Maximum rendered height as a CSS length, such as 60px or 20mm.",
+                                "default": "60px",
+                                "group": "layout"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1264,17 +1280,20 @@
                                         "string",
                                         "null"
                                     ]
-                                }
+                                },
+                                "group": "data"
                             },
                             "labelWidth": {
                                 "type": "string",
-                                "default": "30mm"
+                                "default": "30mm",
+                                "group": "layout"
                             },
                             "fields": {
                                 "type": "array",
                                 "items": {
                                     "$ref": "#/$defs/keyValueField"
-                                }
+                                },
+                                "group": "content"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1301,9 +1320,10 @@
                                 "description": "Stable block identifier used for runtime data overrides."
                             },
                             "height": {
-                                "type": "integer",
-                                "default": 5,
-                                "minimum": 0.0
+                                "type": "string",
+                                "description": "Vertical space as a CSS length, such as 5mm or 12px.",
+                                "default": "5mm",
+                                "group": "layout"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1380,16 +1400,20 @@
                             },
                             "numberRows": {
                                 "type": "boolean",
-                                "default": false
+                                "default": false,
+                                "group": "style"
                             },
                             "columns": {
                                 "type": "array",
                                 "items": {
                                     "$ref": "#/$defs/tableColumn"
-                                }
+                                },
+                                "group": "content"
                             },
                             "style": {
-                                "$ref": "#/$defs/tableStyle"
+                                "$ref": "#/$defs/tableStyle",
+                                "default": "striped",
+                                "group": "style"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1416,7 +1440,8 @@
                                 "description": "Stable block identifier used for runtime data overrides."
                             },
                             "text": {
-                                "type": "string"
+                                "type": "string",
+                                "group": "content"
                             },
                             "config": {
                                 "$ref": "#/$defs/blockConfig"
@@ -1616,7 +1641,7 @@
                 },
                 "x-pdfUa": {
                     "kind": "template",
-                    "templateVersion": 1,
+                    "templateVersion": 2,
                     "renderEndpoint": "/render/template",
                     "templateFields": [
                         "version",

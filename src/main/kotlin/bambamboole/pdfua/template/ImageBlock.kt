@@ -2,7 +2,7 @@ package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
-import bambamboole.pdfua.css.cssPx
+import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
@@ -24,11 +24,16 @@ data class ImageBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     @SchemaDescription("Public image URL, SVG markup, or uploaded image data URL.")
+    @SchemaGroup(SchemaGroups.CONTENT)
     val src: String,
     @SchemaDescription("Alternative text for screen readers and PDF accessibility.")
     @SchemaStringDefault("")
+    @SchemaGroup(SchemaGroups.CONTENT)
     val alt: String = "",
-    @SchemaMin(1) @SchemaIntDefault(60) val maxHeight: Int = 60,
+    @SchemaDescription("Maximum rendered height as a CSS length, such as 60px or 20mm.")
+    @SchemaStringDefault("60px")
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val maxHeight: String = "60px",
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block =
@@ -44,7 +49,7 @@ data class ImageBlock(
     override fun renderCss(cssId: String): List<CssDeclaration> =
         listOf(
             css(".$cssId img, .$cssId svg") {
-                rule("max-height", cssPx(maxHeight))
+                rule("max-height", safeCssWidth(maxHeight))
             },
         )
 

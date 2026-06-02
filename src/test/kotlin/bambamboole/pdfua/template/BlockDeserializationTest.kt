@@ -28,10 +28,10 @@ class BlockDeserializationTest {
             [
               {"type":"text","id":"intro","text":"Hello"},
               {"type":"html","html":"<b>x</b>"},
-              {"type":"spacer","height":12},
-              {"type":"divider","thickness":2,"lineColor":"#111827","style":"dashed"},
+              {"type":"spacer","height":"12mm"},
+              {"type":"divider","thickness":"2pt","lineColor":"#111827","style":"dashed"},
               {"type":"heading","id":"title","text":"Invoice","level":1},
-              {"type":"image","id":"logo","src":"logo.png","alt":"Logo","maxHeight":80},
+              {"type":"image","id":"logo","src":"logo.png","alt":"Logo","maxHeight":"80px"},
               {"type":"key-value","id":"meta","values":{"invoice":"INV-1","empty":null},"labelWidth":"24mm","fields":[{"key":"invoice","label":"Invoice"},{"key":"empty","label":"Empty"}]}
             ]
             """.trimIndent()
@@ -42,9 +42,9 @@ class BlockDeserializationTest {
         assertEquals("Hello", text.text)
         assertIs<HtmlBlock>(blocks[1])
         val spacer = assertIs<SpacerBlock>(blocks[2])
-        assertEquals(12, spacer.height)
+        assertEquals("12mm", spacer.height)
         val divider = assertIs<DividerBlock>(blocks[3])
-        assertEquals(2, divider.thickness)
+        assertEquals("2pt", divider.thickness)
         assertEquals("#111827", divider.lineColor)
         assertEquals(DividerStyle.DASHED, divider.style)
         val heading = assertIs<HeadingBlock>(blocks[4])
@@ -54,7 +54,7 @@ class BlockDeserializationTest {
         val image = assertIs<ImageBlock>(blocks[5])
         assertEquals("logo.png", image.src)
         assertEquals("Logo", image.alt)
-        assertEquals(80, image.maxHeight)
+        assertEquals("80px", image.maxHeight)
         val keyValue = assertIs<KeyValueBlock>(blocks[6])
         assertEquals("meta", keyValue.id)
         assertEquals("INV-1", keyValue.values["invoice"])

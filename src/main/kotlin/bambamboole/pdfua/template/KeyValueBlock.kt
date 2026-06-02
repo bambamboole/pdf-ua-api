@@ -24,9 +24,10 @@ data class KeyValueBlock(
     override val id: String? = null,
     @SchemaTitle("KeyValueValues")
     @SchemaPropertyNames(pattern = "^[A-Za-z][A-Za-z0-9_]*$")
+    @SchemaGroup(SchemaGroups.DATA)
     val values: Map<String, String?> = emptyMap(),
-    @SchemaStringDefault("30mm") val labelWidth: String = "30mm",
-    val fields: List<KeyValueField> = emptyList(),
+    @SchemaStringDefault("30mm") @SchemaGroup(SchemaGroups.LAYOUT) val labelWidth: String = "30mm",
+    @SchemaGroup(SchemaGroups.CONTENT) val fields: List<KeyValueField> = emptyList(),
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = if (values is JsonObject) copy(values = values.stringValues()) else this

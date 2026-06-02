@@ -2,7 +2,7 @@ package bambamboole.pdfua.template
 
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
-import bambamboole.pdfua.css.cssMm
+import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.html.Html
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,7 +13,10 @@ import kotlinx.serialization.json.JsonElement
 data class SpacerBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    @SchemaMin(0) @SchemaIntDefault(5) val height: Int = 5,
+    @SchemaDescription("Vertical space as a CSS length, such as 5mm or 12px.")
+    @SchemaStringDefault("5mm")
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val height: String = "5mm",
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = this
@@ -23,7 +26,7 @@ data class SpacerBlock(
     override fun renderCss(cssId: String): List<CssDeclaration> =
         listOf(
             css(".$cssId") {
-                rule("height", cssMm(height))
+                rule("height", safeCssWidth(height))
             },
         )
 

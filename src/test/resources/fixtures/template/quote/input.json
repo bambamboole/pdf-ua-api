@@ -1,6 +1,6 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
         "size": {
@@ -52,7 +52,7 @@
             "config": {
               "width": "55%"
             },
-            "maxHeight": 32
+            "maxHeight": "32px"
           },
           {
             "type": "key-value",
@@ -88,7 +88,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 6
+            "height": "6mm"
           }
         ]
       },
@@ -154,7 +154,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 6
+            "height": "6mm"
           }
         ]
       },
@@ -191,7 +191,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 4
+            "height": "4mm"
           }
         ]
       },
@@ -236,7 +236,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 4
+            "height": "4mm"
           }
         ]
       },
@@ -286,7 +286,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 8
+            "height": "8mm"
           }
         ]
       },

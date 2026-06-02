@@ -43,9 +43,9 @@ data class TableColumn(
 data class TableBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    @SchemaBoolDefault(false) val numberRows: Boolean = false,
-    val columns: List<TableColumn> = emptyList(),
-    val style: TableStyle = TableStyle.STRIPED,
+    @SchemaBoolDefault(false) @SchemaGroup(SchemaGroups.STYLE) val numberRows: Boolean = false,
+    @SchemaGroup(SchemaGroups.CONTENT) val columns: List<TableColumn> = emptyList(),
+    @SchemaEnumDefault("striped") @SchemaGroup(SchemaGroups.STYLE) val style: TableStyle = TableStyle.STRIPED,
     // Runtime row data; supplied via the data-override channel, not by the static template payload.
     @SchemaIgnore val rows: List<JsonObject> = emptyList(),
     override val config: BaseBlockConfig = BaseBlockConfig(),
