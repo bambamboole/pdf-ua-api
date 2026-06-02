@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -26,7 +27,10 @@ data class KeyValueBlock(
     @SchemaPropertyNames(pattern = "^[A-Za-z][A-Za-z0-9_]*$")
     @SchemaGroup(SchemaGroups.DATA)
     val values: Map<String, String?> = emptyMap(),
-    @SchemaStringDefault("30mm") @SchemaGroup(SchemaGroups.LAYOUT) val labelWidth: String = "30mm",
+    @SchemaStringDefault("30mm")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val labelWidth: String = "30mm",
     @SchemaGroup(SchemaGroups.CONTENT) val fields: List<KeyValueField> = emptyList(),
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
@@ -65,22 +69,23 @@ data class KeyValueBlock(
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        fields.flatMapIndexed { index, field ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
-                emptyList()
-            } else {
-                listOf(
-                    issue(
-                        path
-                            .child("fields")
-                            .index(index)
-                            .child("key"),
-                        ValidationCodes.INVALID_KEY,
-                        "Key-value field key is invalid: ${field.key}",
-                    ),
-                )
+        cssLengthIssues(labelWidth, path.child("labelWidth")) +
+            fields.flatMapIndexed { index, field ->
+                if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
+                    emptyList()
+                } else {
+                    listOf(
+                        issue(
+                            path
+                                .child("fields")
+                                .index(index)
+                                .child("key"),
+                            ValidationCodes.INVALID_KEY,
+                            "Key-value field key is invalid: ${field.key}",
+                        ),
+                    )
+                }
             }
-        }
 
     override fun validateData(
         value: JsonElement,

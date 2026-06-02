@@ -448,7 +448,7 @@ class SchemaWalker {
     private fun SerialDescriptor.isPageSize(): Boolean = serialName.endsWith("<PageSize>")
 }
 
-/** Adds the `group` UI hint to a property's schema when a [SchemaGroup] annotation is present. */
+/** Adds the `x-pdfUaGroup` UI hint to a property's schema when a [SchemaGroup] annotation is present. */
 private fun applyGroup(
     schema: JsonObject,
     annotations: List<Annotation>,

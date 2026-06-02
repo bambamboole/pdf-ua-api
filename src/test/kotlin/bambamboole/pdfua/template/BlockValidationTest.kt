@@ -73,6 +73,22 @@ class BlockValidationTest {
     }
 
     @Test
+    fun keyValueValidateRejectsInvalidLabelWidth() {
+        val errs = KeyValueBlock(labelWidth = "30").validate(path)
+        assertEquals(1, errs.size)
+        assertEquals(ValidationCodes.INVALID_VALUE, errs[0].code)
+        assertEquals("\$.block.labelWidth", errs[0].path)
+    }
+
+    @Test
+    fun tableValidateRejectsInvalidColumnWidth() {
+        val errs = TableBlock(columns = listOf(TableColumn("k", "L", width = "wide"))).validate(path)
+        assertEquals(1, errs.size)
+        assertEquals(ValidationCodes.INVALID_VALUE, errs[0].code)
+        assertEquals("\$.block.columns[0].width", errs[0].path)
+    }
+
+    @Test
     fun tableValidateRejectsInvalidColumnKeys() {
         val block =
             TableBlock(

@@ -110,9 +110,9 @@ annotation class SchemaTsType(
 )
 
 /**
- * UI grouping hint for builders: emits `group` on the property's schema so a builder can place the
- * field in a Content / Layout / Style / Data panel without hardcoding per-field rules. Use the
- * [SchemaGroups] constants.
+ * UI grouping hint for builders: emits `x-pdfUaGroup` on the property's schema so a builder can
+ * place the field in a Content / Layout / Style / Data panel without hardcoding per-field rules.
+ * Use the [SchemaGroups] constants.
  */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
@@ -122,7 +122,7 @@ annotation class SchemaGroup(
     val value: String,
 )
 
-/** Default for an enum-typed property; emitted as `default` alongside the enum `$ref`. */
+/** Default for an enum-typed property; emitted as `x-pdfUaDefault` alongside the enum `$ref`. */
 @OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
