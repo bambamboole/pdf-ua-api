@@ -417,20 +417,20 @@ class SchemaWalker {
     private fun List<Annotation>.applyStringConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
         filterIsInstance<SchemaPattern>().firstOrNull()?.let { builder.put("pattern", it.value) }
-        filterIsInstance<SchemaStringDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaStringDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
         filterIsInstance<SchemaMinLength>().firstOrNull()?.let { builder.put("minLength", it.value) }
     }
 
     private fun List<Annotation>.applyIntConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
-        filterIsInstance<SchemaIntDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaIntDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
         filterIsInstance<SchemaMin>().firstOrNull()?.let { builder.put("minimum", it.value.toDouble()) }
         filterIsInstance<SchemaMax>().firstOrNull()?.let { builder.put("maximum", it.value.toDouble()) }
     }
 
     private fun List<Annotation>.applyBoolConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
-        filterIsInstance<SchemaBoolDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaBoolDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
     }
 
     private fun titleFor(descriptor: SerialDescriptor): String = descriptor.serialName.removeSuffix("?").substringAfterLast('.')
