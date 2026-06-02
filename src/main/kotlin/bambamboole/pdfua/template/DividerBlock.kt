@@ -29,25 +29,14 @@ enum class DividerStyle {
 }
 
 @Serializable
-@SchemaTsType("BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }")
-data class DividerConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
-    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
-    @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-    @SchemaMin(0) @SchemaIntDefault(1) val thickness: Int = 1,
-    @SchemaPattern("^#[0-9A-Fa-f]{3,8}$") @SchemaStringDefault("#d1d5db") val lineColor: String = "#d1d5db",
-    val style: DividerStyle = DividerStyle.SOLID,
-) : BlockConfig
-
-@Serializable
 @SerialName("divider")
 data class DividerBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    override val config: DividerConfig = DividerConfig(),
+    @SchemaMin(0) @SchemaIntDefault(1) val thickness: Int = 1,
+    @SchemaPattern("^#[0-9A-Fa-f]{3,8}$") @SchemaStringDefault("#d1d5db") val lineColor: String = "#d1d5db",
+    val style: DividerStyle = DividerStyle.SOLID,
+    override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = this
 
@@ -58,20 +47,11 @@ data class DividerBlock(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
-                rule("border-top-width", cssPt(config.thickness))
-                rule("border-top-color", safeCssColor(config.lineColor))
-                rule("border-top-style", config.style.cssValue())
+                rule("border-top-width", cssPt(thickness))
+                rule("border-top-color", safeCssColor(lineColor))
+                rule("border-top-style", style.name.lowercase())
             },
         )
-
-    private fun DividerStyle.cssValue(): String =
-        when (this) {
-            DividerStyle.SOLID -> "solid"
-            DividerStyle.DASHED -> "dashed"
-            DividerStyle.DOTTED -> "dotted"
-            DividerStyle.DOUBLE -> "double"
-            DividerStyle.NONE -> "none"
-        }
 
     override fun validateData(
         value: JsonElement,

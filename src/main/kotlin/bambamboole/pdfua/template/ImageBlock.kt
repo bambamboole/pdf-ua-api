@@ -19,18 +19,6 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 @Serializable
-@SchemaTsType("BlockConfig & { maxHeight?: number }")
-data class ImageConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
-    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
-    @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-    @SchemaMin(1) @SchemaIntDefault(60) val maxHeight: Int = 60,
-) : BlockConfig
-
-@Serializable
 @SerialName("image")
 data class ImageBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
@@ -40,7 +28,8 @@ data class ImageBlock(
     @SchemaDescription("Alternative text for screen readers and PDF accessibility.")
     @SchemaStringDefault("")
     val alt: String = "",
-    override val config: ImageConfig = ImageConfig(),
+    @SchemaMin(1) @SchemaIntDefault(60) val maxHeight: Int = 60,
+    override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block =
         copy(
@@ -55,7 +44,7 @@ data class ImageBlock(
     override fun renderCss(cssId: String): List<CssDeclaration> =
         listOf(
             css(".$cssId img, .$cssId svg") {
-                rule("max-height", cssPx(config.maxHeight))
+                rule("max-height", cssPx(maxHeight))
             },
         )
 

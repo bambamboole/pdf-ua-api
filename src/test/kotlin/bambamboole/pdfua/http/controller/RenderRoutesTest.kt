@@ -86,8 +86,8 @@ class RenderRoutesTest {
                 """
                 {"template":{"version":1,"rows":[
                   {"blocks":[{"type":"text","text":"Before"}]},
-                  {"blocks":[{"type":"spacer","config":{"height":6}}]},
-                  {"blocks":[{"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}}]},
+                  {"blocks":[{"type":"spacer","height":6}]},
+                  {"blocks":[{"type":"divider","thickness":2,"lineColor":"#111827","style":"dashed"}]},
                   {"blocks":[{"type":"text","text":"After"}]}
                 ]}}
                 """.trimIndent()
@@ -120,8 +120,8 @@ class RenderRoutesTest {
             val body =
                 """
                 {"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"heading","id":"title","text":"Heading block","config":{"level":2}}]},
-                  {"blocks":[{"type":"image","id":"logo","src":"$imageSrc","alt":"Blue square","config":{"maxHeight":24}}]}
+                  {"blocks":[{"type":"heading","id":"title","text":"Heading block","level":2}]},
+                  {"blocks":[{"type":"image","id":"logo","src":"$imageSrc","alt":"Blue square","maxHeight":24}]}
                 ]}}
                 """.trimIndent()
 
@@ -151,7 +151,7 @@ class RenderRoutesTest {
             val body =
                 """
                 {"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"table","id":"lineItems","config":{
+                  {"blocks":[{"type":"table","id":"lineItems",
                     "numberRows":true,
                     "style":"striped",
                     "columns":[
@@ -159,7 +159,7 @@ class RenderRoutesTest {
                       {"key":"description","label":"Description"},
                       {"key":"total","label":"Total","align":"right"}
                     ]
-                  }}]}
+                  }]}
                 ]},
                 "data":{"lineItems":[
                   {"sku":"A-100","description":"Accessible PDF setup","total":"100,00 €"},
@@ -195,10 +195,10 @@ class RenderRoutesTest {
                 {"template":{"version":1,"rows":[
                   {"blocks":[{"type":"key-value","id":"meta",
                     "values":{"invoice":"Original"},
-                    "config":{"labelWidth":"28mm","fields":[
+                    "labelWidth":"28mm","fields":[
                       {"key":"invoice","label":"Invoice"},
                       {"key":"customer","label":"Customer"}
-                    ]}
+                    ]
                   }]}
                 ]},
                 "data":{"meta":{"invoice":"INV-1","customer":"ACME GmbH"}}}

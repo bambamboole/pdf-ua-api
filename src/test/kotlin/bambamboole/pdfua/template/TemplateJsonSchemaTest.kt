@@ -72,20 +72,20 @@ class TemplateJsonSchemaTest {
         )
         assertEquals("^[A-Za-z][A-Za-z0-9_]*$", tableColumnProps["key"]!!.jsonObject["pattern"]!!.jsonPrimitive.content)
 
-        val tableConfigProps = definitions["tableConfig"]!!.jsonObject["properties"]!!.jsonObject
-        assertEquals("boolean", tableConfigProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-        assertEquals("false", tableConfigProps["numberRows"]!!.jsonObject["default"]!!.jsonPrimitive.content)
-        assertEquals("array", tableConfigProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        val tableBlockProps = definitions["tableBlock"]!!.jsonObject["properties"]!!.jsonObject
+        assertEquals("boolean", tableBlockProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("false", tableBlockProps["numberRows"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("array", tableBlockProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
         assertEquals(
             "#/\$defs/tableColumn",
-            tableConfigProps["columns"]!!
+            tableBlockProps["columns"]!!
                 .jsonObject["items"]!!
                 .jsonObject["\$ref"]!!
                 .jsonPrimitive.content,
         )
         assertEquals(
             "#/\$defs/tableStyle",
-            tableConfigProps["style"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+            tableBlockProps["style"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
         )
 
         val tableBlock = definitions["tableBlock"]!!.jsonObject
@@ -218,17 +218,17 @@ class TemplateJsonSchemaTest {
                 .jsonPrimitive.content,
         )
 
-        val keyValueConfig = definitions["keyValueConfig"]!!.jsonObject
+        val keyValueBlockDef = definitions["keyValueBlock"]!!.jsonObject
         assertEquals(
             "30mm",
-            keyValueConfig["properties"]!!
+            keyValueBlockDef["properties"]!!
                 .jsonObject["labelWidth"]!!
                 .jsonObject["default"]!!
                 .jsonPrimitive.content,
         )
         assertEquals(
             "#/\$defs/keyValueField",
-            keyValueConfig["properties"]!!
+            keyValueBlockDef["properties"]!!
                 .jsonObject["fields"]!!
                 .jsonObject["items"]!!
                 .jsonObject["\$ref"]!!

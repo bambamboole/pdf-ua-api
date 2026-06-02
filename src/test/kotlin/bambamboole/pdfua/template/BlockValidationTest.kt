@@ -19,40 +19,40 @@ class BlockValidationTest {
     @Test
     fun headingValidateAcceptsLevel1To6() {
         (1..6).forEach { level ->
-            assertTrue(HeadingBlock(text = "x", config = HeadingConfig(level = level)).validate(path).isEmpty())
+            assertTrue(HeadingBlock(text = "x", level = level).validate(path).isEmpty())
         }
     }
 
     @Test
     fun headingValidateRejectsLevelOutsideRange() {
-        val errs = HeadingBlock(text = "x", config = HeadingConfig(level = 7)).validate(path)
+        val errs = HeadingBlock(text = "x", level = 7).validate(path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.OUT_OF_RANGE, errs[0].code)
-        assertEquals("\$.block.config.level", errs[0].path)
+        assertEquals("\$.block.level", errs[0].path)
     }
 
     @Test
     fun keyValueValidateRejectsInvalidFieldKeys() {
         val block =
             KeyValueBlock(
-                config = KeyValueConfig(fields = listOf(KeyValueField("good", "G"), KeyValueField("1bad", "B"))),
+                fields = listOf(KeyValueField("good", "G"), KeyValueField("1bad", "B")),
             )
         val errs = block.validate(path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.INVALID_KEY, errs[0].code)
-        assertEquals("\$.block.config.fields[1].key", errs[0].path)
+        assertEquals("\$.block.fields[1].key", errs[0].path)
     }
 
     @Test
     fun tableValidateRejectsInvalidColumnKeys() {
         val block =
             TableBlock(
-                config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("1bad", "X"))),
+                columns = listOf(TableColumn("sku", "SKU"), TableColumn("1bad", "X")),
             )
         val errs = block.validate(path)
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.INVALID_KEY, errs[0].code)
-        assertEquals("\$.block.config.columns[1].key", errs[0].path)
+        assertEquals("\$.block.columns[1].key", errs[0].path)
     }
 
     @Test
@@ -138,7 +138,7 @@ class BlockValidationTest {
     fun keyValueValidateDataAcceptsConfiguredKeysAsStringOrNull() {
         val block =
             KeyValueBlock(
-                config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"), KeyValueField("b", "B"))),
+                fields = listOf(KeyValueField("a", "A"), KeyValueField("b", "B")),
             )
         val obj =
             buildJsonObject {
@@ -150,7 +150,7 @@ class BlockValidationTest {
 
     @Test
     fun keyValueValidateDataRejectsNonObject() {
-        val block = KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"))))
+        val block = KeyValueBlock(fields = listOf(KeyValueField("a", "A")))
         val errs = block.validateData(JsonArray(emptyList()), path)
         assertEquals(ValidationCodes.INVALID_TYPE, errs[0].code)
         assertEquals("\$.block", errs[0].path)
@@ -158,7 +158,7 @@ class BlockValidationTest {
 
     @Test
     fun keyValueValidateDataRejectsKeysNotInFields() {
-        val block = KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"))))
+        val block = KeyValueBlock(fields = listOf(KeyValueField("a", "A")))
         val obj =
             buildJsonObject {
                 put("a", "1")
@@ -172,7 +172,7 @@ class BlockValidationTest {
 
     @Test
     fun keyValueValidateDataRejectsNonStringNonNullValues() {
-        val block = KeyValueBlock(config = KeyValueConfig(fields = listOf(KeyValueField("a", "A"))))
+        val block = KeyValueBlock(fields = listOf(KeyValueField("a", "A")))
         val obj = buildJsonObject { put("a", 42) }
         val errs = block.validateData(obj, path)
         assertEquals(1, errs.size)
@@ -186,7 +186,7 @@ class BlockValidationTest {
     fun tableValidateDataAcceptsArrayOfRowObjects() {
         val block =
             TableBlock(
-                config = TableConfig(columns = listOf(TableColumn("sku", "SKU"), TableColumn("qty", "Qty"))),
+                columns = listOf(TableColumn("sku", "SKU"), TableColumn("qty", "Qty")),
             )
         val data =
             buildJsonArray {
@@ -208,7 +208,7 @@ class BlockValidationTest {
 
     @Test
     fun tableValidateDataRejectsNonArray() {
-        val block = TableBlock(config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))))
+        val block = TableBlock(columns = listOf(TableColumn("sku", "SKU")))
         val errs = block.validateData(JsonObject(emptyMap()), path)
         assertEquals(ValidationCodes.INVALID_TYPE, errs[0].code)
         assertEquals("\$.block", errs[0].path)
@@ -216,7 +216,7 @@ class BlockValidationTest {
 
     @Test
     fun tableValidateDataRejectsNonObjectRow() {
-        val block = TableBlock(config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))))
+        val block = TableBlock(columns = listOf(TableColumn("sku", "SKU")))
         val data = buildJsonArray { add(JsonPrimitive("nope")) }
         val errs = block.validateData(data, path)
         assertEquals(1, errs.size)
@@ -226,7 +226,7 @@ class BlockValidationTest {
 
     @Test
     fun tableValidateDataRejectsUnknownRowKeys() {
-        val block = TableBlock(config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))))
+        val block = TableBlock(columns = listOf(TableColumn("sku", "SKU")))
         val data =
             buildJsonArray {
                 add(

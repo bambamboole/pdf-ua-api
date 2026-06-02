@@ -13,7 +13,7 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable
 sealed interface Block {
     val id: String?
-    val config: BlockConfig
+    val config: BaseBlockConfig
 
     /** Returns a copy with content fields replaced from runtime [values]. */
     fun applyData(values: JsonElement): Block

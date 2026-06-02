@@ -111,14 +111,14 @@ class TemplateValidationRoutesTest {
                     contentType(ContentType.Application.Json)
                     setBody(
                         """{"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"heading","text":"x","config":{"level":9}}]}
+                  {"blocks":[{"type":"heading","text":"x","level":9}]}
                 ]}}""",
                     )
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
             val issues = response.parseIssues()
-            assertEquals("\$.template.rows[0].blocks[0].config.level", issues[0].first)
+            assertEquals("\$.template.rows[0].blocks[0].level", issues[0].first)
             assertEquals(ValidationCodes.OUT_OF_RANGE, issues[0].second)
         }
 
@@ -132,7 +132,7 @@ class TemplateValidationRoutesTest {
                     contentType(ContentType.Application.Json)
                     setBody(
                         """{"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"table","id":"items","config":{"columns":[{"key":"sku","label":"SKU"}]}}]}
+                  {"blocks":[{"type":"table","id":"items","columns":[{"key":"sku","label":"SKU"}]}]}
                 ]},"data":{"items":{"oops":1}}}""",
                     )
                 }
@@ -176,8 +176,8 @@ class TemplateValidationRoutesTest {
                     setBody(
                         """{"template":{"version":1,"rows":[
                   {"blocks":[
-                    {"type":"heading","text":"x","config":{"level":0}},
-                    {"type":"key-value","id":"meta","config":{"fields":[{"key":"1bad","label":"x"}]}}
+                    {"type":"heading","text":"x","level":0},
+                    {"type":"key-value","id":"meta","fields":[{"key":"1bad","label":"x"}]}
                   ]}
                 ]},"data":{"orphan":{"text":"x"}}}""",
                     )

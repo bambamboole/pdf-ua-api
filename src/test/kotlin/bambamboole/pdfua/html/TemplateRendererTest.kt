@@ -5,15 +5,11 @@ import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.BaseBlockConfig
 import bambamboole.pdfua.template.CustomPageSize
 import bambamboole.pdfua.template.DividerBlock
-import bambamboole.pdfua.template.DividerConfig
 import bambamboole.pdfua.template.DividerStyle
 import bambamboole.pdfua.template.HeadingBlock
-import bambamboole.pdfua.template.HeadingConfig
 import bambamboole.pdfua.template.HtmlBlock
 import bambamboole.pdfua.template.ImageBlock
-import bambamboole.pdfua.template.ImageConfig
 import bambamboole.pdfua.template.KeyValueBlock
-import bambamboole.pdfua.template.KeyValueConfig
 import bambamboole.pdfua.template.KeyValueField
 import bambamboole.pdfua.template.Orientation
 import bambamboole.pdfua.template.PageBackgroundConfig
@@ -25,10 +21,8 @@ import bambamboole.pdfua.template.PageNumbersConfig
 import bambamboole.pdfua.template.PresetPageSize
 import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.SpacerBlock
-import bambamboole.pdfua.template.SpacerConfig
 import bambamboole.pdfua.template.TableBlock
 import bambamboole.pdfua.template.TableColumn
-import bambamboole.pdfua.template.TableConfig
 import bambamboole.pdfua.template.TableStyle
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.TemplateConfig
@@ -67,7 +61,7 @@ class TemplateRendererTest {
 
     @Test
     fun rendersSpacerWithScopedHeightCss() {
-        val html = TemplateRenderer.render(template(SpacerBlock(config = SpacerConfig(height = 12))))
+        val html = TemplateRenderer.render(template(SpacerBlock(height = 12)))
 
         assertTrue(html.contains(".block-1 { height: 12mm; }"))
         assertTrue(html.contains("<div class=\"block-1\"></div>"))
@@ -75,7 +69,7 @@ class TemplateRendererTest {
 
     @Test
     fun rendersDividerWithScopedLineCss() {
-        val block = DividerBlock(config = DividerConfig(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED))
+        val block = DividerBlock(thickness = 2, lineColor = "#111827", style = DividerStyle.DASHED)
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(html.contains("<div class=\"block-1\"><hr></div>"))
@@ -89,7 +83,7 @@ class TemplateRendererTest {
     @Test
     fun rendersHeadingWithRuntimeDataOverride() {
         val data = mapOf("title" to JsonObject(mapOf("text" to JsonPrimitive("Runtime title"))))
-        val html = TemplateRenderer.render(template(HeadingBlock(id = "title", text = "Original", config = HeadingConfig(level = 1))), data)
+        val html = TemplateRenderer.render(template(HeadingBlock(id = "title", text = "Original", level = 1)), data)
 
         assertTrue(html.contains("<div class=\"block-1\"><h1>Runtime title</h1></div>"))
         assertTrue(!html.contains("Original"))
@@ -98,7 +92,7 @@ class TemplateRendererTest {
     @Test
     fun rejectsInvalidHeadingLevel() {
         assertFailsWith<IllegalStateException> {
-            TemplateRenderer.render(template(HeadingBlock(text = "Bad", config = HeadingConfig(level = 7))))
+            TemplateRenderer.render(template(HeadingBlock(text = "Bad", level = 7)))
         }
     }
 
@@ -114,7 +108,7 @@ class TemplateRendererTest {
                         ),
                     ),
             )
-        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", config = ImageConfig(maxHeight = 72))), data)
+        val html = TemplateRenderer.render(template(ImageBlock(id = "logo", src = "logo.png", alt = "Logo", maxHeight = 72)), data)
 
         assertTrue(html.contains("<div class=\"block-1\"><img src=\"runtime.png\" alt=\"Runtime logo\"></div>"))
         assertTrue(html.contains(".block-1 img, .block-1 svg { max-height: 72px; }"))
@@ -127,16 +121,13 @@ class TemplateRendererTest {
             KeyValueBlock(
                 id = "meta",
                 values = mapOf("invoice" to "Original", "customer" to "Original customer"),
-                config =
-                    KeyValueConfig(
-                        labelWidth = "28mm",
-                        fields =
-                            listOf(
-                                KeyValueField("customer", "Customer"),
-                                KeyValueField("invoice", "Invoice <no>"),
-                                KeyValueField("missing", "Missing"),
-                                KeyValueField("empty", "Empty"),
-                            ),
+                labelWidth = "28mm",
+                fields =
+                    listOf(
+                        KeyValueField("customer", "Customer"),
+                        KeyValueField("invoice", "Invoice <no>"),
+                        KeyValueField("missing", "Missing"),
+                        KeyValueField("empty", "Empty"),
                     ),
             )
         val data =
@@ -172,11 +163,8 @@ class TemplateRendererTest {
     fun keyValueDropsUnsafeLabelWidth() {
         val block =
             KeyValueBlock(
-                config =
-                    KeyValueConfig(
-                        labelWidth = "1mm} body{display:none",
-                        fields = listOf(KeyValueField("invoice", "Invoice")),
-                    ),
+                labelWidth = "1mm} body{display:none",
+                fields = listOf(KeyValueField("invoice", "Invoice")),
             )
 
         val html = TemplateRenderer.render(template(block))
@@ -187,14 +175,14 @@ class TemplateRendererTest {
 
     @Test
     fun dropsInvalidImageMaxHeightCss() {
-        val html = TemplateRenderer.render(template(ImageBlock(src = "logo.png", config = ImageConfig(maxHeight = -1))))
+        val html = TemplateRenderer.render(template(ImageBlock(src = "logo.png", maxHeight = -1)))
 
         assertTrue(!html.contains("max-height: -1px"))
     }
 
     @Test
     fun dividerDropsUnsafeLineCssValuesButKeepsEnumStyle() {
-        val block = DividerBlock(config = DividerConfig(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED))
+        val block = DividerBlock(thickness = -1, lineColor = "red; } body{display:none", style = DividerStyle.DOTTED)
         val html = TemplateRenderer.render(template(block))
 
         assertTrue(!html.contains("display:none"), "unsafe color must not be emitted")
@@ -460,14 +448,11 @@ class TemplateRendererTest {
         val table =
             TableBlock(
                 id = "items",
-                config =
-                    TableConfig(
-                        style = TableStyle.STRIPED,
-                        columns =
-                            listOf(
-                                TableColumn(key = "sku", label = "SKU"),
-                                TableColumn(key = "description", label = "Description"),
-                            ),
+                style = TableStyle.STRIPED,
+                columns =
+                    listOf(
+                        TableColumn(key = "sku", label = "SKU"),
+                        TableColumn(key = "description", label = "Description"),
                     ),
             )
         val data =
@@ -499,7 +484,7 @@ class TemplateRendererTest {
 
     @Test
     fun emitsDataTableBaseCssOnce() {
-        val html = TemplateRenderer.render(template(TableBlock(config = TableConfig(columns = listOf(TableColumn("a", "A"))))))
+        val html = TemplateRenderer.render(template(TableBlock(columns = listOf(TableColumn("a", "A")))))
 
         assertTrue(html.contains(".data-table { width: 100%; border-collapse: collapse; text-align: left; }"))
         assertTrue(html.contains(".data-table th { padding: 2mm 2.4mm;"))

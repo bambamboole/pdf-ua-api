@@ -46,7 +46,7 @@ class TemplateValidationTest {
                         Row(
                             listOf(
                                 TextBlock(text = "x"),
-                                HeadingBlock(text = "y", config = HeadingConfig(level = 9)),
+                                HeadingBlock(text = "y", level = 9),
                             ),
                         ),
                     ),
@@ -54,7 +54,7 @@ class TemplateValidationTest {
         val errs = template.validate(emptyMap())
         assertEquals(1, errs.size)
         assertEquals(ValidationCodes.OUT_OF_RANGE, errs[0].code)
-        assertEquals("\$.template.rows[0].blocks[1].config.level", errs[0].path)
+        assertEquals("\$.template.rows[0].blocks[1].level", errs[0].path)
     }
 
     @Test
@@ -130,7 +130,7 @@ class TemplateValidationTest {
                             listOf(
                                 TableBlock(
                                     id = "items",
-                                    config = TableConfig(columns = listOf(TableColumn("sku", "SKU"))),
+                                    columns = listOf(TableColumn("sku", "SKU")),
                                 ),
                             ),
                         ),
@@ -244,10 +244,10 @@ class TemplateValidationTest {
                     listOf(
                         Row(
                             listOf(
-                                HeadingBlock(id = "h", text = "x", config = HeadingConfig(level = 0)),
+                                HeadingBlock(id = "h", text = "x", level = 0),
                                 TableBlock(
                                     id = "t",
-                                    config = TableConfig(columns = listOf(TableColumn("1bad", "X"))),
+                                    columns = listOf(TableColumn("1bad", "X")),
                                 ),
                             ),
                         ),
