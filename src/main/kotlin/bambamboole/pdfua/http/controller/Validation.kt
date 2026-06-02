@@ -1,10 +1,10 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.ValidationResponse
 import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.pdf.PdfValidator
+import bambamboole.pdfua.protectedRoute
 import io.ktor.http.*
 import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
@@ -18,7 +18,7 @@ import io.ktor.utils.io.ExperimentalKtorApi
 fun Application.validation() {
     val config: AppConfig by dependencies
     routing {
-        expensiveRoute(config) { validationRoutes() }
+        protectedRoute(config) { validationRoutes() }
     }
 }
 

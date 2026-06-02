@@ -1,7 +1,6 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.html.TemplateRenderer
 import bambamboole.pdfua.http.ErrorResponse
 import bambamboole.pdfua.http.RenderHtmlRequest
@@ -9,6 +8,7 @@ import bambamboole.pdfua.http.TEMPLATE_SCHEMA_REF
 import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
+import bambamboole.pdfua.protectedRoute
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import bambamboole.pdfua.services.FetchResult
@@ -44,7 +44,7 @@ fun Application.render() {
     val uploader: DocumentUploader? by dependencies
     val htmlSourceFetcher: HtmlSourceFetcher by dependencies
     routing {
-        expensiveRoute(config) {
+        protectedRoute(config) {
             renderRoutes(config.pdfProducer, assetResolver, uploader, htmlSourceFetcher)
         }
     }

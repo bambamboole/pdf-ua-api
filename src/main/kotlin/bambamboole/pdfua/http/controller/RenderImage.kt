@@ -1,9 +1,9 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.binarySchema
 import bambamboole.pdfua.image.ImageRenderer
+import bambamboole.pdfua.protectedRoute
 import bambamboole.pdfua.services.AssetResolver
 import bambamboole.pdfua.services.DocumentUploader
 import com.openhtmltopdf.extend.FSStreamFactory
@@ -31,7 +31,7 @@ fun Application.renderImage() {
     val assetResolver: AssetResolver by dependencies
     val uploader: DocumentUploader? by dependencies
     routing {
-        expensiveRoute(config) {
+        protectedRoute(config) {
             renderImageRoutes(assetResolver, uploader)
         }
     }

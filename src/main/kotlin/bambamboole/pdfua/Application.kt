@@ -106,7 +106,7 @@ fun authProviderName(config: AppConfig): String? =
         else -> null
     }
 
-fun Route.expensiveRoute(
+fun Route.protectedRoute(
     config: AppConfig,
     block: Route.() -> Unit,
 ) {

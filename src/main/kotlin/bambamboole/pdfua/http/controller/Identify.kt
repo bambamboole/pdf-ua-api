@@ -1,8 +1,8 @@
 package bambamboole.pdfua.http.controller
 
 import bambamboole.pdfua.config.AppConfig
-import bambamboole.pdfua.expensiveRoute
 import bambamboole.pdfua.http.binarySchema
+import bambamboole.pdfua.protectedRoute
 import io.ktor.http.*
 import io.ktor.openapi.jsonSchema
 import io.ktor.server.application.*
@@ -23,7 +23,7 @@ data class IdentifyResponse(
 fun Application.identify() {
     val config: AppConfig by dependencies
     routing {
-        expensiveRoute(config) { identifyRoutes() }
+        protectedRoute(config) { identifyRoutes() }
     }
 }
 

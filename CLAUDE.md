@@ -11,7 +11,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Important Paths
 
-- `src/main/kotlin/bambamboole/pdfua/Application.kt` defines `main()`, `bootstrap()` (config + DI bindings), the `module()` test aggregator, and the `Route.expensiveRoute` helper (auth + rate-limit envelope).
+- `src/main/kotlin/bambamboole/pdfua/Application.kt` defines `main()`, `bootstrap()` (config + DI bindings), the `module()` test aggregator, and the `Route.protectedRoute` helper (auth + rate-limit envelope).
 - `src/main/kotlin/bambamboole/pdfua/Plugins.kt` exposes `Application.<feature>()` installers for cross-cutting plugins (`logging`, `serialization`, `statusPages`, `cors`, `rateLimit`, `auth`, `swagger`).
 - Each `http/controller/<Feature>.kt` exports both `Route.<feature>Routes()` (annotated with Ktor's runtime `describe {}` OpenAPI DSL) and `Application.<feature>()` (the Ktor module that resolves DI bindings and wires the routes).
 - The OpenAPI spec is assembled at runtime from the routing tree (`bambamboole.pdfua.http.OpenApiSpec`) and served at `/openapi.json`; `docs/openapi/openapi.json` is a committed snapshot regenerated with `./gradlew updateOpenApi`. The `test` task fails if the snapshot is stale (`OpenApiSpecGeneratorTest`). There is no build-time codegen — do not reintroduce a spec-patching task.
