@@ -189,6 +189,17 @@
       ],
       "additionalProperties": false
     },
+    "dividerStyle": {
+      "type": "string",
+      "title": "DividerStyle",
+      "enum": [
+        "solid",
+        "dashed",
+        "dotted",
+        "double",
+        "none"
+      ]
+    },
     "typographyConfig": {
       "type": "object",
       "title": "TypographyConfig",
@@ -246,184 +257,6 @@
       },
       "additionalProperties": false
     },
-    "dividerStyle": {
-      "type": "string",
-      "title": "DividerStyle",
-      "enum": [
-        "solid",
-        "dashed",
-        "dotted",
-        "double",
-        "none"
-      ]
-    },
-    "dividerConfig": {
-      "type": "object",
-      "title": "DividerConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "thickness": {
-          "type": "integer",
-          "default": 1,
-          "minimum": 0.0
-        },
-        "lineColor": {
-          "type": "string",
-          "pattern": "^#[0-9A-Fa-f]{3,8}$",
-          "default": "#d1d5db"
-        },
-        "style": {
-          "$ref": "#/$defs/dividerStyle"
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
-    },
-    "dividerBlock": {
-      "type": "object",
-      "title": "DividerBlock",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "divider"
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Stable block identifier used for runtime data overrides."
-        },
-        "config": {
-          "$ref": "#/$defs/dividerConfig"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "additionalProperties": false
-    },
-    "headingConfig": {
-      "type": "object",
-      "title": "HeadingConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "level": {
-          "type": "integer",
-          "default": 2,
-          "minimum": 1.0,
-          "maximum": 6.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { level?: number }"
-    },
-    "headingBlock": {
-      "type": "object",
-      "title": "HeadingBlock",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "heading"
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Stable block identifier used for runtime data overrides."
-        },
-        "text": {
-          "type": "string"
-        },
-        "config": {
-          "$ref": "#/$defs/headingConfig"
-        }
-      },
-      "required": [
-        "type",
-        "text"
-      ],
-      "additionalProperties": false
-    },
     "blockConfig": {
       "type": "object",
       "title": "BlockConfig",
@@ -472,6 +305,77 @@
       "additionalProperties": false,
       "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
     },
+    "dividerBlock": {
+      "type": "object",
+      "title": "DividerBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "divider"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "thickness": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 0.0
+        },
+        "lineColor": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{3,8}$",
+          "default": "#d1d5db"
+        },
+        "style": {
+          "$ref": "#/$defs/dividerStyle"
+        },
+        "config": {
+          "$ref": "#/$defs/blockConfig"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "headingBlock": {
+      "type": "object",
+      "title": "HeadingBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "heading"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "text": {
+          "type": "string"
+        },
+        "level": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1.0,
+          "maximum": 6.0
+        },
+        "config": {
+          "$ref": "#/$defs/blockConfig"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false
+    },
     "htmlBlock": {
       "type": "object",
       "title": "HtmlBlock",
@@ -500,59 +404,6 @@
       ],
       "additionalProperties": false
     },
-    "imageConfig": {
-      "type": "object",
-      "title": "ImageConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "maxHeight": {
-          "type": "integer",
-          "default": 60,
-          "minimum": 1.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { maxHeight?: number }"
-    },
     "imageBlock": {
       "type": "object",
       "title": "ImageBlock",
@@ -577,8 +428,13 @@
           "description": "Alternative text for screen readers and PDF accessibility.",
           "default": ""
         },
+        "maxHeight": {
+          "type": "integer",
+          "default": 60,
+          "minimum": 1.0
+        },
         "config": {
-          "$ref": "#/$defs/imageConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -605,64 +461,6 @@
       ],
       "additionalProperties": false,
       "tsType": "{ key: string; label: string }"
-    },
-    "keyValueConfig": {
-      "type": "object",
-      "title": "KeyValueConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "labelWidth": {
-          "type": "string",
-          "default": "30mm"
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/keyValueField"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }"
     },
     "keyValueBlock": {
       "type": "object",
@@ -693,67 +491,24 @@
             ]
           }
         },
+        "labelWidth": {
+          "type": "string",
+          "default": "30mm"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/keyValueField"
+          }
+        },
         "config": {
-          "$ref": "#/$defs/keyValueConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
         "type"
       ],
       "additionalProperties": false
-    },
-    "spacerConfig": {
-      "type": "object",
-      "title": "SpacerConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "height": {
-          "type": "integer",
-          "default": 5,
-          "minimum": 0.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { height?: number }"
     },
     "spacerBlock": {
       "type": "object",
@@ -770,8 +525,13 @@
           ],
           "description": "Stable block identifier used for runtime data overrides."
         },
+        "height": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 0.0
+        },
         "config": {
-          "$ref": "#/$defs/spacerConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -828,67 +588,6 @@
         "minimal"
       ]
     },
-    "tableConfig": {
-      "type": "object",
-      "title": "TableConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "numberRows": {
-          "type": "boolean",
-          "default": false
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/tableColumn"
-          }
-        },
-        "style": {
-          "$ref": "#/$defs/tableStyle"
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }"
-    },
     "tableBlock": {
       "type": "object",
       "title": "TableBlock",
@@ -904,8 +603,21 @@
           ],
           "description": "Stable block identifier used for runtime data overrides."
         },
+        "numberRows": {
+          "type": "boolean",
+          "default": false
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tableColumn"
+          }
+        },
+        "style": {
+          "$ref": "#/$defs/tableStyle"
+        },
         "config": {
-          "$ref": "#/$defs/tableConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [

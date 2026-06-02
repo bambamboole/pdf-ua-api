@@ -110,24 +110,17 @@ data class SpacingConfig(
     val left: Int? = null,
 )
 
-interface BlockConfig {
-    val typography: TypographyConfig?
-    val spacing: SpacingConfig?
-    val width: String?
-    val align: Align?
-}
-
 @Serializable
 @SerialName("BlockConfig")
 @SchemaTsType("{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }")
 data class BaseBlockConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
+    val typography: TypographyConfig? = null,
+    val spacing: SpacingConfig? = null,
     @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
+    val width: String? = null,
     @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-) : BlockConfig
+    val align: Align? = null,
+)
 
 @Serializable
 enum class Align {
