@@ -32,6 +32,35 @@ class BlockValidationTest {
     }
 
     @Test
+    fun spacerValidateRejectsInvalidCssLength() {
+        val errs = SpacerBlock(height = "5").validate(path)
+        assertEquals(1, errs.size)
+        assertEquals(ValidationCodes.INVALID_VALUE, errs[0].code)
+        assertEquals("\$.block.height", errs[0].path)
+    }
+
+    @Test
+    fun spacerValidateAcceptsValidCssLength() {
+        assertTrue(SpacerBlock(height = "12mm").validate(path).isEmpty())
+    }
+
+    @Test
+    fun imageValidateRejectsInvalidMaxHeight() {
+        val errs = ImageBlock(src = "https://example.com/x.png", maxHeight = "big").validate(path)
+        assertEquals(1, errs.size)
+        assertEquals(ValidationCodes.INVALID_VALUE, errs[0].code)
+        assertEquals("\$.block.maxHeight", errs[0].path)
+    }
+
+    @Test
+    fun dividerValidateRejectsInvalidThickness() {
+        val errs = DividerBlock(thickness = "2").validate(path)
+        assertEquals(1, errs.size)
+        assertEquals(ValidationCodes.INVALID_VALUE, errs[0].code)
+        assertEquals("\$.block.thickness", errs[0].path)
+    }
+
+    @Test
     fun keyValueValidateRejectsInvalidFieldKeys() {
         val block =
             KeyValueBlock(

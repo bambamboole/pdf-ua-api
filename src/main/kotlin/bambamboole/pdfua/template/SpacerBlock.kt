@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -15,6 +16,7 @@ data class SpacerBlock(
     override val id: String? = null,
     @SchemaDescription("Vertical space as a CSS length, such as 5mm or 12px.")
     @SchemaStringDefault("5mm")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     @SchemaGroup(SchemaGroups.LAYOUT)
     val height: String = "5mm",
     override val config: BaseBlockConfig = BaseBlockConfig(),
@@ -29,6 +31,8 @@ data class SpacerBlock(
                 rule("height", safeCssWidth(height))
             },
         )
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> = cssLengthIssues(height, path.child("height"))
 
     override fun validateData(
         value: JsonElement,

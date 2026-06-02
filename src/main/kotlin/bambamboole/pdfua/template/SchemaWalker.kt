@@ -105,11 +105,13 @@ class SchemaWalker {
             SerialKind.ENUM -> {
                 registerEnum(descriptor)
                 val ref = refTo(defName(descriptor))
+                // Namespaced (x-) so json-schema-to-typescript keeps the enum's named alias clean —
+                // a standard `default` sibling of `$ref` makes it emit duplicate aliases (DividerStyle1).
                 propertyAnnotations
                     .filterIsInstance<SchemaEnumDefault>()
                     .firstOrNull()
                     ?.value
-                    ?.let { JsonObject(ref + ("default" to JsonPrimitive(it))) }
+                    ?.let { JsonObject(ref + ("x-pdfUaDefault" to JsonPrimitive(it))) }
                     ?: ref
             }
 
@@ -452,7 +454,7 @@ private fun applyGroup(
     annotations: List<Annotation>,
 ): JsonObject {
     val group = annotations.filterIsInstance<SchemaGroup>().firstOrNull()?.value ?: return schema
-    return JsonObject(schema + ("group" to JsonPrimitive(group)))
+    return JsonObject(schema + ("x-pdfUaGroup" to JsonPrimitive(group)))
 }
 
 /** Rewrites a non-null primitive schema's scalar `type` to the nullable `[type, "null"]` form. */

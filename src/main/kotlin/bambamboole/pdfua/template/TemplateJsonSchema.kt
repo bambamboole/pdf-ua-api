@@ -52,7 +52,7 @@ object TemplateJsonSchema {
 
         return buildJsonObject {
             put("\$schema", "https://json-schema.org/draft/2020-12/schema")
-            put("\$id", "https://pdf-ua-api.com/schemas/template-v1.json")
+            put("\$id", "https://pdf-ua-api.com/schemas/template-v2.json")
             put("title", "Template")
             put("type", "object")
             put(

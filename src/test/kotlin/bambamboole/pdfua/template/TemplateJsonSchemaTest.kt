@@ -13,7 +13,7 @@ class TemplateJsonSchemaTest {
         val schema = TemplateJsonSchema.current()
 
         assertEquals("https://json-schema.org/draft/2020-12/schema", schema["\$schema"]?.jsonPrimitive?.content)
-        assertEquals("https://pdf-ua-api.com/schemas/template-v1.json", schema["\$id"]?.jsonPrimitive?.content)
+        assertEquals("https://pdf-ua-api.com/schemas/template-v2.json", schema["\$id"]?.jsonPrimitive?.content)
         assertEquals("Template", schema["title"]?.jsonPrimitive?.content)
         assertEquals("object", schema["type"]?.jsonPrimitive?.content)
 

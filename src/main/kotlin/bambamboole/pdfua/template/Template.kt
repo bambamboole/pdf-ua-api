@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.serialization.SerialName
@@ -119,6 +120,7 @@ data class BaseBlockConfig(
     @SchemaGroup(SchemaGroups.LAYOUT)
     val spacing: SpacingConfig? = null,
     @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     @SchemaGroup(SchemaGroups.LAYOUT)
     val width: String? = null,
     @SchemaDescription("Horizontal placement of this block within its row cell.")
