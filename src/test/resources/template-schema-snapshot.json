@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pdf-ua-api.com/schemas/template-v1.json",
+  "$id": "https://pdf-ua-api.com/schemas/template-v2.json",
   "title": "Template",
   "type": "object",
   "properties": {
@@ -158,7 +158,7 @@
         },
         "position": {
           "$ref": "#/$defs/align",
-          "default": "center"
+          "x-pdfUaDefault": "center"
         }
       },
       "additionalProperties": false
@@ -183,7 +183,7 @@
         },
         "type": {
           "$ref": "#/$defs/pageBackgroundType",
-          "default": "auto"
+          "x-pdfUaDefault": "auto"
         }
       },
       "required": [
@@ -272,7 +272,7 @@
               "type": "null"
             }
           ],
-          "group": "style"
+          "x-pdfUaGroup": "style"
         },
         "spacing": {
           "oneOf": [
@@ -283,7 +283,7 @@
               "type": "null"
             }
           ],
-          "group": "layout"
+          "x-pdfUaGroup": "layout"
         },
         "width": {
           "type": [
@@ -291,7 +291,8 @@
             "null"
           ],
           "description": "CSS width for this block, such as 50%, 80mm, or auto.",
-          "group": "layout"
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaGroup": "layout"
         },
         "align": {
           "type": [
@@ -305,7 +306,7 @@
             "right",
             null
           ],
-          "group": "layout"
+          "x-pdfUaGroup": "layout"
         }
       },
       "additionalProperties": false,
@@ -329,19 +330,20 @@
         "thickness": {
           "type": "string",
           "description": "Rule thickness as a CSS length, such as 1pt or 2px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
           "default": "1pt",
-          "group": "style"
+          "x-pdfUaGroup": "style"
         },
         "lineColor": {
           "type": "string",
           "pattern": "^#[0-9A-Fa-f]{3,8}$",
           "default": "#d1d5db",
-          "group": "style"
+          "x-pdfUaGroup": "style"
         },
         "style": {
           "$ref": "#/$defs/dividerStyle",
-          "default": "solid",
-          "group": "style"
+          "x-pdfUaDefault": "solid",
+          "x-pdfUaGroup": "style"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -369,14 +371,14 @@
         },
         "text": {
           "type": "string",
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "level": {
           "type": "integer",
           "default": 2,
           "minimum": 1.0,
           "maximum": 6.0,
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -405,7 +407,7 @@
         },
         "html": {
           "type": "string",
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -435,19 +437,20 @@
         "src": {
           "type": "string",
           "description": "Public image URL, SVG markup, or uploaded image data URL.",
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "alt": {
           "type": "string",
           "description": "Alternative text for screen readers and PDF accessibility.",
           "default": "",
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "maxHeight": {
           "type": "string",
           "description": "Maximum rendered height as a CSS length, such as 60px or 20mm.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
           "default": "60px",
-          "group": "layout"
+          "x-pdfUaGroup": "layout"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -506,19 +509,19 @@
               "null"
             ]
           },
-          "group": "data"
+          "x-pdfUaGroup": "data"
         },
         "labelWidth": {
           "type": "string",
           "default": "30mm",
-          "group": "layout"
+          "x-pdfUaGroup": "layout"
         },
         "fields": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/keyValueField"
           },
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -547,8 +550,9 @@
         "height": {
           "type": "string",
           "description": "Vertical space as a CSS length, such as 5mm or 12px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
           "default": "5mm",
-          "group": "layout"
+          "x-pdfUaGroup": "layout"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -626,19 +630,19 @@
         "numberRows": {
           "type": "boolean",
           "default": false,
-          "group": "style"
+          "x-pdfUaGroup": "style"
         },
         "columns": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/tableColumn"
           },
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "style": {
           "$ref": "#/$defs/tableStyle",
-          "default": "striped",
-          "group": "style"
+          "x-pdfUaDefault": "striped",
+          "x-pdfUaGroup": "style"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -666,7 +670,7 @@
         },
         "text": {
           "type": "string",
-          "group": "content"
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"

@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -32,6 +33,7 @@ data class ImageBlock(
     val alt: String = "",
     @SchemaDescription("Maximum rendered height as a CSS length, such as 60px or 20mm.")
     @SchemaStringDefault("60px")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     @SchemaGroup(SchemaGroups.LAYOUT)
     val maxHeight: String = "60px",
     override val config: BaseBlockConfig = BaseBlockConfig(),
@@ -52,6 +54,8 @@ data class ImageBlock(
                 rule("max-height", safeCssWidth(maxHeight))
             },
         )
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> = cssLengthIssues(maxHeight, path.child("maxHeight"))
 
     override fun validateData(
         value: JsonElement,

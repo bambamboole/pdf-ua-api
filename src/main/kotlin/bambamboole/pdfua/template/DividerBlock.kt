@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssColor
@@ -35,6 +36,7 @@ data class DividerBlock(
     override val id: String? = null,
     @SchemaDescription("Rule thickness as a CSS length, such as 1pt or 2px.")
     @SchemaStringDefault("1pt")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     @SchemaGroup(SchemaGroups.STYLE)
     val thickness: String = "1pt",
     @SchemaPattern("^#[0-9A-Fa-f]{3,8}$")
@@ -60,6 +62,8 @@ data class DividerBlock(
                 rule("border-top-style", style.name.lowercase())
             },
         )
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> = cssLengthIssues(thickness, path.child("thickness"))
 
     override fun validateData(
         value: JsonElement,
