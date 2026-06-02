@@ -47,7 +47,7 @@ Confirm it is reachable — the SSE stream opens and emits an `endpoint` event:
 ```bash
 curl -N http://localhost:8080/mcp
 # event: endpoint
-# data: /mcp?sessionId=...
+# data: ?sessionId=...
 ```
 
 Add `-H "Authorization: Bearer super-secret-key"` if you started the server with an `API_KEY`.
