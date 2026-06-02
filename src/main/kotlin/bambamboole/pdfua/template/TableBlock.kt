@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -35,6 +36,7 @@ data class TableColumn(
     @SchemaDescription("Text alignment for this table column.")
     val align: Align? = null,
     @SchemaDescription("Column width as a CSS width value, such as 20mm or 15%.")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     val width: String? = null,
 )
 
@@ -159,20 +161,20 @@ data class TableBlock(
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         columns.flatMapIndexed { index, column ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
-                emptyList()
-            } else {
-                listOf(
-                    issue(
-                        path
-                            .child("columns")
-                            .index(index)
-                            .child("key"),
-                        ValidationCodes.INVALID_KEY,
-                        "Table column key is invalid: ${column.key}",
-                    ),
-                )
-            }
+            val columnPath = path.child("columns").index(index)
+            val keyIssues =
+                if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
+                    emptyList()
+                } else {
+                    listOf(
+                        issue(
+                            columnPath.child("key"),
+                            ValidationCodes.INVALID_KEY,
+                            "Table column key is invalid: ${column.key}",
+                        ),
+                    )
+                }
+            keyIssues + cssLengthIssues(column.width, columnPath.child("width"))
         }
 
     override fun validateData(

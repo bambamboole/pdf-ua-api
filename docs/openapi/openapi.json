@@ -1288,6 +1288,7 @@
                             },
                             "labelWidth": {
                                 "type": "string",
+                                "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
                                 "x-pdfUaDefault": "30mm",
                                 "x-pdfUaGroup": "layout"
                             },
@@ -1369,7 +1370,8 @@
                                     "string",
                                     "null"
                                 ],
-                                "description": "Column width as a CSS width value, such as 20mm or 15%."
+                                "description": "Column width as a CSS width value, such as 20mm or 15%.",
+                                "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$"
                             }
                         },
                         "required": [
