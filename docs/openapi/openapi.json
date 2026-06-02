@@ -929,7 +929,7 @@
                         "properties": {
                             "enabled": {
                                 "type": "boolean",
-                                "default": false
+                                "x-pdfUaDefault": false
                             },
                             "position": {
                                 "$ref": "#/$defs/align",
@@ -1106,13 +1106,13 @@
                                 "type": "string",
                                 "description": "Rule thickness as a CSS length, such as 1pt or 2px.",
                                 "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
-                                "default": "1pt",
+                                "x-pdfUaDefault": "1pt",
                                 "x-pdfUaGroup": "style"
                             },
                             "lineColor": {
                                 "type": "string",
                                 "pattern": "^#[0-9A-Fa-f]{3,8}$",
-                                "default": "#d1d5db",
+                                "x-pdfUaDefault": "#d1d5db",
                                 "x-pdfUaGroup": "style"
                             },
                             "style": {
@@ -1150,7 +1150,7 @@
                             },
                             "level": {
                                 "type": "integer",
-                                "default": 2,
+                                "x-pdfUaDefault": 2,
                                 "minimum": 1.0,
                                 "maximum": 6.0,
                                 "x-pdfUaGroup": "content"
@@ -1217,14 +1217,14 @@
                             "alt": {
                                 "type": "string",
                                 "description": "Alternative text for screen readers and PDF accessibility.",
-                                "default": "",
+                                "x-pdfUaDefault": "",
                                 "x-pdfUaGroup": "content"
                             },
                             "maxHeight": {
                                 "type": "string",
                                 "description": "Maximum rendered height as a CSS length, such as 60px or 20mm.",
                                 "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
-                                "default": "60px",
+                                "x-pdfUaDefault": "60px",
                                 "x-pdfUaGroup": "layout"
                             },
                             "config": {
@@ -1288,7 +1288,7 @@
                             },
                             "labelWidth": {
                                 "type": "string",
-                                "default": "30mm",
+                                "x-pdfUaDefault": "30mm",
                                 "x-pdfUaGroup": "layout"
                             },
                             "fields": {
@@ -1326,7 +1326,7 @@
                                 "type": "string",
                                 "description": "Vertical space as a CSS length, such as 5mm or 12px.",
                                 "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
-                                "default": "5mm",
+                                "x-pdfUaDefault": "5mm",
                                 "x-pdfUaGroup": "layout"
                             },
                             "config": {
@@ -1404,7 +1404,7 @@
                             },
                             "numberRows": {
                                 "type": "boolean",
-                                "default": false,
+                                "x-pdfUaDefault": false,
                                 "x-pdfUaGroup": "style"
                             },
                             "columns": {
@@ -1507,7 +1507,7 @@
                         "properties": {
                             "repeat": {
                                 "type": "boolean",
-                                "default": true
+                                "x-pdfUaDefault": true
                             },
                             "rows": {
                                 "type": "array",
@@ -1528,7 +1528,7 @@
                             },
                             "locale": {
                                 "type": "string",
-                                "default": "de_DE"
+                                "x-pdfUaDefault": "de_DE"
                             },
                             "margins": {
                                 "$ref": "#/$defs/spacingConfig"
@@ -1560,7 +1560,7 @@
                             "title": {
                                 "type": "string",
                                 "description": "Document title. Used as the PDF document title, which PDF/UA requires.",
-                                "default": "Document"
+                                "x-pdfUaDefault": "Document"
                             },
                             "page": {
                                 "$ref": "#/$defs/pageConfig"
@@ -1571,7 +1571,7 @@
                             "embedColorProfile": {
                                 "type": "boolean",
                                 "description": "Embed the PDF/A ICC color profile. Disable only for PDF/UA-without-PDF/A output.",
-                                "default": true
+                                "x-pdfUaDefault": true
                             }
                         },
                         "additionalProperties": false,
@@ -1587,11 +1587,11 @@
                             "weight": {
                                 "type": "string",
                                 "description": "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
-                                "default": "400"
+                                "x-pdfUaDefault": "400"
                             },
                             "style": {
                                 "type": "string",
-                                "default": "normal"
+                                "x-pdfUaDefault": "normal"
                             }
                         },
                         "required": [
@@ -1612,7 +1612,7 @@
                             },
                             "mimeType": {
                                 "type": "string",
-                                "default": "application/octet-stream"
+                                "x-pdfUaDefault": "application/octet-stream"
                             },
                             "description": {
                                 "type": [
@@ -1622,7 +1622,7 @@
                             },
                             "relationship": {
                                 "type": "string",
-                                "default": "Alternative"
+                                "x-pdfUaDefault": "Alternative"
                             }
                         },
                         "required": [

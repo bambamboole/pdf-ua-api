@@ -74,7 +74,7 @@ class TemplateJsonSchemaTest {
 
         val tableBlockProps = definitions["tableBlock"]!!.jsonObject["properties"]!!.jsonObject
         assertEquals("boolean", tableBlockProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-        assertEquals("false", tableBlockProps["numberRows"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("false", tableBlockProps["numberRows"]!!.jsonObject["x-pdfUaDefault"]!!.jsonPrimitive.content)
         assertEquals("array", tableBlockProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
         assertEquals(
             "#/\$defs/tableColumn",
@@ -160,7 +160,7 @@ class TemplateJsonSchemaTest {
         val pageFooterConfig = definitions["pageFooterConfig"]!!.jsonObject
         val footerProps = pageFooterConfig["properties"]!!.jsonObject
         assertEquals("boolean", footerProps["repeat"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-        assertEquals("true", footerProps["repeat"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("true", footerProps["repeat"]!!.jsonObject["x-pdfUaDefault"]!!.jsonPrimitive.content)
         assertEquals("array", footerProps["rows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
         assertEquals(
             "#/\$defs/row",
@@ -196,7 +196,7 @@ class TemplateJsonSchemaTest {
         )
         val fontFaceWeight = definitions["fontFace"]!!.jsonObject["properties"]!!.jsonObject["weight"]!!.jsonObject
         assertEquals("string", fontFaceWeight["type"]!!.jsonPrimitive.content)
-        assertEquals("400", fontFaceWeight["default"]!!.jsonPrimitive.content)
+        assertEquals("400", fontFaceWeight["x-pdfUaDefault"]!!.jsonPrimitive.content)
 
         val textBlock = definitions["textBlock"]!!.jsonObject
         assertEquals(listOf("type", "text"), textBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
@@ -223,7 +223,7 @@ class TemplateJsonSchemaTest {
             "30mm",
             keyValueBlockDef["properties"]!!
                 .jsonObject["labelWidth"]!!
-                .jsonObject["default"]!!
+                .jsonObject["x-pdfUaDefault"]!!
                 .jsonPrimitive.content,
         )
         assertEquals(
