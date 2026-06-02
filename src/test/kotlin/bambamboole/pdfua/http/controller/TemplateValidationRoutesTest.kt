@@ -41,7 +41,7 @@ class TemplateValidationRoutesTest {
             val response =
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
-                    setBody("""{"template":{"version":2,"rows":[]}}""")
+                    setBody("""{"template":{"version":1,"rows":[]}}""")
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -93,7 +93,7 @@ class TemplateValidationRoutesTest {
             val response =
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
-                    setBody("""{"template":{"version":1},"weirdRoot":1}""")
+                    setBody("""{"template":{"version":2},"weirdRoot":1}""")
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -110,7 +110,7 @@ class TemplateValidationRoutesTest {
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"template":{"version":1,"rows":[
+                        """{"template":{"version":2,"rows":[
                   {"blocks":[{"type":"heading","text":"x","level":9}]}
                 ]}}""",
                     )
@@ -131,7 +131,7 @@ class TemplateValidationRoutesTest {
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"template":{"version":1,"rows":[
+                        """{"template":{"version":2,"rows":[
                   {"blocks":[{"type":"table","id":"items","columns":[{"key":"sku","label":"SKU"}]}]}
                 ]},"data":{"items":{"oops":1}}}""",
                     )
@@ -152,7 +152,7 @@ class TemplateValidationRoutesTest {
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"template":{"version":1,"rows":[
+                        """{"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","text":"hi"}]}
                 ]},"data":{"nope":{"text":"x"}}}""",
                     )
@@ -174,7 +174,7 @@ class TemplateValidationRoutesTest {
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"template":{"version":1,"rows":[
+                        """{"template":{"version":2,"rows":[
                   {"blocks":[
                     {"type":"heading","text":"x","level":0},
                     {"type":"key-value","id":"meta","fields":[{"key":"1bad","label":"x"}]}
@@ -200,7 +200,7 @@ class TemplateValidationRoutesTest {
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"template":{"version":1,"rows":[
+                        """{"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","id":"intro","text":"Hello"}]}
                 ]},"data":{"intro":{"text":"World"}}}""",
                     )

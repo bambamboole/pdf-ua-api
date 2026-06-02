@@ -1,6 +1,6 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
         "size": {
@@ -142,7 +142,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 6
+            "height": "6mm"
           }
         ]
       },
@@ -181,7 +181,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 6
+            "height": "6mm"
           }
         ]
       },
@@ -218,7 +218,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 4
+            "height": "4mm"
           }
         ]
       },
@@ -269,7 +269,7 @@
           {
             "type": "spacer",
             "config": {},
-            "height": 4
+            "height": "4mm"
           }
         ]
       },

@@ -104,7 +104,13 @@ class SchemaWalker {
 
             SerialKind.ENUM -> {
                 registerEnum(descriptor)
-                refTo(defName(descriptor))
+                val ref = refTo(defName(descriptor))
+                propertyAnnotations
+                    .filterIsInstance<SchemaEnumDefault>()
+                    .firstOrNull()
+                    ?.value
+                    ?.let { JsonObject(ref + ("default" to JsonPrimitive(it))) }
+                    ?: ref
             }
 
             StructureKind.LIST -> {
@@ -254,7 +260,7 @@ class SchemaWalker {
             val elementAnnotations = descriptor.getElementAnnotations(i)
             if (elementAnnotations.any { it is SchemaIgnore }) continue
 
-            properties[elementName] = valueSchema(elementDesc, elementAnnotations)
+            properties[elementName] = applyGroup(valueSchema(elementDesc, elementAnnotations), elementAnnotations)
             // Required = no default + not nullable. We approximate with `!isElementOptional`.
             if (!descriptor.isElementOptional(i) && !elementDesc.isNullable) {
                 required += elementName
@@ -331,7 +337,7 @@ class SchemaWalker {
             val elementAnnotations = descriptor.getElementAnnotations(i)
             val skip = elementAnnotations.any { it is SchemaIgnore } || elementName == "type"
             if (skip) continue
-            properties[elementName] = valueSchema(elementDesc, elementAnnotations)
+            properties[elementName] = applyGroup(valueSchema(elementDesc, elementAnnotations), elementAnnotations)
             if (!descriptor.isElementOptional(i) && !elementDesc.isNullable) {
                 required += elementName
             }
@@ -438,6 +444,15 @@ class SchemaWalker {
      * marker) whose `serialName` contains `<PageSize>`.
      */
     private fun SerialDescriptor.isPageSize(): Boolean = serialName.endsWith("<PageSize>")
+}
+
+/** Adds the `group` UI hint to a property's schema when a [SchemaGroup] annotation is present. */
+private fun applyGroup(
+    schema: JsonObject,
+    annotations: List<Annotation>,
+): JsonObject {
+    val group = annotations.filterIsInstance<SchemaGroup>().firstOrNull()?.value ?: return schema
+    return JsonObject(schema + ("group" to JsonPrimitive(group)))
 }
 
 /** Rewrites a non-null primitive schema's scalar `type` to the nullable `[type, "null"]` form. */

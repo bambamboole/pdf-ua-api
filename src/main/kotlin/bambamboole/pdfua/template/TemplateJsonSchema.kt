@@ -22,7 +22,7 @@ import kotlinx.serialization.serializer
  * — live here.
  */
 object TemplateJsonSchema {
-    private const val TEMPLATE_VERSION = 1
+    private const val TEMPLATE_VERSION = 2
     private const val RENDER_ENDPOINT = "/render/template"
 
     private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")

@@ -1,18 +1,43 @@
 {
   "template": {
-    "version": 1,
-    "config": { "page": { "size": { "format": "Letter" } } },
+    "version": 2,
+    "config": {
+      "page": {
+        "size": {
+          "format": "Letter"
+        }
+      }
+    },
     "rows": [
       {
         "blocks": [
-          { "type": "text", "id": "left", "text": "LEFT", "config": { "width": "60%" } },
-          { "type": "text", "id": "right", "text": "RIGHT", "config": { "width": "40%", "align": "right" } }
+          {
+            "type": "text",
+            "id": "left",
+            "text": "LEFT",
+            "config": {
+              "width": "60%"
+            }
+          },
+          {
+            "type": "text",
+            "id": "right",
+            "text": "RIGHT",
+            "config": {
+              "width": "40%",
+              "align": "right"
+            }
+          }
         ]
       }
     ]
   },
   "data": {
-    "left": { "text": "Invoice #2026-001" },
-    "right": { "text": "Issued 2026-05-27" }
+    "left": {
+      "text": "Invoice #2026-001"
+    },
+    "right": {
+      "text": "Issued 2026-05-27"
+    }
   }
 }

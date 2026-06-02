@@ -11,8 +11,8 @@ import kotlinx.serialization.json.JsonElement
 data class HeadingBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    val text: String,
-    @SchemaMin(1) @SchemaMax(6) @SchemaIntDefault(2) val level: Int = 2,
+    @SchemaGroup(SchemaGroups.CONTENT) val text: String,
+    @SchemaMin(1) @SchemaMax(6) @SchemaIntDefault(2) @SchemaGroup(SchemaGroups.CONTENT) val level: Int = 2,
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     companion object {
