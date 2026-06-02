@@ -773,6 +773,839 @@
                     }
                 }
             },
+            "pageFormat": {
+                "type": "string",
+                "title": "PageFormat",
+                "enum": [
+                    "A3",
+                    "A4",
+                    "A5",
+                    "A6",
+                    "Letter",
+                    "Legal",
+                    "Tabloid"
+                ]
+            },
+            "orientation": {
+                "type": "string",
+                "title": "Orientation",
+                "enum": [
+                    "portrait",
+                    "landscape"
+                ]
+            },
+            "presetPageSize": {
+                "type": "object",
+                "title": "PresetPageSize",
+                "properties": {
+                    "format": {
+                        "$ref": "#/components/schemas/pageFormat"
+                    },
+                    "orientation": {
+                        "$ref": "#/components/schemas/orientation"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "customPageSize": {
+                "type": "object",
+                "title": "CustomPageSize",
+                "properties": {
+                    "width": {
+                        "type": "integer",
+                        "minimum": 1.0
+                    },
+                    "height": {
+                        "type": "integer",
+                        "minimum": 1.0
+                    }
+                },
+                "required": [
+                    "width",
+                    "height"
+                ],
+                "additionalProperties": false
+            },
+            "pageSize": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/presetPageSize"
+                    },
+                    {
+                        "$ref": "#/components/schemas/customPageSize"
+                    }
+                ],
+                "title": "PageSize"
+            },
+            "spacingConfig": {
+                "type": "object",
+                "title": "SpacingConfig",
+                "properties": {
+                    "top": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Top spacing in millimetres.",
+                        "minimum": 0.0
+                    },
+                    "right": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Right spacing in millimetres.",
+                        "minimum": 0.0
+                    },
+                    "bottom": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Bottom spacing in millimetres.",
+                        "minimum": 0.0
+                    },
+                    "left": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Left spacing in millimetres.",
+                        "minimum": 0.0
+                    }
+                },
+                "additionalProperties": false
+            },
+            "align": {
+                "type": "string",
+                "title": "Align",
+                "enum": [
+                    "left",
+                    "center",
+                    "right"
+                ]
+            },
+            "pageNumbersConfig": {
+                "type": "object",
+                "title": "PageNumbersConfig",
+                "properties": {
+                    "enabled": {
+                        "type": "boolean",
+                        "x-pdfUaDefault": false
+                    },
+                    "position": {
+                        "$ref": "#/components/schemas/align",
+                        "x-pdfUaDefault": "center"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "pageBackgroundType": {
+                "type": "string",
+                "title": "PageBackgroundType",
+                "enum": [
+                    "auto",
+                    "image",
+                    "pdf"
+                ]
+            },
+            "pageBackgroundConfig": {
+                "type": "object",
+                "title": "PageBackgroundConfig",
+                "properties": {
+                    "src": {
+                        "type": "string",
+                        "description": "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+                        "minLength": 1
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/pageBackgroundType",
+                        "x-pdfUaDefault": "auto"
+                    }
+                },
+                "required": [
+                    "src"
+                ],
+                "additionalProperties": false
+            },
+            "dividerStyle": {
+                "type": "string",
+                "title": "DividerStyle",
+                "enum": [
+                    "solid",
+                    "dashed",
+                    "dotted",
+                    "double",
+                    "none"
+                ]
+            },
+            "typographyConfig": {
+                "type": "object",
+                "title": "TypographyConfig",
+                "properties": {
+                    "family": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Bundled or external font family key."
+                    },
+                    "size": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Font size in points.",
+                        "minimum": 1.0
+                    },
+                    "weight": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Font weight; one of the FontWeight enum values.",
+                        "enum": [
+                            "300",
+                            "400",
+                            "500",
+                            "600",
+                            "700",
+                            null
+                        ]
+                    },
+                    "align": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Text alignment for this typography scope.",
+                        "enum": [
+                            "left",
+                            "center",
+                            "right",
+                            null
+                        ]
+                    },
+                    "color": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "CSS color value used for text."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "blockConfig": {
+                "type": "object",
+                "title": "BlockConfig",
+                "properties": {
+                    "typography": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/typographyConfig"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "x-pdfUaGroup": "style"
+                    },
+                    "spacing": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/spacingConfig"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "x-pdfUaGroup": "layout"
+                    },
+                    "width": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "CSS width for this block, such as 50%, 80mm, or auto.",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+                        "x-pdfUaGroup": "layout"
+                    },
+                    "align": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Horizontal placement of this block within its row cell.",
+                        "enum": [
+                            "left",
+                            "center",
+                            "right",
+                            null
+                        ],
+                        "x-pdfUaGroup": "layout"
+                    }
+                },
+                "additionalProperties": false,
+                "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
+            },
+            "dividerBlock": {
+                "type": "object",
+                "title": "DividerBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "divider"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "thickness": {
+                        "type": "string",
+                        "description": "Rule thickness as a CSS length, such as 1pt or 2px.",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+                        "x-pdfUaDefault": "1pt",
+                        "x-pdfUaGroup": "style"
+                    },
+                    "lineColor": {
+                        "type": "string",
+                        "pattern": "^#[0-9A-Fa-f]{3,8}$",
+                        "x-pdfUaDefault": "#d1d5db",
+                        "x-pdfUaGroup": "style"
+                    },
+                    "style": {
+                        "$ref": "#/components/schemas/dividerStyle",
+                        "x-pdfUaDefault": "solid",
+                        "x-pdfUaGroup": "style"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "additionalProperties": false
+            },
+            "headingBlock": {
+                "type": "object",
+                "title": "HeadingBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "heading"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "text": {
+                        "type": "string",
+                        "x-pdfUaGroup": "content"
+                    },
+                    "level": {
+                        "type": "integer",
+                        "x-pdfUaDefault": 2,
+                        "minimum": 1.0,
+                        "maximum": 6.0,
+                        "x-pdfUaGroup": "content"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type",
+                    "text"
+                ],
+                "additionalProperties": false
+            },
+            "htmlBlock": {
+                "type": "object",
+                "title": "HtmlBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "html"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "html": {
+                        "type": "string",
+                        "x-pdfUaGroup": "content"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type",
+                    "html"
+                ],
+                "additionalProperties": false
+            },
+            "imageBlock": {
+                "type": "object",
+                "title": "ImageBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "image"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "src": {
+                        "type": "string",
+                        "description": "Public image URL, SVG markup, or uploaded image data URL.",
+                        "x-pdfUaGroup": "content"
+                    },
+                    "alt": {
+                        "type": "string",
+                        "description": "Alternative text for screen readers and PDF accessibility.",
+                        "x-pdfUaDefault": "",
+                        "x-pdfUaGroup": "content"
+                    },
+                    "maxHeight": {
+                        "type": "string",
+                        "description": "Maximum rendered height as a CSS length, such as 60px or 20mm.",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+                        "x-pdfUaDefault": "60px",
+                        "x-pdfUaGroup": "layout"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type",
+                    "src"
+                ],
+                "additionalProperties": false
+            },
+            "keyValueField": {
+                "type": "object",
+                "title": "KeyValueField",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                    },
+                    "label": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key",
+                    "label"
+                ],
+                "additionalProperties": false,
+                "tsType": "{ key: string; label: string }"
+            },
+            "keyValueBlock": {
+                "type": "object",
+                "title": "KeyValueBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "key-value"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "values": {
+                        "type": "object",
+                        "title": "KeyValueValues",
+                        "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                        },
+                        "additionalProperties": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "x-pdfUaGroup": "data"
+                    },
+                    "labelWidth": {
+                        "type": "string",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+                        "x-pdfUaDefault": "30mm",
+                        "x-pdfUaGroup": "layout"
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/keyValueField"
+                        },
+                        "x-pdfUaGroup": "content"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "additionalProperties": false
+            },
+            "spacerBlock": {
+                "type": "object",
+                "title": "SpacerBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "spacer"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "height": {
+                        "type": "string",
+                        "description": "Vertical space as a CSS length, such as 5mm or 12px.",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+                        "x-pdfUaDefault": "5mm",
+                        "x-pdfUaGroup": "layout"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "additionalProperties": false
+            },
+            "tableColumn": {
+                "type": "object",
+                "title": "TableColumn",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "Runtime data key used for this table column.",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                    },
+                    "label": {
+                        "type": "string",
+                        "description": "Header label rendered for this table column."
+                    },
+                    "align": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Text alignment for this table column.",
+                        "enum": [
+                            "left",
+                            "center",
+                            "right",
+                            null
+                        ]
+                    },
+                    "width": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Column width as a CSS width value, such as 20mm or 15%.",
+                        "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$"
+                    }
+                },
+                "required": [
+                    "key",
+                    "label"
+                ],
+                "additionalProperties": false
+            },
+            "tableStyle": {
+                "type": "string",
+                "title": "TableStyle",
+                "enum": [
+                    "striped",
+                    "bordered",
+                    "minimal"
+                ]
+            },
+            "tableBlock": {
+                "type": "object",
+                "title": "TableBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "table"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "numberRows": {
+                        "type": "boolean",
+                        "x-pdfUaDefault": false,
+                        "x-pdfUaGroup": "style"
+                    },
+                    "columns": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/tableColumn"
+                        },
+                        "x-pdfUaGroup": "content"
+                    },
+                    "style": {
+                        "$ref": "#/components/schemas/tableStyle",
+                        "x-pdfUaDefault": "striped",
+                        "x-pdfUaGroup": "style"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "additionalProperties": false
+            },
+            "textBlock": {
+                "type": "object",
+                "title": "TextBlock",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text"
+                    },
+                    "id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Stable block identifier used for runtime data overrides."
+                    },
+                    "text": {
+                        "type": "string",
+                        "x-pdfUaGroup": "content"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/blockConfig"
+                    }
+                },
+                "required": [
+                    "type",
+                    "text"
+                ],
+                "additionalProperties": false
+            },
+            "block": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/textBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/htmlBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/headingBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/imageBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/keyValueBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/spacerBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/dividerBlock"
+                    },
+                    {
+                        "$ref": "#/components/schemas/tableBlock"
+                    }
+                ]
+            },
+            "row": {
+                "type": "object",
+                "title": "Row",
+                "properties": {
+                    "blocks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/block"
+                        }
+                    }
+                },
+                "required": [
+                    "blocks"
+                ],
+                "additionalProperties": false
+            },
+            "pageFooterConfig": {
+                "type": "object",
+                "title": "PageFooterConfig",
+                "properties": {
+                    "repeat": {
+                        "type": "boolean",
+                        "x-pdfUaDefault": true
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/row"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "tsType": "{ repeat?: boolean; rows?: Row[] }"
+            },
+            "pageConfig": {
+                "type": "object",
+                "title": "PageConfig",
+                "properties": {
+                    "size": {
+                        "$ref": "#/components/schemas/pageSize"
+                    },
+                    "locale": {
+                        "type": "string",
+                        "x-pdfUaDefault": "de_DE"
+                    },
+                    "margins": {
+                        "$ref": "#/components/schemas/spacingConfig"
+                    },
+                    "pageNumbers": {
+                        "$ref": "#/components/schemas/pageNumbersConfig"
+                    },
+                    "background": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/pageBackgroundConfig"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "footer": {
+                        "$ref": "#/components/schemas/pageFooterConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }"
+            },
+            "templateConfig": {
+                "type": "object",
+                "title": "TemplateConfig",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Document title. Used as the PDF document title, which PDF/UA requires.",
+                        "x-pdfUaDefault": "Document"
+                    },
+                    "page": {
+                        "$ref": "#/components/schemas/pageConfig"
+                    },
+                    "typography": {
+                        "$ref": "#/components/schemas/typographyConfig"
+                    },
+                    "embedColorProfile": {
+                        "type": "boolean",
+                        "description": "Embed the PDF/A ICC color profile. Disable only for PDF/UA-without-PDF/A output.",
+                        "x-pdfUaDefault": true
+                    }
+                },
+                "additionalProperties": false,
+                "tsType": "{ title?: string; page?: PageConfig; typography?: TypographyConfig; embedColorProfile?: boolean }"
+            },
+            "fontFace": {
+                "type": "object",
+                "title": "FontFace",
+                "properties": {
+                    "src": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "string",
+                        "description": "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
+                        "x-pdfUaDefault": "400"
+                    },
+                    "style": {
+                        "type": "string",
+                        "x-pdfUaDefault": "normal"
+                    }
+                },
+                "required": [
+                    "src"
+                ],
+                "additionalProperties": false
+            },
+            "fileAttachment": {
+                "type": "object",
+                "title": "FileAttachment",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Base64-encoded file content."
+                    },
+                    "mimeType": {
+                        "type": "string",
+                        "x-pdfUaDefault": "application/octet-stream"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "relationship": {
+                        "type": "string",
+                        "x-pdfUaDefault": "Alternative"
+                    }
+                },
+                "required": [
+                    "name",
+                    "content"
+                ],
+                "additionalProperties": false
+            },
+            "fontWeight": {
+                "type": "string",
+                "title": "FontWeight",
+                "enum": [
+                    "300",
+                    "400",
+                    "500",
+                    "600",
+                    "700"
+                ]
+            },
             "Template": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$id": "https://pdf-ua-api.com/schemas/template-v2.json",
@@ -784,25 +1617,25 @@
                         "const": 2
                     },
                     "config": {
-                        "$ref": "#/$defs/templateConfig"
+                        "$ref": "#/components/schemas/templateConfig"
                     },
                     "fonts": {
                         "type": "object",
                         "description": "External fonts keyed by font family name.",
                         "additionalProperties": {
-                            "$ref": "#/$defs/fontFace"
+                            "$ref": "#/components/schemas/fontFace"
                         }
                     },
                     "attachments": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/$defs/fileAttachment"
+                            "$ref": "#/components/schemas/fileAttachment"
                         }
                     },
                     "rows": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/$defs/row"
+                            "$ref": "#/components/schemas/row"
                         }
                     }
                 },
@@ -837,10 +1670,10 @@
                         "title": "PresetPageSize",
                         "properties": {
                             "format": {
-                                "$ref": "#/$defs/pageFormat"
+                                "$ref": "#/components/schemas/pageFormat"
                             },
                             "orientation": {
-                                "$ref": "#/$defs/orientation"
+                                "$ref": "#/components/schemas/orientation"
                             }
                         },
                         "additionalProperties": false
@@ -867,10 +1700,10 @@
                     "pageSize": {
                         "oneOf": [
                             {
-                                "$ref": "#/$defs/presetPageSize"
+                                "$ref": "#/components/schemas/presetPageSize"
                             },
                             {
-                                "$ref": "#/$defs/customPageSize"
+                                "$ref": "#/components/schemas/customPageSize"
                             }
                         ],
                         "title": "PageSize"
@@ -932,7 +1765,7 @@
                                 "x-pdfUaDefault": false
                             },
                             "position": {
-                                "$ref": "#/$defs/align",
+                                "$ref": "#/components/schemas/align",
                                 "x-pdfUaDefault": "center"
                             }
                         },
@@ -957,7 +1790,7 @@
                                 "minLength": 1
                             },
                             "type": {
-                                "$ref": "#/$defs/pageBackgroundType",
+                                "$ref": "#/components/schemas/pageBackgroundType",
                                 "x-pdfUaDefault": "auto"
                             }
                         },
@@ -1041,7 +1874,7 @@
                             "typography": {
                                 "oneOf": [
                                     {
-                                        "$ref": "#/$defs/typographyConfig"
+                                        "$ref": "#/components/schemas/typographyConfig"
                                     },
                                     {
                                         "type": "null"
@@ -1052,7 +1885,7 @@
                             "spacing": {
                                 "oneOf": [
                                     {
-                                        "$ref": "#/$defs/spacingConfig"
+                                        "$ref": "#/components/schemas/spacingConfig"
                                     },
                                     {
                                         "type": "null"
@@ -1116,12 +1949,12 @@
                                 "x-pdfUaGroup": "style"
                             },
                             "style": {
-                                "$ref": "#/$defs/dividerStyle",
+                                "$ref": "#/components/schemas/dividerStyle",
                                 "x-pdfUaDefault": "solid",
                                 "x-pdfUaGroup": "style"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1156,7 +1989,7 @@
                                 "x-pdfUaGroup": "content"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1185,7 +2018,7 @@
                                 "x-pdfUaGroup": "content"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1228,7 +2061,7 @@
                                 "x-pdfUaGroup": "layout"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1295,12 +2128,12 @@
                             "fields": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/$defs/keyValueField"
+                                    "$ref": "#/components/schemas/keyValueField"
                                 },
                                 "x-pdfUaGroup": "content"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1331,7 +2164,7 @@
                                 "x-pdfUaGroup": "layout"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1412,17 +2245,17 @@
                             "columns": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/$defs/tableColumn"
+                                    "$ref": "#/components/schemas/tableColumn"
                                 },
                                 "x-pdfUaGroup": "content"
                             },
                             "style": {
-                                "$ref": "#/$defs/tableStyle",
+                                "$ref": "#/components/schemas/tableStyle",
                                 "x-pdfUaDefault": "striped",
                                 "x-pdfUaGroup": "style"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1450,7 +2283,7 @@
                                 "x-pdfUaGroup": "content"
                             },
                             "config": {
-                                "$ref": "#/$defs/blockConfig"
+                                "$ref": "#/components/schemas/blockConfig"
                             }
                         },
                         "required": [
@@ -1462,28 +2295,28 @@
                     "block": {
                         "oneOf": [
                             {
-                                "$ref": "#/$defs/textBlock"
+                                "$ref": "#/components/schemas/textBlock"
                             },
                             {
-                                "$ref": "#/$defs/htmlBlock"
+                                "$ref": "#/components/schemas/htmlBlock"
                             },
                             {
-                                "$ref": "#/$defs/headingBlock"
+                                "$ref": "#/components/schemas/headingBlock"
                             },
                             {
-                                "$ref": "#/$defs/imageBlock"
+                                "$ref": "#/components/schemas/imageBlock"
                             },
                             {
-                                "$ref": "#/$defs/keyValueBlock"
+                                "$ref": "#/components/schemas/keyValueBlock"
                             },
                             {
-                                "$ref": "#/$defs/spacerBlock"
+                                "$ref": "#/components/schemas/spacerBlock"
                             },
                             {
-                                "$ref": "#/$defs/dividerBlock"
+                                "$ref": "#/components/schemas/dividerBlock"
                             },
                             {
-                                "$ref": "#/$defs/tableBlock"
+                                "$ref": "#/components/schemas/tableBlock"
                             }
                         ]
                     },
@@ -1494,7 +2327,7 @@
                             "blocks": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/$defs/block"
+                                    "$ref": "#/components/schemas/block"
                                 }
                             }
                         },
@@ -1514,7 +2347,7 @@
                             "rows": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/$defs/row"
+                                    "$ref": "#/components/schemas/row"
                                 }
                             }
                         },
@@ -1526,22 +2359,22 @@
                         "title": "PageConfig",
                         "properties": {
                             "size": {
-                                "$ref": "#/$defs/pageSize"
+                                "$ref": "#/components/schemas/pageSize"
                             },
                             "locale": {
                                 "type": "string",
                                 "x-pdfUaDefault": "de_DE"
                             },
                             "margins": {
-                                "$ref": "#/$defs/spacingConfig"
+                                "$ref": "#/components/schemas/spacingConfig"
                             },
                             "pageNumbers": {
-                                "$ref": "#/$defs/pageNumbersConfig"
+                                "$ref": "#/components/schemas/pageNumbersConfig"
                             },
                             "background": {
                                 "oneOf": [
                                     {
-                                        "$ref": "#/$defs/pageBackgroundConfig"
+                                        "$ref": "#/components/schemas/pageBackgroundConfig"
                                     },
                                     {
                                         "type": "null"
@@ -1549,7 +2382,7 @@
                                 ]
                             },
                             "footer": {
-                                "$ref": "#/$defs/pageFooterConfig"
+                                "$ref": "#/components/schemas/pageFooterConfig"
                             }
                         },
                         "additionalProperties": false,
@@ -1565,10 +2398,10 @@
                                 "x-pdfUaDefault": "Document"
                             },
                             "page": {
-                                "$ref": "#/$defs/pageConfig"
+                                "$ref": "#/components/schemas/pageConfig"
                             },
                             "typography": {
-                                "$ref": "#/$defs/typographyConfig"
+                                "$ref": "#/components/schemas/typographyConfig"
                             },
                             "embedColorProfile": {
                                 "type": "boolean",

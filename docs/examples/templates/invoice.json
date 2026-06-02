@@ -74,7 +74,7 @@
         "blocks": [
           {
             "type": "image",
-            "src": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"140\" height=\"32\" viewBox=\"0 0 140 32\"><rect width=\"140\" height=\"32\" rx=\"4\" fill=\"#1f2937\"/><text x=\"70\" y=\"22\" font-family=\"Inter\" font-size=\"14\" fill=\"#ffffff\" text-anchor=\"middle\" font-weight=\"700\">PUA Kit</text></svg>",
+            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAxNDAgMzIiPjxyZWN0IHdpZHRoPSIxNDAiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjMWYyOTM3Ii8+PHRleHQgeD0iNzAiIHk9IjIyIiBmb250LWZhbWlseT0iSW50ZXIiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNmZmZmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSI3MDAiPlBVQSBLaXQ8L3RleHQ+PC9zdmc+",
             "alt": "PUA Kit",
             "config": {
               "width": "55%"

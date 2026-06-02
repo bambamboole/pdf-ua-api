@@ -16,8 +16,12 @@ import io.ktor.server.routing.openapi.plus
 import io.ktor.server.routing.openapi.registerSecurityScheme
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 const val BEARER_SECURITY_SCHEME = "bearerAuth"
 
@@ -66,9 +70,46 @@ fun serializeOpenApiDoc(doc: OpenApiDoc): String {
     val root = specJson.parseToJsonElement(specJson.encodeToString(doc)).jsonObject
     val components = root["components"]?.jsonObject ?: JsonObject(emptyMap())
     val schemas = components["schemas"]?.jsonObject ?: JsonObject(emptyMap())
-    val mergedSchemas = JsonObject(schemas + (TEMPLATE_SCHEMA_COMPONENT to TemplateJsonSchema.current()))
+    val templateSchema = TemplateJsonSchema.current()
+    val templateDefinitions = templateSchema["\$defs"]?.jsonObject ?: JsonObject(emptyMap())
+    val openApiTemplateDefinitions =
+        JsonObject(templateDefinitions.mapValues { (_, value) -> rewriteTemplateSchemaRefsForOpenApi(value) })
+    val mergedSchemas =
+        JsonObject(
+            schemas +
+                openApiTemplateDefinitions +
+                (TEMPLATE_SCHEMA_COMPONENT to rewriteTemplateSchemaRefsForOpenApi(templateSchema)),
+        )
     val mergedComponents = JsonObject(components + ("schemas" to mergedSchemas))
     return specJson.encodeToString(JsonObject(root + ("components" to mergedComponents)))
+}
+
+private fun rewriteTemplateSchemaRefsForOpenApi(element: JsonElement): JsonElement =
+    when (element) {
+        is JsonObject -> {
+            JsonObject(
+                element.mapValues { (key, value) ->
+                    if (key == "\$ref") rewriteTemplateRefForOpenApi(value) else rewriteTemplateSchemaRefsForOpenApi(value)
+                },
+            )
+        }
+
+        is JsonArray -> {
+            JsonArray(element.map(::rewriteTemplateSchemaRefsForOpenApi))
+        }
+
+        else -> {
+            element
+        }
+    }
+
+private fun rewriteTemplateRefForOpenApi(value: JsonElement): JsonElement {
+    val ref = value.jsonPrimitive.content
+    return if (ref.startsWith("#/\$defs/")) {
+        JsonPrimitive("#/components/schemas/${ref.removePrefix("#/\$defs/")}")
+    } else {
+        value
+    }
 }
 
 fun Application.serializeOpenApiDocument(version: String): String = serializeOpenApiDoc(buildOpenApiDocument(version))
