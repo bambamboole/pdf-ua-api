@@ -382,13 +382,6 @@ class SchemaWalker {
 
     private fun sealedSubtypeTitle(defName: String): String = defName.replaceFirstChar { it.uppercase() }
 
-    private fun kebabToCamel(value: String): String =
-        value
-            .split('-')
-            .mapIndexed { index, segment ->
-                if (index == 0) segment else segment.replaceFirstChar { it.uppercase() }
-            }.joinToString("")
-
     /** Manual registration for `PageSize` which uses a `JsonContentPolymorphicSerializer`. */
     private fun registerPageSize() {
         if ("pageSize" in defs) return
@@ -470,3 +463,11 @@ private fun withNullType(base: JsonObject): JsonObject {
         ),
     )
 }
+
+/** Converts a kebab-case discriminator (e.g. `key-value`) to camelCase (e.g. `keyValue`). */
+internal fun kebabToCamel(value: String): String =
+    value
+        .split('-')
+        .mapIndexed { index, segment ->
+            if (index == 0) segment else segment.replaceFirstChar { it.uppercase() }
+        }.joinToString("")

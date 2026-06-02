@@ -56,7 +56,7 @@ class DocumentUploader(
                     .build()
 
             val response = httpClient.send(request, HttpResponse.BodyHandlers.discarding())
-            if (response.statusCode() in HTTP_OK_MIN..HTTP_OK_MAX) {
+            if (response.statusCode() in HTTP_SUCCESS_RANGE) {
                 logger.debug("Uploaded document to {} ({} bytes)", uri, bytes.size)
                 UploadResult.Success
             } else {
@@ -69,9 +69,7 @@ class DocumentUploader(
     }
 
     companion object {
-        const val DEFAULT_TIMEOUT_MS: Long = 30_000
-        private const val HTTP_OK_MIN = 200
-        private const val HTTP_OK_MAX = 299
+        private const val DEFAULT_TIMEOUT_MS: Long = 30_000
 
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient

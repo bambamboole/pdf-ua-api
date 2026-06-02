@@ -190,13 +190,13 @@ class HtmlSourceFetcherTest {
     fun fetchRejectsLoopbackByDefault() {
         val fetcher = HtmlSourceFetcher(httpClient = client(), timeoutMs = 2000)
         val result = fetcher.fetch("http://127.0.0.1/page")
-        assertIs<FetchResult.InvalidUrl>(result)
+        assertIs<FetchResult.Failed>(result)
     }
 
     @Test
     fun fetchRejectsNonHttpScheme() {
         val fetcher = HtmlSourceFetcher(httpClient = client(), timeoutMs = 2000)
         val result = fetcher.fetch("ftp://example.com/page")
-        assertIs<FetchResult.InvalidUrl>(result)
+        assertIs<FetchResult.Failed>(result)
     }
 }

@@ -47,7 +47,7 @@ class AssetResolver(
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
-        if (response.statusCode() !in HTTP_OK_MIN..HTTP_OK_MAX) {
+        if (response.statusCode() !in HTTP_SUCCESS_RANGE) {
             throw java.io.IOException("HTTP ${response.statusCode()} for $uri")
         }
 
@@ -83,10 +83,8 @@ class AssetResolver(
     }
 
     companion object {
-        const val DEFAULT_TIMEOUT_MS: Long = 5_000
-        const val DEFAULT_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
-        private const val HTTP_OK_MIN = 200
-        private const val HTTP_OK_MAX = 299
+        private const val DEFAULT_TIMEOUT_MS: Long = 5_000
+        private const val DEFAULT_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
 
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient

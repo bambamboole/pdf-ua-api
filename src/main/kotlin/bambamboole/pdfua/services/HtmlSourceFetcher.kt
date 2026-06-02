@@ -17,17 +17,9 @@ sealed interface FetchResult {
         val finalUrl: String,
     ) : FetchResult
 
-    sealed interface Failure : FetchResult {
-        val message: String
-    }
-
-    data class InvalidUrl(
-        override val message: String,
-    ) : Failure
-
     data class Failed(
-        override val message: String,
-    ) : Failure
+        val message: String,
+    ) : FetchResult
 }
 
 private val HTML_MIME_TYPES = setOf("text/html", "application/xhtml+xml")
@@ -54,7 +46,7 @@ class HtmlSourceFetcher(
             try {
                 URI.create(url).also { validateUrl(it, allowedDomains) }
             } catch (e: IllegalArgumentException) {
-                return FetchResult.InvalidUrl(e.message ?: "Invalid URL")
+                return FetchResult.Failed(e.message ?: "Invalid URL")
             }
 
         return try {
@@ -75,7 +67,7 @@ class HtmlSourceFetcher(
             .build()
 
     private fun readResponse(response: HttpResponse<InputStream>): FetchResult {
-        if (response.statusCode() !in HTTP_OK_MIN..HTTP_OK_MAX) {
+        if (response.statusCode() !in HTTP_SUCCESS_RANGE) {
             return FetchResult.Failed("Failed to fetch URL: HTTP ${response.statusCode()}")
         }
         val rawContentType = response.headers().firstValue("Content-Type").orElse(null)
@@ -124,8 +116,6 @@ class HtmlSourceFetcher(
     companion object {
         private const val DEFAULT_TIMEOUT_MS: Long = 5_000
         private const val DEFAULT_MAX_SIZE_BYTES: Long = 5L * 1024 * 1024
-        private const val HTTP_OK_MIN = 200
-        private const val HTTP_OK_MAX = 299
 
         fun createHttpClient(connectTimeoutMs: Long): HttpClient =
             HttpClient

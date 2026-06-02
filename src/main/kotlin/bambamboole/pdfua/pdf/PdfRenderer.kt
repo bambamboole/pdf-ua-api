@@ -5,8 +5,6 @@ import bambamboole.pdfua.fonts.useBundledFontsFor
 import bambamboole.pdfua.hyphenation.LocaleAwareHyphenator
 import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
-import com.openhtmltopdf.extend.FSSupplier
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FSFontUseCase
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.render.DefaultObjectDrawerFactory
 import org.apache.pdfbox.Loader
@@ -23,7 +21,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 
 data class PdfResult(
     val bytes: ByteArray,

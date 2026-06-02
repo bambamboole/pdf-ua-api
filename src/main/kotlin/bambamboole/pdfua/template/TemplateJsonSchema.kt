@@ -98,13 +98,6 @@ object TemplateJsonSchema {
         }
     }
 
-    private fun kebabToCamel(value: String): String =
-        value
-            .split('-')
-            .mapIndexed { index, segment ->
-                if (index == 0) segment else segment.replaceFirstChar { it.uppercase() }
-            }.joinToString("")
-
     @OptIn(ExperimentalSerializationApi::class)
     private fun fontWeightDef(): JsonObject {
         val descriptor = FontWeight.serializer().descriptor
@@ -141,7 +134,7 @@ object TemplateJsonSchema {
                 BundledFonts.families.sorted().forEach(::add)
             }
             putJsonArray("blockOrder") {
-                listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table").forEach(::add)
+                blockOrder.forEach(::add)
             }
             putJsonArray("pageFormats") {
                 PageFormat.entries.forEach { format ->

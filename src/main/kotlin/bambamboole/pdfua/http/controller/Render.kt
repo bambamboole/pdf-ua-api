@@ -299,7 +299,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
     uploader: DocumentUploader?,
 ) {
     when (result) {
-        is FetchResult.Failure -> {
+        is FetchResult.Failed -> {
             call.respond(HttpStatusCode.BadRequest, ErrorResponse(result.message))
         }
 

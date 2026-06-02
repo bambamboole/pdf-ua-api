@@ -36,3 +36,6 @@ internal fun validatePublicHttpUrl(
         require(!addr.isAnyLocalAddress) { "Wildcard addresses are blocked: $host" }
     }
 }
+
+/** HTTP status codes the outbound HTTP clients treat as a successful response. */
+internal val HTTP_SUCCESS_RANGE = 200..299

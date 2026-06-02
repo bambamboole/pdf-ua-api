@@ -150,7 +150,3 @@ internal fun cssMm(value: Int?): String? = value?.let { cssMm(it) }
 internal fun cssPt(value: Int): String? = value.takeIf { it >= 0 }?.let { "${it}pt" }
 
 internal fun cssPt(value: Int?): String? = value?.let { cssPt(it) }
-
-internal fun cssPx(value: Int): String? = value.takeIf { it >= 0 }?.let { "${it}px" }
-
-internal fun cssPx(value: Int?): String? = value?.let { cssPx(it) }

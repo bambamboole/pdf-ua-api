@@ -3,7 +3,6 @@ package bambamboole.pdfua.image
 import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.fonts.useBundledFontsFor
 import com.openhtmltopdf.extend.FSStreamFactory
-import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.java2d.api.BufferedImagePageProcessor
 import com.openhtmltopdf.java2d.api.Java2DRendererBuilder
 import org.jsoup.Jsoup
@@ -11,11 +10,8 @@ import org.jsoup.helper.W3CDom
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import javax.imageio.ImageIO
-import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle as RendererFontStyle
 
 object ImageRenderer {
     private val logger = LoggerFactory.getLogger(ImageRenderer::class.java)
@@ -80,22 +76,21 @@ object ImageRenderer {
         if (pages.isEmpty()) throw IllegalStateException("No image was rendered")
         val image = pages.first()
 
-        if (format == "jpg") {
-            val rgb = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
-            val g = rgb.createGraphics()
-            g.color = Color.WHITE
-            g.fillRect(0, 0, rgb.width, rgb.height)
-            g.drawImage(image, 0, 0, null)
-            g.dispose()
-            return ByteArrayOutputStream().use { out ->
-                ImageIO.write(rgb, "jpg", out)
-                out.toByteArray()
-            }
-        }
-
+        // JPEG has no alpha channel, so flatten transparency onto white before encoding.
+        val target = if (format == "jpg") flattenOntoWhite(image) else image
         return ByteArrayOutputStream().use { out ->
-            ImageIO.write(image, format, out)
+            ImageIO.write(target, format, out)
             out.toByteArray()
         }
+    }
+
+    private fun flattenOntoWhite(image: BufferedImage): BufferedImage {
+        val rgb = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
+        val g = rgb.createGraphics()
+        g.color = Color.WHITE
+        g.fillRect(0, 0, rgb.width, rgb.height)
+        g.drawImage(image, 0, 0, null)
+        g.dispose()
+        return rgb
     }
 }
