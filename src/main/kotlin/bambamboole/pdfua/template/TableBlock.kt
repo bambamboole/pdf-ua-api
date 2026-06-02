@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -35,31 +36,21 @@ data class TableColumn(
     @SchemaDescription("Text alignment for this table column.")
     val align: Align? = null,
     @SchemaDescription("Column width as a CSS width value, such as 20mm or 15%.")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
     val width: String? = null,
 )
-
-@Serializable
-@SchemaTsType("BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }")
-data class TableConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
-    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
-    @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-    @SchemaBoolDefault(false) val numberRows: Boolean = false,
-    val columns: List<TableColumn> = emptyList(),
-    val style: TableStyle = TableStyle.STRIPED,
-) : BlockConfig
 
 @Serializable
 @SerialName("table")
 data class TableBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
+    @SchemaBoolDefault(false) @SchemaGroup(SchemaGroups.STYLE) val numberRows: Boolean = false,
+    @SchemaGroup(SchemaGroups.CONTENT) val columns: List<TableColumn> = emptyList(),
+    @SchemaEnumDefault("striped") @SchemaGroup(SchemaGroups.STYLE) val style: TableStyle = TableStyle.STRIPED,
     // Runtime row data; supplied via the data-override channel, not by the static template payload.
     @SchemaIgnore val rows: List<JsonObject> = emptyList(),
-    override val config: TableConfig = TableConfig(),
+    override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     @Suppress("MaxLineLength")
     override fun applyData(values: JsonElement): Block = copy(rows = (values as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList())
@@ -67,8 +58,8 @@ data class TableBlock(
     override fun render(): Html {
         val headers =
             buildList {
-                if (config.numberRows) add("#")
-                config.columns.forEach { add(it.label) }
+                if (numberRows) add("#")
+                columns.forEach { add(it.label) }
             }
         return html {
             tag("table", "class" to "data-table") {
@@ -94,7 +85,7 @@ data class TableBlock(
     }
 
     override fun renderCss(cssId: String): List<CssDeclaration> =
-        when (config.style) {
+        when (style) {
             TableStyle.STRIPED -> {
                 listOf(
                     css(".$cssId tbody tr:nth-child(even)") {
@@ -131,15 +122,15 @@ data class TableBlock(
         rowIndex: Int,
     ): List<String> =
         buildList {
-            if (config.numberRows) add((rowIndex + 1).toString())
-            config.columns.forEach { column -> add(cellText(row[column.key])) }
+            if (numberRows) add((rowIndex + 1).toString())
+            columns.forEach { column -> add(cellText(row[column.key])) }
         }
 
     private fun colgroup(): Html {
         val widths =
             buildList<String?> {
-                if (config.numberRows) add(null)
-                config.columns.forEach { add(safeCssWidth(it.width)) }
+                if (numberRows) add(null)
+                columns.forEach { add(safeCssWidth(it.width)) }
             }
         if (widths.none { !it.isNullOrEmpty() }) return Html.EMPTY
         return html {
@@ -153,11 +144,11 @@ data class TableBlock(
 
     private fun alignStyle(index: Int): String? {
         var columnIndex = index
-        if (config.numberRows) {
+        if (numberRows) {
             if (columnIndex == 0) return "text-align: right;"
             columnIndex--
         }
-        val align = config.columns.getOrNull(columnIndex)?.align ?: return null
+        val align = columns.getOrNull(columnIndex)?.align ?: return null
         return "text-align: ${align.name.lowercase()};"
     }
 
@@ -169,22 +160,21 @@ data class TableBlock(
         }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        config.columns.flatMapIndexed { index, column ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
-                emptyList()
-            } else {
-                listOf(
-                    issue(
-                        path
-                            .child("config")
-                            .child("columns")
-                            .index(index)
-                            .child("key"),
-                        ValidationCodes.INVALID_KEY,
-                        "Table column key is invalid: ${column.key}",
-                    ),
-                )
-            }
+        columns.flatMapIndexed { index, column ->
+            val columnPath = path.child("columns").index(index)
+            val keyIssues =
+                if (SAFE_KEY_VALUE_FIELD_KEY.matches(column.key)) {
+                    emptyList()
+                } else {
+                    listOf(
+                        issue(
+                            columnPath.child("key"),
+                            ValidationCodes.INVALID_KEY,
+                            "Table column key is invalid: ${column.key}",
+                        ),
+                    )
+                }
+            keyIssues + cssLengthIssues(column.width, columnPath.child("width"))
         }
 
     override fun validateData(
@@ -193,7 +183,7 @@ data class TableBlock(
     ): List<ValidationIssue> {
         val (arr, errs) = requireArray(value, path)
         if (arr == null) return errs
-        val allowed = config.columns.map { it.key }.toSet()
+        val allowed = columns.map { it.key }.toSet()
         return arr.flatMapIndexed { i, row ->
             val rowPath = path.index(i)
             val (obj, rowErrs) = requireObject(row, rowPath)

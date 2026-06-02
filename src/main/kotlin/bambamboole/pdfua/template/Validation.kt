@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.serialization.MissingFieldException
@@ -57,6 +58,17 @@ internal fun issue(
     code: String,
     message: String,
 ): ValidationIssue = ValidationIssue(path.toString(), code, message)
+
+/** Rejects CSS-length fields (width, spacer height, image maxHeight, divider thickness) that the renderer would otherwise drop. */
+internal fun cssLengthIssues(
+    value: String?,
+    path: ValidationPath,
+): List<ValidationIssue> =
+    if (value == null || safeCssWidth(value) != null) {
+        emptyList()
+    } else {
+        listOf(issue(path, ValidationCodes.INVALID_VALUE, "Invalid CSS length: $value"))
+    }
 
 @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 fun serializationIssue(e: SerializationException): ValidationIssue {
@@ -134,7 +146,7 @@ internal fun nullableStringField(
 fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> =
     buildList {
         val root = ValidationPath().child("template")
-        if (version != 1) {
+        if (version != 2) {
             add(
                 issue(
                     root.child("version"),
@@ -157,6 +169,7 @@ fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> =
                 row.blocks.forEachIndexed { blockIndex, block ->
                     val blockPath = rowsPath.index(rowIndex).child("blocks").index(blockIndex)
                     addAll(block.validate(blockPath))
+                    addAll(cssLengthIssues(block.config.width, blockPath.child("config").child("width")))
                     val id = block.id ?: return@forEachIndexed
                     if (!seenIds.add(id)) {
                         add(

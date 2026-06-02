@@ -1,12 +1,22 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "de_DE",
-        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 25 },
-        "pageNumbers": { "enabled": true, "position": "center" },
+        "margins": {
+          "top": 20,
+          "right": 20,
+          "bottom": 20,
+          "left": 25
+        },
+        "pageNumbers": {
+          "enabled": true,
+          "position": "center"
+        },
         "footer": {
           "repeat": true,
           "rows": [
@@ -14,29 +24,50 @@
               "blocks": [
                 {
                   "type": "text",
-                  "text": "PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Please quote the notice number with every payment.",
-                  "config": { "width": "70%", "typography": { "size": 8, "color": "#6b7280" } }
+                  "text": "PUA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Please quote the notice number with every payment.",
+                  "config": {
+                    "width": "70%",
+                    "typography": {
+                      "size": 8,
+                      "color": "#6b7280"
+                    }
+                  }
                 },
                 {
                   "type": "key-value",
-                  "values": { "registration": "HRB 123456 B", "taxId": "DE123456789" },
+                  "values": {
+                    "registration": "HRB 123456 B",
+                    "taxId": "DE123456789"
+                  },
                   "config": {
                     "width": "30%",
                     "align": "right",
-                    "labelWidth": "22mm",
-                    "fields": [
-                      { "key": "registration", "label": "Registry" },
-                      { "key": "taxId", "label": "Tax no." }
-                    ],
-                    "typography": { "size": 8, "color": "#6b7280" }
-                  }
+                    "typography": {
+                      "size": 8,
+                      "color": "#6b7280"
+                    }
+                  },
+                  "labelWidth": "22mm",
+                  "fields": [
+                    {
+                      "key": "registration",
+                      "label": "Registry"
+                    },
+                    {
+                      "key": "taxId",
+                      "label": "Tax no."
+                    }
+                  ]
                 }
               ]
             }
           ]
         }
       },
-      "typography": { "family": "Inter", "size": 10 }
+      "typography": {
+        "family": "Inter",
+        "size": 10
+      }
     },
     "rows": [
       {
@@ -45,66 +76,126 @@
             "type": "key-value",
             "values": {
               "name": "PUA Kit GmbH",
-              "address": "Musterstraße 1, 10115 Berlin, DE",
+              "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
               "contact": "Max Mustermann",
               "email": "billing@pdfua-kit.example",
               "vatId": "DE123456789"
             },
             "config": {
-              "width": "58%",
-              "labelWidth": "22mm",
-              "fields": [
-                { "key": "name", "label": "Creditor" },
-                { "key": "address", "label": "Address" },
-                { "key": "contact", "label": "Contact" },
-                { "key": "email", "label": "Email" },
-                { "key": "vatId", "label": "VAT ID" }
-              ]
-            }
+              "width": "58%"
+            },
+            "labelWidth": "22mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Creditor"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "contact",
+                "label": "Contact"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              },
+              {
+                "key": "vatId",
+                "label": "VAT ID"
+              }
+            ]
           },
           {
             "type": "key-value",
             "id": "notice-meta",
             "config": {
               "width": "42%",
-              "align": "right",
-              "labelWidth": "34mm",
-              "fields": [
-                { "key": "noticeNumber", "label": "Notice number" },
-                { "key": "noticeDate", "label": "Notice date" },
-                { "key": "customerNumber", "label": "Customer number" },
-                { "key": "paymentDueDate", "label": "Payment due" }
-              ]
-            }
+              "align": "right"
+            },
+            "labelWidth": "34mm",
+            "fields": [
+              {
+                "key": "noticeNumber",
+                "label": "Notice number"
+              },
+              {
+                "key": "noticeDate",
+                "label": "Notice date"
+              },
+              {
+                "key": "customerNumber",
+                "label": "Customer number"
+              },
+              {
+                "key": "paymentDueDate",
+                "label": "Payment due"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "key-value",
             "id": "debtor",
             "config": {
-              "width": "58%",
-              "labelWidth": "30mm",
-              "fields": [
-                { "key": "name", "label": "Debtor" },
-                { "key": "address", "label": "Address" },
-                { "key": "email", "label": "Email" },
-                { "key": "reference", "label": "Debtor reference" }
-              ]
-            }
+              "width": "58%"
+            },
+            "labelWidth": "30mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Debtor"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              },
+              {
+                "key": "reference",
+                "label": "Debtor reference"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "heading",
             "text": "Dunning notice / Payment reminder",
-            "config": { "level": 1, "typography": { "weight": "700" } }
+            "config": {
+              "typography": {
+                "weight": "700"
+              }
+            },
+            "level": 1
           }
         ]
       },
@@ -114,36 +205,85 @@
             "type": "text",
             "id": "notice-text",
             "text": "",
-            "config": { "typography": { "color": "#374151" } }
+            "config": {
+              "typography": {
+                "color": "#374151"
+              }
+            }
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "table",
             "id": "overdue-invoices",
-            "config": {
-              "style": "striped",
-              "columns": [
-                { "key": "invoiceNumber", "label": "Invoice no.", "align": "left", "width": "24%" },
-                { "key": "issueDate", "label": "Issue date", "align": "left", "width": "18%" },
-                { "key": "dueDate", "label": "Due date", "align": "left", "width": "18%" },
-                { "key": "daysOverdue", "label": "Days overdue", "align": "right", "width": "18%" },
-                { "key": "amount", "label": "Amount", "align": "right", "width": "22%" }
-              ]
-            }
+            "config": {},
+            "style": "striped",
+            "columns": [
+              {
+                "key": "invoiceNumber",
+                "label": "Invoice no.",
+                "align": "left",
+                "width": "24%"
+              },
+              {
+                "key": "issueDate",
+                "label": "Issue date",
+                "align": "left",
+                "width": "18%"
+              },
+              {
+                "key": "dueDate",
+                "label": "Due date",
+                "align": "left",
+                "width": "18%"
+              },
+              {
+                "key": "daysOverdue",
+                "label": "Days overdue",
+                "align": "right",
+                "width": "18%"
+              },
+              {
+                "key": "amount",
+                "label": "Amount",
+                "align": "right",
+                "width": "22%"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "text",
             "text": "If payment has already been made, please disregard this reminder and send us the remittance advice. Otherwise, kindly transfer the outstanding amount to the account below before the payment due date.",
-            "config": { "width": "55%", "typography": { "color": "#374151" } }
+            "config": {
+              "width": "55%",
+              "typography": {
+                "color": "#374151"
+              }
+            }
           },
           {
             "type": "key-value",
@@ -156,16 +296,33 @@
             "config": {
               "width": "45%",
               "align": "right",
-              "labelWidth": "34mm",
-              "fields": [
-                { "key": "amountDue", "label": "Amount due" },
-                { "key": "bank", "label": "Bank" },
-                { "key": "iban", "label": "IBAN" },
-                { "key": "bic", "label": "BIC" },
-                { "key": "reference", "label": "Payment reference" }
-              ],
-              "typography": { "weight": "500" }
-            }
+              "typography": {
+                "weight": "500"
+              }
+            },
+            "labelWidth": "34mm",
+            "fields": [
+              {
+                "key": "amountDue",
+                "label": "Amount due"
+              },
+              {
+                "key": "bank",
+                "label": "Bank"
+              },
+              {
+                "key": "iban",
+                "label": "IBAN"
+              },
+              {
+                "key": "bic",
+                "label": "BIC"
+              },
+              {
+                "key": "reference",
+                "label": "Payment reference"
+              }
+            ]
           }
         ]
       }
@@ -180,7 +337,7 @@
     },
     "debtor": {
       "name": "Musterkunde AG",
-      "address": "Käuferweg 2, 80331 München, DE",
+      "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
       "email": "accounting@musterkunde.example",
       "reference": "04011000-12345-67"
     },
@@ -188,11 +345,23 @@
       "text": "According to our records, the invoices listed below remain unpaid after their agreed due dates. Please arrange payment of the outstanding balance no later than 2026-05-02."
     },
     "overdue-invoices": [
-      { "invoiceNumber": "RE-2026-001104", "issueDate": "2026-02-03", "dueDate": "2026-03-04", "daysOverdue": "51", "amount": "2.856,00 €" },
-      { "invoiceNumber": "RE-2026-001137", "issueDate": "2026-02-21", "dueDate": "2026-03-23", "daysOverdue": "32", "amount": "1.975,40 €" }
+      {
+        "invoiceNumber": "RE-2026-001104",
+        "issueDate": "2026-02-03",
+        "dueDate": "2026-03-04",
+        "daysOverdue": "51",
+        "amount": "2.856,00 \u20ac"
+      },
+      {
+        "invoiceNumber": "RE-2026-001137",
+        "issueDate": "2026-02-21",
+        "dueDate": "2026-03-23",
+        "daysOverdue": "32",
+        "amount": "1.975,40 \u20ac"
+      }
     ],
     "payment": {
-      "amountDue": "4.831,40 €",
+      "amountDue": "4.831,40 \u20ac",
       "reference": "MA-2026-00018"
     }
   }

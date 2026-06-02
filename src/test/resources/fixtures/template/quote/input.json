@@ -1,12 +1,22 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "de_DE",
-        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 25 },
-        "pageNumbers": { "enabled": true, "position": "right" },
+        "margins": {
+          "top": 20,
+          "right": 20,
+          "bottom": 20,
+          "left": 25
+        },
+        "pageNumbers": {
+          "enabled": true,
+          "position": "right"
+        },
         "footer": {
           "repeat": true,
           "rows": [
@@ -14,15 +24,23 @@
               "blocks": [
                 {
                   "type": "text",
-                  "text": "PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Quote valid for 30 days unless otherwise noted.",
-                  "config": { "typography": { "size": 8, "color": "#6b7280" } }
+                  "text": "PUA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Quote valid for 30 days unless otherwise noted.",
+                  "config": {
+                    "typography": {
+                      "size": 8,
+                      "color": "#6b7280"
+                    }
+                  }
                 }
               ]
             }
           ]
         }
       },
-      "typography": { "family": "Inter", "size": 10 }
+      "typography": {
+        "family": "Inter",
+        "size": 10
+      }
     },
     "rows": [
       {
@@ -31,69 +49,126 @@
             "type": "image",
             "src": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"140\" height=\"32\" viewBox=\"0 0 140 32\"><rect width=\"140\" height=\"32\" rx=\"4\" fill=\"#0f766e\"/><text x=\"70\" y=\"22\" font-family=\"Inter\" font-size=\"14\" fill=\"#ffffff\" text-anchor=\"middle\" font-weight=\"700\">PUA Kit</text></svg>",
             "alt": "PUA Kit",
-            "config": { "width": "55%", "maxHeight": 32 }
+            "config": {
+              "width": "55%"
+            },
+            "maxHeight": "32px"
           },
           {
             "type": "key-value",
             "id": "quote-meta",
             "config": {
               "width": "45%",
-              "align": "right",
-              "labelWidth": "32mm",
-              "fields": [
-                { "key": "quoteNumber", "label": "Quote no." },
-                { "key": "issueDate", "label": "Issue date" },
-                { "key": "validUntil", "label": "Valid until" },
-                { "key": "owner", "label": "Account manager" }
-              ]
-            }
+              "align": "right"
+            },
+            "labelWidth": "32mm",
+            "fields": [
+              {
+                "key": "quoteNumber",
+                "label": "Quote no."
+              },
+              {
+                "key": "issueDate",
+                "label": "Issue date"
+              },
+              {
+                "key": "validUntil",
+                "label": "Valid until"
+              },
+              {
+                "key": "owner",
+                "label": "Account manager"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "key-value",
             "values": {
               "name": "PUA Kit GmbH",
-              "address": "Musterstraße 1, 10115 Berlin, DE",
+              "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
               "contact": "Max Mustermann",
               "email": "sales@pdfua-kit.example"
             },
             "config": {
-              "width": "50%",
-              "labelWidth": "22mm",
-              "fields": [
-                { "key": "name", "label": "Provider" },
-                { "key": "address", "label": "Address" },
-                { "key": "contact", "label": "Contact" },
-                { "key": "email", "label": "Email" }
-              ]
-            }
+              "width": "50%"
+            },
+            "labelWidth": "22mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Provider"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "contact",
+                "label": "Contact"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              }
+            ]
           },
           {
             "type": "key-value",
             "id": "customer",
             "config": {
-              "width": "50%",
-              "labelWidth": "24mm",
-              "fields": [
-                { "key": "name", "label": "Customer" },
-                { "key": "address", "label": "Address" },
-                { "key": "email", "label": "Email" }
-              ]
-            }
+              "width": "50%"
+            },
+            "labelWidth": "24mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Customer"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "heading",
             "text": "Quote / Proposal",
-            "config": { "level": 1, "typography": { "weight": "700" } }
+            "config": {
+              "typography": {
+                "weight": "700"
+              }
+            },
+            "level": 1
           }
         ]
       },
@@ -103,35 +178,80 @@
             "type": "text",
             "id": "intro",
             "text": "",
-            "config": { "typography": { "color": "#374151" } }
+            "config": {
+              "typography": {
+                "color": "#374151"
+              }
+            }
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "table",
             "id": "line-items",
-            "config": {
-              "style": "bordered",
-              "columns": [
-                { "key": "description", "label": "Description", "align": "left", "width": "52%" },
-                { "key": "quantity", "label": "Qty", "align": "right", "width": "12%" },
-                { "key": "unitPrice", "label": "Unit price", "align": "right", "width": "18%" },
-                { "key": "total", "label": "Total", "align": "right", "width": "18%" }
-              ]
-            }
+            "config": {},
+            "style": "bordered",
+            "columns": [
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left",
+                "width": "52%"
+              },
+              {
+                "key": "quantity",
+                "label": "Qty",
+                "align": "right",
+                "width": "12%"
+              },
+              {
+                "key": "unitPrice",
+                "label": "Unit price",
+                "align": "right",
+                "width": "18%"
+              },
+              {
+                "key": "total",
+                "label": "Total",
+                "align": "right",
+                "width": "18%"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "text",
             "text": "Terms: prices are net and exclude VAT. 50% deposit on acceptance, balance on delivery. Travel costs billed separately at cost.",
-            "config": { "width": "55%", "typography": { "size": 9, "color": "#374151" } }
+            "config": {
+              "width": "55%",
+              "typography": {
+                "size": 9,
+                "color": "#374151"
+              }
+            }
           },
           {
             "type": "key-value",
@@ -139,18 +259,37 @@
             "config": {
               "width": "45%",
               "align": "right",
-              "labelWidth": "32mm",
-              "fields": [
-                { "key": "subtotal", "label": "Subtotal" },
-                { "key": "vat", "label": "VAT 19%" },
-                { "key": "total", "label": "Grand total" }
-              ],
-              "typography": { "weight": "500" }
-            }
+              "typography": {
+                "weight": "500"
+              }
+            },
+            "labelWidth": "32mm",
+            "fields": [
+              {
+                "key": "subtotal",
+                "label": "Subtotal"
+              },
+              {
+                "key": "vat",
+                "label": "VAT 19%"
+              },
+              {
+                "key": "total",
+                "label": "Grand total"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 8 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "8mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
@@ -170,22 +309,42 @@
     },
     "customer": {
       "name": "Musterkunde AG",
-      "address": "Käuferweg 2, 80331 München, DE",
+      "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
       "email": "procurement@musterkunde.example"
     },
     "intro": {
       "text": "Thank you for your interest in PUA Kit. The proposal below covers an accessible PDF/UA template implementation and on-going maintenance for the 2026 fiscal year."
     },
     "line-items": [
-      { "description": "Accessibility audit of existing document templates", "quantity": "1", "unitPrice": "1.200,00 €", "total": "1.200,00 €" },
-      { "description": "Implementation of accessible invoice and statement templates", "quantity": "1", "unitPrice": "3.800,00 €", "total": "3.800,00 €" },
-      { "description": "Operator training (two half-day sessions)", "quantity": "2", "unitPrice": "650,00 €", "total": "1.300,00 €" },
-      { "description": "Annual maintenance and support package", "quantity": "1", "unitPrice": "1.440,00 €", "total": "1.440,00 €" }
+      {
+        "description": "Accessibility audit of existing document templates",
+        "quantity": "1",
+        "unitPrice": "1.200,00 \u20ac",
+        "total": "1.200,00 \u20ac"
+      },
+      {
+        "description": "Implementation of accessible invoice and statement templates",
+        "quantity": "1",
+        "unitPrice": "3.800,00 \u20ac",
+        "total": "3.800,00 \u20ac"
+      },
+      {
+        "description": "Operator training (two half-day sessions)",
+        "quantity": "2",
+        "unitPrice": "650,00 \u20ac",
+        "total": "1.300,00 \u20ac"
+      },
+      {
+        "description": "Annual maintenance and support package",
+        "quantity": "1",
+        "unitPrice": "1.440,00 \u20ac",
+        "total": "1.440,00 \u20ac"
+      }
     ],
     "totals": {
-      "subtotal": "7.740,00 €",
-      "vat": "1.470,60 €",
-      "total": "9.210,60 €"
+      "subtotal": "7.740,00 \u20ac",
+      "vat": "1.470,60 \u20ac",
+      "total": "9.210,60 \u20ac"
     }
   }
 }

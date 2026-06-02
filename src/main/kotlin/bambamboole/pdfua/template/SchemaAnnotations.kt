@@ -108,3 +108,33 @@ annotation class SchemaTitle(
 annotation class SchemaTsType(
     val value: String,
 )
+
+/**
+ * UI grouping hint for builders: emits `x-pdfUaGroup` on the property's schema so a builder can
+ * place the field in a Content / Layout / Style / Data panel without hardcoding per-field rules.
+ * Use the [SchemaGroups] constants.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class SchemaGroup(
+    val value: String,
+)
+
+/** Default for an enum-typed property; emitted as `x-pdfUaDefault` alongside the enum `$ref`. */
+@OptIn(ExperimentalSerializationApi::class)
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class SchemaEnumDefault(
+    val value: String,
+)
+
+/** Allowed values for [SchemaGroup]. */
+object SchemaGroups {
+    const val CONTENT = "content"
+    const val LAYOUT = "layout"
+    const val STYLE = "style"
+    const val DATA = "data"
+}

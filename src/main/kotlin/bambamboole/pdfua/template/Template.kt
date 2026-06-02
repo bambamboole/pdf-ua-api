@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.fonts.FontWeight
 import kotlinx.serialization.SerialName
@@ -54,7 +55,7 @@ data class PageConfig(
 @Serializable
 data class PageNumbersConfig(
     @SchemaBoolDefault(false) val enabled: Boolean = false,
-    val position: Align = Align.CENTER,
+    @SchemaEnumDefault("center") val position: Align = Align.CENTER,
 )
 
 @Serializable
@@ -74,7 +75,7 @@ data class PageBackgroundConfig(
     @SchemaDescription("HTTP, HTTPS, or base64 data URI for an image or PDF page background.")
     @SchemaMinLength(1)
     val src: String,
-    val type: PageBackgroundType = PageBackgroundType.AUTO,
+    @SchemaEnumDefault("auto") val type: PageBackgroundType = PageBackgroundType.AUTO,
 )
 
 @Serializable
@@ -110,24 +111,22 @@ data class SpacingConfig(
     val left: Int? = null,
 )
 
-interface BlockConfig {
-    val typography: TypographyConfig?
-    val spacing: SpacingConfig?
-    val width: String?
-    val align: Align?
-}
-
 @Serializable
 @SerialName("BlockConfig")
 @SchemaTsType("{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }")
 data class BaseBlockConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
+    @SchemaGroup(SchemaGroups.STYLE)
+    val typography: TypographyConfig? = null,
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val spacing: SpacingConfig? = null,
     @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
+    @SchemaPattern(CSS_LENGTH_PATTERN)
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val width: String? = null,
     @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-) : BlockConfig
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val align: Align? = null,
+)
 
 @Serializable
 enum class Align {

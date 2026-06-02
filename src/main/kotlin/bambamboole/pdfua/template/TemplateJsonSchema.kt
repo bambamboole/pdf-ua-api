@@ -12,17 +12,18 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.serializer
 
 /**
- * Generates the JSON Schema served at `/schema` for [Template].
+ * Generates the canonical JSON Schema for [Template], injected as the `Template` component of the
+ * OpenAPI document (see `http/OpenApiSpec.kt`).
  *
  * The schema definitions (`$defs`) are derived directly from the `@Serializable` data classes
  * via [SchemaWalker], driven by `@Schema*` annotations placed on the data class properties
  * (see [SchemaAnnotations.kt]). Things the walker cannot derive — the schema root identity
- * (`$schema`, `$id`, `title`), the const `version: 1`, the `x-pdfUa` runtime-metadata block,
+ * (`$schema`, `$id`, `title`), the const `version: 2`, the `x-pdfUa` runtime-metadata block,
  * the UX-meaningful `block.oneOf` order, and the explicit `fontWeight` `$def` for SDK consumers
  * — live here.
  */
 object TemplateJsonSchema {
-    private const val TEMPLATE_VERSION = 1
+    private const val TEMPLATE_VERSION = 2
     private const val RENDER_ENDPOINT = "/render/template"
 
     private val blockOrder = listOf("text", "html", "heading", "image", "key-value", "spacer", "divider", "table")
@@ -52,7 +53,7 @@ object TemplateJsonSchema {
 
         return buildJsonObject {
             put("\$schema", "https://json-schema.org/draft/2020-12/schema")
-            put("\$id", "https://pdf-ua-api.com/schemas/template-v1.json")
+            put("\$id", "https://pdf-ua-api.com/schemas/template-v2.json")
             put("title", "Template")
             put("type", "object")
             put(

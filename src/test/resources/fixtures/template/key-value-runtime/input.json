@@ -1,14 +1,26 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
-      "page": { "size": { "format": "Letter" }, "locale": "en_US" },
-      "typography": { "family": "Inter" }
+      "page": {
+        "size": {
+          "format": "Letter"
+        },
+        "locale": "en_US"
+      },
+      "typography": {
+        "family": "Inter"
+      }
     },
     "rows": [
       {
         "blocks": [
-          { "type": "heading", "text": "Delivery summary", "config": { "level": 1 } }
+          {
+            "type": "heading",
+            "text": "Delivery summary",
+            "config": {},
+            "level": 1
+          }
         ]
       },
       {
@@ -21,21 +33,35 @@
               "recipient": "Original recipient",
               "missingValue": "Original missing"
             },
-            "config": {
-              "labelWidth": "22mm",
-              "fields": [
-                { "key": "orderId", "label": "Order" },
-                { "key": "recipient", "label": "Recipient" },
-                { "key": "reference", "label": "Reference" },
-                { "key": "missingValue", "label": "Missing value" }
-              ]
-            }
+            "config": {},
+            "labelWidth": "22mm",
+            "fields": [
+              {
+                "key": "orderId",
+                "label": "Order"
+              },
+              {
+                "key": "recipient",
+                "label": "Recipient"
+              },
+              {
+                "key": "reference",
+                "label": "Reference"
+              },
+              {
+                "key": "missingValue",
+                "label": "Missing value"
+              }
+            ]
           }
         ]
       },
       {
         "blocks": [
-          { "type": "text", "text": "Runtime data replaces every template value in this key-value block." }
+          {
+            "type": "text",
+            "text": "Runtime data replaces every template value in this key-value block."
+          }
         ]
       }
     ]

@@ -1,5 +1,6 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
@@ -18,27 +19,20 @@ data class KeyValueField(
 )
 
 @Serializable
-@SchemaTsType("BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }")
-data class KeyValueConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
-    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
-    @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-    @SchemaStringDefault("30mm") val labelWidth: String = "30mm",
-    val fields: List<KeyValueField> = emptyList(),
-) : BlockConfig
-
-@Serializable
 @SerialName("key-value")
 data class KeyValueBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     @SchemaTitle("KeyValueValues")
     @SchemaPropertyNames(pattern = "^[A-Za-z][A-Za-z0-9_]*$")
+    @SchemaGroup(SchemaGroups.DATA)
     val values: Map<String, String?> = emptyMap(),
-    override val config: KeyValueConfig = KeyValueConfig(),
+    @SchemaStringDefault("30mm")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
+    @SchemaGroup(SchemaGroups.LAYOUT)
+    val labelWidth: String = "30mm",
+    @SchemaGroup(SchemaGroups.CONTENT) val fields: List<KeyValueField> = emptyList(),
+    override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = if (values is JsonObject) copy(values = values.stringValues()) else this
 
@@ -47,7 +41,7 @@ data class KeyValueBlock(
         return html {
             tag("table", "class" to "key-value") {
                 tag("tbody") {
-                    config.fields.forEach { field ->
+                    fields.forEach { field ->
                         tag("tr") {
                             tag("td") { text(field.label) }
                             tag("td") { text(values[field.key].orEmpty()) }
@@ -60,38 +54,38 @@ data class KeyValueBlock(
 
     override fun renderCss(cssId: String): List<CssDeclaration> {
         validateFields()
-        val labelWidth = safeCssWidth(config.labelWidth) ?: return emptyList()
+        val cssLabelWidth = safeCssWidth(labelWidth) ?: return emptyList()
         return listOf(
             css(".$cssId .key-value td:first-child") {
-                rule("width", labelWidth)
+                rule("width", cssLabelWidth)
             },
         )
     }
 
     private fun validateFields() {
-        config.fields.forEach { field ->
+        fields.forEach { field ->
             check(SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) { "Key-value field key is invalid: ${field.key}" }
         }
     }
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
-        config.fields.flatMapIndexed { index, field ->
-            if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
-                emptyList()
-            } else {
-                listOf(
-                    issue(
-                        path
-                            .child("config")
-                            .child("fields")
-                            .index(index)
-                            .child("key"),
-                        ValidationCodes.INVALID_KEY,
-                        "Key-value field key is invalid: ${field.key}",
-                    ),
-                )
+        cssLengthIssues(labelWidth, path.child("labelWidth")) +
+            fields.flatMapIndexed { index, field ->
+                if (SAFE_KEY_VALUE_FIELD_KEY.matches(field.key)) {
+                    emptyList()
+                } else {
+                    listOf(
+                        issue(
+                            path
+                                .child("fields")
+                                .index(index)
+                                .child("key"),
+                            ValidationCodes.INVALID_KEY,
+                            "Key-value field key is invalid: ${field.key}",
+                        ),
+                    )
+                }
             }
-        }
 
     override fun validateData(
         value: JsonElement,
@@ -99,7 +93,7 @@ data class KeyValueBlock(
     ): List<ValidationIssue> {
         val (obj, errs) = requireObject(value, path)
         if (obj == null) return errs
-        val allowed = config.fields.map { it.key }.toSet()
+        val allowed = fields.map { it.key }.toSet()
         return allowedKeys(obj, allowed, path) +
             obj.keys.filter { it in allowed }.flatMap { key -> nullableStringField(obj, key, path) }
     }

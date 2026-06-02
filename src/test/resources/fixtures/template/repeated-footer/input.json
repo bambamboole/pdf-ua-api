@@ -1,11 +1,16 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "en_US",
-        "pageNumbers": { "enabled": true, "position": "center" },
+        "pageNumbers": {
+          "enabled": true,
+          "position": "center"
+        },
         "footer": {
           "repeat": true,
           "rows": [
@@ -25,7 +30,12 @@
     "rows": [
       {
         "blocks": [
-          { "type": "heading", "text": "Repeated footer fixture", "config": { "level": 1 } }
+          {
+            "type": "heading",
+            "text": "Repeated footer fixture",
+            "config": {},
+            "level": 1
+          }
         ]
       },
       {
@@ -39,6 +49,8 @@
     ]
   },
   "data": {
-    "footerText": { "text": "Runtime footer for every page" }
+    "footerText": {
+      "text": "Runtime footer for every page"
+    }
   }
 }

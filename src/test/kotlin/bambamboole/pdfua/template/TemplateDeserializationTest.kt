@@ -13,12 +13,12 @@ class TemplateDeserializationTest {
     fun decodesFullRenderRequestWithDefaults() {
         val input =
             """
-            {"template":{"version":1,"rows":[{"blocks":[{"type":"text","text":"Hi"}]}]}}
+            {"template":{"version":2,"rows":[{"blocks":[{"type":"text","text":"Hi"}]}]}}
             """.trimIndent()
 
         val request = json.decodeFromString(RenderRequest.serializer(), input)
 
-        assertEquals(1, request.template.version)
+        assertEquals(2, request.template.version)
         assertEquals(PresetPageSize(PageFormat.A4, Orientation.PORTRAIT), request.template.config.page.size)
         assertEquals("de_DE", request.template.config.page.locale)
         assertIs<TextBlock>(request.template.rows[0].blocks[0])
@@ -30,7 +30,7 @@ class TemplateDeserializationTest {
     fun decodesPageNumbersAndMargins() {
         val input =
             """
-            {"template":{"version":1,"config":{"page":{"size":{"format":"Letter"},
+            {"template":{"version":2,"config":{"page":{"size":{"format":"Letter"},
             "pageNumbers":{"enabled":true,"position":"right"},
             "margins":{"top":10,"right":10,"bottom":10,"left":10}}},"rows":[]}}
             """.trimIndent()
@@ -48,7 +48,7 @@ class TemplateDeserializationTest {
     fun decodesPageBackground() {
         val input =
             """
-            {"template":{"version":1,"config":{"page":{
+            {"template":{"version":2,"config":{"page":{
             "background":{"src":"https://cdn.example.com/stationary","type":"pdf"}
             }},"rows":[]}}
             """.trimIndent()
@@ -64,7 +64,7 @@ class TemplateDeserializationTest {
     fun decodesPageFooter() {
         val input =
             """
-            {"template":{"version":1,"config":{"page":{
+            {"template":{"version":2,"config":{"page":{
             "footer":{"repeat":true,"rows":[{"blocks":[{"type":"text","id":"footerText","text":"Footer"}]}]}
             }},"rows":[]}}
             """.trimIndent()

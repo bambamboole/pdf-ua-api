@@ -12,8 +12,8 @@ import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.fonts.FontFace
 import bambamboole.pdfua.pdf.BackgroundObjectDrawer
 import bambamboole.pdfua.template.Align
+import bambamboole.pdfua.template.BaseBlockConfig
 import bambamboole.pdfua.template.Block
-import bambamboole.pdfua.template.BlockConfig
 import bambamboole.pdfua.template.CustomPageSize
 import bambamboole.pdfua.template.Orientation
 import bambamboole.pdfua.template.PageBackgroundConfig
@@ -58,7 +58,7 @@ object TemplateRenderer {
         template: Template,
         data: Map<String, JsonElement> = emptyMap(),
     ): String {
-        check(template.version == 1) { "Unsupported template version: ${template.version}" }
+        check(template.version == 2) { "Unsupported template version: ${template.version}" }
 
         val css = CssRegistry()
         val page = template.config.page
@@ -105,7 +105,7 @@ object TemplateRenderer {
     private fun emitPositioningCss(
         css: CssRegistry,
         cssId: String,
-        config: BlockConfig,
+        config: BaseBlockConfig,
         widthOnCell: Boolean,
     ) {
         css.css(".$cssId") {

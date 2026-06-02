@@ -1,11 +1,16 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "en_US",
-        "pageNumbers": { "enabled": true, "position": "right" },
+        "pageNumbers": {
+          "enabled": true,
+          "position": "right"
+        },
         "footer": {
           "repeat": true,
           "rows": [
@@ -25,7 +30,12 @@
     "rows": [
       {
         "blocks": [
-          { "type": "heading", "text": "Repeated footer with right page numbers", "config": { "level": 1 } }
+          {
+            "type": "heading",
+            "text": "Repeated footer with right page numbers",
+            "config": {},
+            "level": 1
+          }
         ]
       },
       {
@@ -47,6 +57,8 @@
     ]
   },
   "data": {
-    "footerText": { "text": "Runtime footer plus right page numbers" }
+    "footerText": {
+      "text": "Runtime footer plus right page numbers"
+    }
   }
 }

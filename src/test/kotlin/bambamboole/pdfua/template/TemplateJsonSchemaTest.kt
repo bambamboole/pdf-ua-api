@@ -13,13 +13,13 @@ class TemplateJsonSchemaTest {
         val schema = TemplateJsonSchema.current()
 
         assertEquals("https://json-schema.org/draft/2020-12/schema", schema["\$schema"]?.jsonPrimitive?.content)
-        assertEquals("https://pdf-ua-api.com/schemas/template-v1.json", schema["\$id"]?.jsonPrimitive?.content)
+        assertEquals("https://pdf-ua-api.com/schemas/template-v2.json", schema["\$id"]?.jsonPrimitive?.content)
         assertEquals("Template", schema["title"]?.jsonPrimitive?.content)
         assertEquals("object", schema["type"]?.jsonPrimitive?.content)
 
         val metadata = schema["x-pdfUa"]!!.jsonObject
         assertEquals("template", metadata["kind"]?.jsonPrimitive?.content)
-        assertEquals("1", metadata["templateVersion"]?.jsonPrimitive?.content)
+        assertEquals("2", metadata["templateVersion"]?.jsonPrimitive?.content)
         assertEquals("/render/template", metadata["renderEndpoint"]?.jsonPrimitive?.content)
         assertEquals(
             listOf("version", "config", "fonts", "attachments", "rows"),
@@ -72,20 +72,20 @@ class TemplateJsonSchemaTest {
         )
         assertEquals("^[A-Za-z][A-Za-z0-9_]*$", tableColumnProps["key"]!!.jsonObject["pattern"]!!.jsonPrimitive.content)
 
-        val tableConfigProps = definitions["tableConfig"]!!.jsonObject["properties"]!!.jsonObject
-        assertEquals("boolean", tableConfigProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-        assertEquals("false", tableConfigProps["numberRows"]!!.jsonObject["default"]!!.jsonPrimitive.content)
-        assertEquals("array", tableConfigProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        val tableBlockProps = definitions["tableBlock"]!!.jsonObject["properties"]!!.jsonObject
+        assertEquals("boolean", tableBlockProps["numberRows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("false", tableBlockProps["numberRows"]!!.jsonObject["x-pdfUaDefault"]!!.jsonPrimitive.content)
+        assertEquals("array", tableBlockProps["columns"]!!.jsonObject["type"]!!.jsonPrimitive.content)
         assertEquals(
             "#/\$defs/tableColumn",
-            tableConfigProps["columns"]!!
+            tableBlockProps["columns"]!!
                 .jsonObject["items"]!!
                 .jsonObject["\$ref"]!!
                 .jsonPrimitive.content,
         )
         assertEquals(
             "#/\$defs/tableStyle",
-            tableConfigProps["style"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
+            tableBlockProps["style"]!!.jsonObject["\$ref"]!!.jsonPrimitive.content,
         )
 
         val tableBlock = definitions["tableBlock"]!!.jsonObject
@@ -160,7 +160,7 @@ class TemplateJsonSchemaTest {
         val pageFooterConfig = definitions["pageFooterConfig"]!!.jsonObject
         val footerProps = pageFooterConfig["properties"]!!.jsonObject
         assertEquals("boolean", footerProps["repeat"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-        assertEquals("true", footerProps["repeat"]!!.jsonObject["default"]!!.jsonPrimitive.content)
+        assertEquals("true", footerProps["repeat"]!!.jsonObject["x-pdfUaDefault"]!!.jsonPrimitive.content)
         assertEquals("array", footerProps["rows"]!!.jsonObject["type"]!!.jsonPrimitive.content)
         assertEquals(
             "#/\$defs/row",
@@ -196,7 +196,7 @@ class TemplateJsonSchemaTest {
         )
         val fontFaceWeight = definitions["fontFace"]!!.jsonObject["properties"]!!.jsonObject["weight"]!!.jsonObject
         assertEquals("string", fontFaceWeight["type"]!!.jsonPrimitive.content)
-        assertEquals("400", fontFaceWeight["default"]!!.jsonPrimitive.content)
+        assertEquals("400", fontFaceWeight["x-pdfUaDefault"]!!.jsonPrimitive.content)
 
         val textBlock = definitions["textBlock"]!!.jsonObject
         assertEquals(listOf("type", "text"), textBlock["required"]!!.jsonArray.map { it.jsonPrimitive.content })
@@ -218,17 +218,17 @@ class TemplateJsonSchemaTest {
                 .jsonPrimitive.content,
         )
 
-        val keyValueConfig = definitions["keyValueConfig"]!!.jsonObject
+        val keyValueBlockDef = definitions["keyValueBlock"]!!.jsonObject
         assertEquals(
             "30mm",
-            keyValueConfig["properties"]!!
+            keyValueBlockDef["properties"]!!
                 .jsonObject["labelWidth"]!!
-                .jsonObject["default"]!!
+                .jsonObject["x-pdfUaDefault"]!!
                 .jsonPrimitive.content,
         )
         assertEquals(
             "#/\$defs/keyValueField",
-            keyValueConfig["properties"]!!
+            keyValueBlockDef["properties"]!!
                 .jsonObject["fields"]!!
                 .jsonObject["items"]!!
                 .jsonObject["\$ref"]!!

@@ -1,14 +1,26 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
-      "page": { "size": { "format": "A4" }, "locale": "en_US" },
-      "typography": { "family": "Inter" }
+      "page": {
+        "size": {
+          "format": "A4"
+        },
+        "locale": "en_US"
+      },
+      "typography": {
+        "family": "Inter"
+      }
     },
     "rows": [
       {
         "blocks": [
-          { "type": "heading", "text": "Invoice metadata", "config": { "level": 1 } }
+          {
+            "type": "heading",
+            "text": "Invoice metadata",
+            "config": {},
+            "level": 1
+          }
         ]
       },
       {
@@ -20,20 +32,31 @@
               "customerName": "ACME GmbH",
               "paymentTerms": "Due within 14 days"
             },
-            "config": {
-              "labelWidth": "34mm",
-              "fields": [
-                { "key": "invoiceNumber", "label": "Invoice number" },
-                { "key": "customerName", "label": "Customer" },
-                { "key": "paymentTerms", "label": "Payment terms" }
-              ]
-            }
+            "config": {},
+            "labelWidth": "34mm",
+            "fields": [
+              {
+                "key": "invoiceNumber",
+                "label": "Invoice number"
+              },
+              {
+                "key": "customerName",
+                "label": "Customer"
+              },
+              {
+                "key": "paymentTerms",
+                "label": "Payment terms"
+              }
+            ]
           }
         ]
       },
       {
         "blocks": [
-          { "type": "text", "text": "All values are supplied directly by the template." }
+          {
+            "type": "text",
+            "text": "All values are supplied directly by the template."
+          }
         ]
       }
     ]

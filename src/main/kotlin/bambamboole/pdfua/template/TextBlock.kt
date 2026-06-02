@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonElement
 data class TextBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    val text: String,
+    @SchemaGroup(SchemaGroups.CONTENT) val text: String,
     override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = copy(text = values.string("text") ?: text)

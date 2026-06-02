@@ -113,7 +113,9 @@ internal fun nestedCss(
     rules: CssRules.() -> Unit,
 ): CssDeclaration = CssRules().apply(rules).declaration(CssSelector.Nested(parent, child))
 
-private val SAFE_CSS_WIDTH = Regex("^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$")
+/** Shared by [safeCssWidth] (render-time sanitization), the JSON Schema `pattern`, and `validate()`. */
+const val CSS_LENGTH_PATTERN = "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$"
+private val SAFE_CSS_WIDTH = Regex(CSS_LENGTH_PATTERN)
 private val SAFE_CSS_COLOR = Regex("^[#a-zA-Z0-9(),.%\\s-]+$")
 private val UNSAFE_CSS_IDENTIFIER = Regex("[;{}\"'\\r\\n]")
 

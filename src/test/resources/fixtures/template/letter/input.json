@@ -1,16 +1,36 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "en_US",
-        "pageNumbers": { "enabled": true, "position": "center" }
+        "pageNumbers": {
+          "enabled": true,
+          "position": "center"
+        }
       }
     },
     "rows": [
-      { "blocks": [ { "type": "html", "html": "<h1>Welcome</h1>" } ] },
-      { "blocks": [ { "type": "text", "id": "body", "text": "Dear customer,\n\nThank you for your order.\n\nBest regards" } ] }
+      {
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<h1>Welcome</h1>"
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "text",
+            "id": "body",
+            "text": "Dear customer,\n\nThank you for your order.\n\nBest regards"
+          }
+        ]
+      }
     ]
   }
 }

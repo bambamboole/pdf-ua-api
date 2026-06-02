@@ -1,9 +1,10 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.css.CSS_LENGTH_PATTERN
 import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
-import bambamboole.pdfua.css.cssPt
 import bambamboole.pdfua.css.safeCssColor
+import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.html.Html
 import bambamboole.pdfua.html.html
 import kotlinx.serialization.SerialName
@@ -29,25 +30,23 @@ enum class DividerStyle {
 }
 
 @Serializable
-@SchemaTsType("BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }")
-data class DividerConfig(
-    override val typography: TypographyConfig? = null,
-    override val spacing: SpacingConfig? = null,
-    @SchemaDescription("CSS width for this block, such as 50%, 80mm, or auto.")
-    override val width: String? = null,
-    @SchemaDescription("Horizontal placement of this block within its row cell.")
-    override val align: Align? = null,
-    @SchemaMin(0) @SchemaIntDefault(1) val thickness: Int = 1,
-    @SchemaPattern("^#[0-9A-Fa-f]{3,8}$") @SchemaStringDefault("#d1d5db") val lineColor: String = "#d1d5db",
-    val style: DividerStyle = DividerStyle.SOLID,
-) : BlockConfig
-
-@Serializable
 @SerialName("divider")
 data class DividerBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
-    override val config: DividerConfig = DividerConfig(),
+    @SchemaDescription("Rule thickness as a CSS length, such as 1pt or 2px.")
+    @SchemaStringDefault("1pt")
+    @SchemaPattern(CSS_LENGTH_PATTERN)
+    @SchemaGroup(SchemaGroups.STYLE)
+    val thickness: String = "1pt",
+    @SchemaPattern("^#[0-9A-Fa-f]{3,8}$")
+    @SchemaStringDefault("#d1d5db")
+    @SchemaGroup(SchemaGroups.STYLE)
+    val lineColor: String = "#d1d5db",
+    @SchemaEnumDefault("solid")
+    @SchemaGroup(SchemaGroups.STYLE)
+    val style: DividerStyle = DividerStyle.SOLID,
+    override val config: BaseBlockConfig = BaseBlockConfig(),
 ) : Block {
     override fun applyData(values: JsonElement): Block = this
 
@@ -58,20 +57,13 @@ data class DividerBlock(
             css(".$cssId hr") {
                 rule("border", "none")
                 rule("margin", "2.5mm 0")
-                rule("border-top-width", cssPt(config.thickness))
-                rule("border-top-color", safeCssColor(config.lineColor))
-                rule("border-top-style", config.style.cssValue())
+                rule("border-top-width", safeCssWidth(thickness))
+                rule("border-top-color", safeCssColor(lineColor))
+                rule("border-top-style", style.name.lowercase())
             },
         )
 
-    private fun DividerStyle.cssValue(): String =
-        when (this) {
-            DividerStyle.SOLID -> "solid"
-            DividerStyle.DASHED -> "dashed"
-            DividerStyle.DOTTED -> "dotted"
-            DividerStyle.DOUBLE -> "double"
-            DividerStyle.NONE -> "none"
-        }
+    override fun validate(path: ValidationPath): List<ValidationIssue> = cssLengthIssues(thickness, path.child("thickness"))
 
     override fun validateData(
         value: JsonElement,

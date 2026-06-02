@@ -24,7 +24,7 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
+                {"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","id":"intro","text":"Hello from a template"}]}
                 ]}}
                 """.trimIndent()
@@ -55,7 +55,7 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
+                {"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","id":"intro","text":"Hello from a template"}]}
                 ]}}
                 """.trimIndent()
@@ -84,10 +84,10 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
+                {"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","text":"Before"}]},
-                  {"blocks":[{"type":"spacer","config":{"height":6}}]},
-                  {"blocks":[{"type":"divider","config":{"thickness":2,"lineColor":"#111827","style":"dashed"}}]},
+                  {"blocks":[{"type":"spacer","height":"6mm"}]},
+                  {"blocks":[{"type":"divider","thickness":"2pt","lineColor":"#111827","style":"dashed"}]},
                   {"blocks":[{"type":"text","text":"After"}]}
                 ]}}
                 """.trimIndent()
@@ -119,9 +119,9 @@ class RenderRoutesTest {
             val imageSrc = "data:image/svg+xml;base64,${Base64.getEncoder().encodeToString(svg.toByteArray())}"
             val body =
                 """
-                {"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"heading","id":"title","text":"Heading block","config":{"level":2}}]},
-                  {"blocks":[{"type":"image","id":"logo","src":"$imageSrc","alt":"Blue square","config":{"maxHeight":24}}]}
+                {"template":{"version":2,"rows":[
+                  {"blocks":[{"type":"heading","id":"title","text":"Heading block","level":2}]},
+                  {"blocks":[{"type":"image","id":"logo","src":"$imageSrc","alt":"Blue square","maxHeight":"24px"}]}
                 ]}}
                 """.trimIndent()
 
@@ -150,8 +150,8 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
-                  {"blocks":[{"type":"table","id":"lineItems","config":{
+                {"template":{"version":2,"rows":[
+                  {"blocks":[{"type":"table","id":"lineItems",
                     "numberRows":true,
                     "style":"striped",
                     "columns":[
@@ -159,7 +159,7 @@ class RenderRoutesTest {
                       {"key":"description","label":"Description"},
                       {"key":"total","label":"Total","align":"right"}
                     ]
-                  }}]}
+                  }]}
                 ]},
                 "data":{"lineItems":[
                   {"sku":"A-100","description":"Accessible PDF setup","total":"100,00 €"},
@@ -192,13 +192,13 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
+                {"template":{"version":2,"rows":[
                   {"blocks":[{"type":"key-value","id":"meta",
                     "values":{"invoice":"Original"},
-                    "config":{"labelWidth":"28mm","fields":[
+                    "labelWidth":"28mm","fields":[
                       {"key":"invoice","label":"Invoice"},
                       {"key":"customer","label":"Customer"}
-                    ]}
+                    ]
                   }]}
                 ]},
                 "data":{"meta":{"invoice":"INV-1","customer":"ACME GmbH"}}}
@@ -229,7 +229,7 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,
+                {"template":{"version":2,
                   "config":{"page":{
                     "footer":{"repeat":true,"rows":[
                       {"blocks":[{"type":"text","id":"footer","text":"Original footer"}]}
@@ -268,7 +268,7 @@ class RenderRoutesTest {
 
             val body =
                 """
-                {"template":{"version":1,"rows":[
+                {"template":{"version":2,"rows":[
                   {"blocks":[{"type":"text","id":"intro","text":"Original"}]}
                 ]},
                 "data":{"intro":{"text":"Overridden"}}}
@@ -292,7 +292,7 @@ class RenderRoutesTest {
             val attachmentContent = Base64.getEncoder().encodeToString("<invoice/>".toByteArray())
             val body =
                 """
-                {"template":{"version":1,
+                {"template":{"version":2,
                   "attachments":[{
                     "name":"factur-x.xml",
                     "content":"$attachmentContent",
@@ -335,7 +335,7 @@ class RenderRoutesTest {
             val response =
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
-                    setBody("""{"template":{"version":2,"rows":[]}}""")
+                    setBody("""{"template":{"version":1,"rows":[]}}""")
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -349,7 +349,7 @@ class RenderRoutesTest {
             val response =
                 client.post("/render/template") {
                     contentType(ContentType.Application.Json)
-                    setBody("""{"template":{"version":1,"rows":[{"blocks":[{"type":"nope"}]}]}}""")
+                    setBody("""{"template":{"version":2,"rows":[{"blocks":[{"type":"nope"}]}]}}""")
                 }
 
             assertEquals(HttpStatusCode.BadRequest, response.status)

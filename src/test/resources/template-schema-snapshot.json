@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pdf-ua-api.com/schemas/template-v1.json",
+  "$id": "https://pdf-ua-api.com/schemas/template-v2.json",
   "title": "Template",
   "type": "object",
   "properties": {
     "version": {
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "config": {
       "$ref": "#/$defs/templateConfig"
@@ -154,10 +154,11 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "default": false
+          "x-pdfUaDefault": false
         },
         "position": {
-          "$ref": "#/$defs/align"
+          "$ref": "#/$defs/align",
+          "x-pdfUaDefault": "center"
         }
       },
       "additionalProperties": false
@@ -181,13 +182,25 @@
           "minLength": 1
         },
         "type": {
-          "$ref": "#/$defs/pageBackgroundType"
+          "$ref": "#/$defs/pageBackgroundType",
+          "x-pdfUaDefault": "auto"
         }
       },
       "required": [
         "src"
       ],
       "additionalProperties": false
+    },
+    "dividerStyle": {
+      "type": "string",
+      "title": "DividerStyle",
+      "enum": [
+        "solid",
+        "dashed",
+        "dotted",
+        "double",
+        "none"
+      ]
     },
     "typographyConfig": {
       "type": "object",
@@ -246,20 +259,9 @@
       },
       "additionalProperties": false
     },
-    "dividerStyle": {
-      "type": "string",
-      "title": "DividerStyle",
-      "enum": [
-        "solid",
-        "dashed",
-        "dotted",
-        "double",
-        "none"
-      ]
-    },
-    "dividerConfig": {
+    "blockConfig": {
       "type": "object",
-      "title": "DividerConfig",
+      "title": "BlockConfig",
       "properties": {
         "typography": {
           "oneOf": [
@@ -269,7 +271,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "x-pdfUaGroup": "style"
         },
         "spacing": {
           "oneOf": [
@@ -279,14 +282,17 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "x-pdfUaGroup": "layout"
         },
         "width": {
           "type": [
             "string",
             "null"
           ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
+          "description": "CSS width for this block, such as 50%, 80mm, or auto.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaGroup": "layout"
         },
         "align": {
           "type": [
@@ -299,24 +305,12 @@
             "center",
             "right",
             null
-          ]
-        },
-        "thickness": {
-          "type": "integer",
-          "default": 1,
-          "minimum": 0.0
-        },
-        "lineColor": {
-          "type": "string",
-          "pattern": "^#[0-9A-Fa-f]{3,8}$",
-          "default": "#d1d5db"
-        },
-        "style": {
-          "$ref": "#/$defs/dividerStyle"
+          ],
+          "x-pdfUaGroup": "layout"
         }
       },
       "additionalProperties": false,
-      "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
+      "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
     },
     "dividerBlock": {
       "type": "object",
@@ -333,68 +327,32 @@
           ],
           "description": "Stable block identifier used for runtime data overrides."
         },
+        "thickness": {
+          "type": "string",
+          "description": "Rule thickness as a CSS length, such as 1pt or 2px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaDefault": "1pt",
+          "x-pdfUaGroup": "style"
+        },
+        "lineColor": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{3,8}$",
+          "x-pdfUaDefault": "#d1d5db",
+          "x-pdfUaGroup": "style"
+        },
+        "style": {
+          "$ref": "#/$defs/dividerStyle",
+          "x-pdfUaDefault": "solid",
+          "x-pdfUaGroup": "style"
+        },
         "config": {
-          "$ref": "#/$defs/dividerConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
         "type"
       ],
       "additionalProperties": false
-    },
-    "headingConfig": {
-      "type": "object",
-      "title": "HeadingConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "level": {
-          "type": "integer",
-          "default": 2,
-          "minimum": 1.0,
-          "maximum": 6.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { level?: number }"
     },
     "headingBlock": {
       "type": "object",
@@ -412,10 +370,18 @@
           "description": "Stable block identifier used for runtime data overrides."
         },
         "text": {
-          "type": "string"
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "level": {
+          "type": "integer",
+          "x-pdfUaDefault": 2,
+          "minimum": 1.0,
+          "maximum": 6.0,
+          "x-pdfUaGroup": "content"
         },
         "config": {
-          "$ref": "#/$defs/headingConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -423,54 +389,6 @@
         "text"
       ],
       "additionalProperties": false
-    },
-    "blockConfig": {
-      "type": "object",
-      "title": "BlockConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
     },
     "htmlBlock": {
       "type": "object",
@@ -488,7 +406,8 @@
           "description": "Stable block identifier used for runtime data overrides."
         },
         "html": {
-          "type": "string"
+          "type": "string",
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -499,59 +418,6 @@
         "html"
       ],
       "additionalProperties": false
-    },
-    "imageConfig": {
-      "type": "object",
-      "title": "ImageConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "maxHeight": {
-          "type": "integer",
-          "default": 60,
-          "minimum": 1.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { maxHeight?: number }"
     },
     "imageBlock": {
       "type": "object",
@@ -570,15 +436,24 @@
         },
         "src": {
           "type": "string",
-          "description": "Public image URL, SVG markup, or uploaded image data URL."
+          "description": "Public image URL, SVG markup, or uploaded image data URL.",
+          "x-pdfUaGroup": "content"
         },
         "alt": {
           "type": "string",
           "description": "Alternative text for screen readers and PDF accessibility.",
-          "default": ""
+          "x-pdfUaDefault": "",
+          "x-pdfUaGroup": "content"
+        },
+        "maxHeight": {
+          "type": "string",
+          "description": "Maximum rendered height as a CSS length, such as 60px or 20mm.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaDefault": "60px",
+          "x-pdfUaGroup": "layout"
         },
         "config": {
-          "$ref": "#/$defs/imageConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -605,64 +480,6 @@
       ],
       "additionalProperties": false,
       "tsType": "{ key: string; label: string }"
-    },
-    "keyValueConfig": {
-      "type": "object",
-      "title": "KeyValueConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "labelWidth": {
-          "type": "string",
-          "default": "30mm"
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/keyValueField"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }"
     },
     "keyValueBlock": {
       "type": "object",
@@ -691,69 +508,30 @@
               "string",
               "null"
             ]
-          }
+          },
+          "x-pdfUaGroup": "data"
+        },
+        "labelWidth": {
+          "type": "string",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaDefault": "30mm",
+          "x-pdfUaGroup": "layout"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/keyValueField"
+          },
+          "x-pdfUaGroup": "content"
         },
         "config": {
-          "$ref": "#/$defs/keyValueConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
         "type"
       ],
       "additionalProperties": false
-    },
-    "spacerConfig": {
-      "type": "object",
-      "title": "SpacerConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "height": {
-          "type": "integer",
-          "default": 5,
-          "minimum": 0.0
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { height?: number }"
     },
     "spacerBlock": {
       "type": "object",
@@ -770,8 +548,15 @@
           ],
           "description": "Stable block identifier used for runtime data overrides."
         },
+        "height": {
+          "type": "string",
+          "description": "Vertical space as a CSS length, such as 5mm or 12px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaDefault": "5mm",
+          "x-pdfUaGroup": "layout"
+        },
         "config": {
-          "$ref": "#/$defs/spacerConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -810,7 +595,8 @@
             "string",
             "null"
           ],
-          "description": "Column width as a CSS width value, such as 20mm or 15%."
+          "description": "Column width as a CSS width value, such as 20mm or 15%.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$"
         }
       },
       "required": [
@@ -828,67 +614,6 @@
         "minimal"
       ]
     },
-    "tableConfig": {
-      "type": "object",
-      "title": "TableConfig",
-      "properties": {
-        "typography": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/typographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "spacing": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/spacingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "width": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "CSS width for this block, such as 50%, 80mm, or auto."
-        },
-        "align": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Horizontal placement of this block within its row cell.",
-          "enum": [
-            "left",
-            "center",
-            "right",
-            null
-          ]
-        },
-        "numberRows": {
-          "type": "boolean",
-          "default": false
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/tableColumn"
-          }
-        },
-        "style": {
-          "$ref": "#/$defs/tableStyle"
-        }
-      },
-      "additionalProperties": false,
-      "tsType": "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }"
-    },
     "tableBlock": {
       "type": "object",
       "title": "TableBlock",
@@ -904,8 +629,25 @@
           ],
           "description": "Stable block identifier used for runtime data overrides."
         },
+        "numberRows": {
+          "type": "boolean",
+          "x-pdfUaDefault": false,
+          "x-pdfUaGroup": "style"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tableColumn"
+          },
+          "x-pdfUaGroup": "content"
+        },
+        "style": {
+          "$ref": "#/$defs/tableStyle",
+          "x-pdfUaDefault": "striped",
+          "x-pdfUaGroup": "style"
+        },
         "config": {
-          "$ref": "#/$defs/tableConfig"
+          "$ref": "#/$defs/blockConfig"
         }
       },
       "required": [
@@ -929,7 +671,8 @@
           "description": "Stable block identifier used for runtime data overrides."
         },
         "text": {
-          "type": "string"
+          "type": "string",
+          "x-pdfUaGroup": "content"
         },
         "config": {
           "$ref": "#/$defs/blockConfig"
@@ -991,7 +734,7 @@
       "properties": {
         "repeat": {
           "type": "boolean",
-          "default": true
+          "x-pdfUaDefault": true
         },
         "rows": {
           "type": "array",
@@ -1012,7 +755,7 @@
         },
         "locale": {
           "type": "string",
-          "default": "de_DE"
+          "x-pdfUaDefault": "de_DE"
         },
         "margins": {
           "$ref": "#/$defs/spacingConfig"
@@ -1044,7 +787,7 @@
         "title": {
           "type": "string",
           "description": "Document title. Used as the PDF document title, which PDF/UA requires.",
-          "default": "Document"
+          "x-pdfUaDefault": "Document"
         },
         "page": {
           "$ref": "#/$defs/pageConfig"
@@ -1055,7 +798,7 @@
         "embedColorProfile": {
           "type": "boolean",
           "description": "Embed the PDF/A ICC color profile. Disable only for PDF/UA-without-PDF/A output.",
-          "default": true
+          "x-pdfUaDefault": true
         }
       },
       "additionalProperties": false,
@@ -1071,11 +814,11 @@
         "weight": {
           "type": "string",
           "description": "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
-          "default": "400"
+          "x-pdfUaDefault": "400"
         },
         "style": {
           "type": "string",
-          "default": "normal"
+          "x-pdfUaDefault": "normal"
         }
       },
       "required": [
@@ -1096,7 +839,7 @@
         },
         "mimeType": {
           "type": "string",
-          "default": "application/octet-stream"
+          "x-pdfUaDefault": "application/octet-stream"
         },
         "description": {
           "type": [
@@ -1106,7 +849,7 @@
         },
         "relationship": {
           "type": "string",
-          "default": "Alternative"
+          "x-pdfUaDefault": "Alternative"
         }
       },
       "required": [
@@ -1129,7 +872,7 @@
   },
   "x-pdfUa": {
     "kind": "template",
-    "templateVersion": 1,
+    "templateVersion": 2,
     "renderEndpoint": "/render/template",
     "templateFields": [
       "version",

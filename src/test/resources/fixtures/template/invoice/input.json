@@ -1,12 +1,22 @@
 {
   "template": {
-    "version": 1,
+    "version": 2,
     "config": {
       "page": {
-        "size": { "format": "A4" },
+        "size": {
+          "format": "A4"
+        },
         "locale": "de_DE",
-        "margins": { "top": 20, "right": 20, "bottom": 20, "left": 25 },
-        "pageNumbers": { "enabled": true, "position": "center" },
+        "margins": {
+          "top": 20,
+          "right": 20,
+          "bottom": 20,
+          "left": 25
+        },
+        "pageNumbers": {
+          "enabled": true,
+          "position": "center"
+        },
         "footer": {
           "repeat": true,
           "rows": [
@@ -14,8 +24,14 @@
               "blocks": [
                 {
                   "type": "text",
-                  "text": "PUA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany\nBank Musterbank Berlin · IBAN DE89 3704 0044 0532 0130 00 · BIC COBADEFFXXX",
-                  "config": { "width": "68%", "typography": { "size": 8, "color": "#6b7280" } }
+                  "text": "PUA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany\nBank Musterbank Berlin \u00b7 IBAN DE89 3704 0044 0532 0130 00 \u00b7 BIC COBADEFFXXX",
+                  "config": {
+                    "width": "68%",
+                    "typography": {
+                      "size": 8,
+                      "color": "#6b7280"
+                    }
+                  }
                 },
                 {
                   "type": "key-value",
@@ -26,20 +42,32 @@
                   "config": {
                     "width": "32%",
                     "align": "right",
-                    "labelWidth": "24mm",
-                    "fields": [
-                      { "key": "registration", "label": "Registry" },
-                      { "key": "taxId", "label": "Tax no." }
-                    ],
-                    "typography": { "size": 8, "color": "#6b7280" }
-                  }
+                    "typography": {
+                      "size": 8,
+                      "color": "#6b7280"
+                    }
+                  },
+                  "labelWidth": "24mm",
+                  "fields": [
+                    {
+                      "key": "registration",
+                      "label": "Registry"
+                    },
+                    {
+                      "key": "taxId",
+                      "label": "Tax no."
+                    }
+                  ]
                 }
               ]
             }
           ]
         }
       },
-      "typography": { "family": "Inter", "size": 10 }
+      "typography": {
+        "family": "Inter",
+        "size": 10
+      }
     },
     "rows": [
       {
@@ -48,72 +76,135 @@
             "type": "image",
             "src": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"140\" height=\"32\" viewBox=\"0 0 140 32\"><rect width=\"140\" height=\"32\" rx=\"4\" fill=\"#1f2937\"/><text x=\"70\" y=\"22\" font-family=\"Inter\" font-size=\"14\" fill=\"#ffffff\" text-anchor=\"middle\" font-weight=\"700\">PUA Kit</text></svg>",
             "alt": "PUA Kit",
-            "config": { "width": "55%", "maxHeight": 32 }
+            "config": {
+              "width": "55%"
+            },
+            "maxHeight": "32px"
           },
           {
             "type": "key-value",
             "id": "invoice-meta",
             "config": {
               "width": "45%",
-              "align": "right",
-              "labelWidth": "32mm",
-              "fields": [
-                { "key": "invoiceNumber", "label": "Invoice no." },
-                { "key": "issueDate", "label": "Issue date" },
-                { "key": "dueDate", "label": "Due date" },
-                { "key": "currency", "label": "Currency" }
-              ]
-            }
+              "align": "right"
+            },
+            "labelWidth": "32mm",
+            "fields": [
+              {
+                "key": "invoiceNumber",
+                "label": "Invoice no."
+              },
+              {
+                "key": "issueDate",
+                "label": "Issue date"
+              },
+              {
+                "key": "dueDate",
+                "label": "Due date"
+              },
+              {
+                "key": "currency",
+                "label": "Currency"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "key-value",
             "values": {
               "name": "PUA Kit GmbH",
-              "address": "Musterstraße 1, 10115 Berlin, DE",
+              "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
               "contact": "Max Mustermann",
               "email": "billing@pdfua-kit.example",
               "vatId": "DE123456789"
             },
             "config": {
-              "width": "50%",
-              "labelWidth": "20mm",
-              "fields": [
-                { "key": "name", "label": "Seller" },
-                { "key": "address", "label": "Address" },
-                { "key": "contact", "label": "Contact" },
-                { "key": "email", "label": "Email" },
-                { "key": "vatId", "label": "VAT ID" }
-              ]
-            }
+              "width": "50%"
+            },
+            "labelWidth": "20mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Seller"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "contact",
+                "label": "Contact"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              },
+              {
+                "key": "vatId",
+                "label": "VAT ID"
+              }
+            ]
           },
           {
             "type": "key-value",
             "id": "buyer",
             "config": {
-              "width": "50%",
-              "labelWidth": "26mm",
-              "fields": [
-                { "key": "name", "label": "Buyer" },
-                { "key": "address", "label": "Address" },
-                { "key": "email", "label": "Email" },
-                { "key": "reference", "label": "Buyer reference" }
-              ]
-            }
+              "width": "50%"
+            },
+            "labelWidth": "26mm",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Buyer"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "email",
+                "label": "Email"
+              },
+              {
+                "key": "reference",
+                "label": "Buyer reference"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 6 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "6mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "heading",
             "text": "Invoice",
-            "config": { "level": 1, "typography": { "weight": "700" } }
+            "config": {
+              "typography": {
+                "weight": "700"
+              }
+            },
+            "level": 1
           }
         ]
       },
@@ -123,37 +214,86 @@
             "type": "text",
             "id": "intro",
             "text": "",
-            "config": { "typography": { "color": "#374151" } }
+            "config": {
+              "typography": {
+                "color": "#374151"
+              }
+            }
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "table",
             "id": "line-items",
-            "config": {
-              "style": "striped",
-              "numberRows": true,
-              "columns": [
-                { "key": "description", "label": "Description", "align": "left", "width": "44%" },
-                { "key": "quantity", "label": "Qty", "align": "right", "width": "12%" },
-                { "key": "unitPrice", "label": "Unit price", "align": "right", "width": "18%" },
-                { "key": "vatRate", "label": "VAT", "align": "right", "width": "10%" },
-                { "key": "total", "label": "Total", "align": "right", "width": "16%" }
-              ]
-            }
+            "config": {},
+            "style": "striped",
+            "numberRows": true,
+            "columns": [
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left",
+                "width": "44%"
+              },
+              {
+                "key": "quantity",
+                "label": "Qty",
+                "align": "right",
+                "width": "12%"
+              },
+              {
+                "key": "unitPrice",
+                "label": "Unit price",
+                "align": "right",
+                "width": "18%"
+              },
+              {
+                "key": "vatRate",
+                "label": "VAT",
+                "align": "right",
+                "width": "10%"
+              },
+              {
+                "key": "total",
+                "label": "Total",
+                "align": "right",
+                "width": "16%"
+              }
+            ]
           }
         ]
       },
-      { "blocks": [ { "type": "spacer", "config": { "height": 4 } } ] },
+      {
+        "blocks": [
+          {
+            "type": "spacer",
+            "config": {},
+            "height": "4mm"
+          }
+        ]
+      },
       {
         "blocks": [
           {
             "type": "text",
             "text": "Payment within the due date. Please include the invoice number with the payment reference.",
-            "config": { "width": "55%", "typography": { "color": "#374151" } }
+            "config": {
+              "width": "55%",
+              "typography": {
+                "color": "#374151"
+              }
+            }
           },
           {
             "type": "key-value",
@@ -161,14 +301,25 @@
             "config": {
               "width": "45%",
               "align": "right",
-              "labelWidth": "32mm",
-              "fields": [
-                { "key": "subtotal", "label": "Subtotal" },
-                { "key": "vat", "label": "VAT 19%" },
-                { "key": "total", "label": "Grand total" }
-              ],
-              "typography": { "weight": "500" }
-            }
+              "typography": {
+                "weight": "500"
+              }
+            },
+            "labelWidth": "32mm",
+            "fields": [
+              {
+                "key": "subtotal",
+                "label": "Subtotal"
+              },
+              {
+                "key": "vat",
+                "label": "VAT 19%"
+              },
+              {
+                "key": "total",
+                "label": "Grand total"
+              }
+            ]
           }
         ]
       }
@@ -183,7 +334,7 @@
     },
     "buyer": {
       "name": "Musterkunde AG",
-      "address": "Käuferweg 2, 80331 München, DE",
+      "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
       "email": "invoice@musterkunde.example",
       "reference": "04011000-12345-67"
     },
@@ -191,15 +342,39 @@
       "text": "Thank you for your business. The services below were rendered between 2026-01-15 and 2026-02-15."
     },
     "line-items": [
-      { "description": "Accessible PDF template implementation", "quantity": "40", "unitPrice": "95,00 €", "vatRate": "19%", "total": "3.800,00 €" },
-      { "description": "Document structure and tagging review", "quantity": "16", "unitPrice": "85,00 €", "vatRate": "19%", "total": "1.360,00 €" },
-      { "description": "Project management and acceptance testing", "quantity": "8", "unitPrice": "90,00 €", "vatRate": "19%", "total": "720,00 €" },
-      { "description": "Annual hosting and maintenance package", "quantity": "1", "unitPrice": "240,00 €", "vatRate": "19%", "total": "240,00 €" }
+      {
+        "description": "Accessible PDF template implementation",
+        "quantity": "40",
+        "unitPrice": "95,00 \u20ac",
+        "vatRate": "19%",
+        "total": "3.800,00 \u20ac"
+      },
+      {
+        "description": "Document structure and tagging review",
+        "quantity": "16",
+        "unitPrice": "85,00 \u20ac",
+        "vatRate": "19%",
+        "total": "1.360,00 \u20ac"
+      },
+      {
+        "description": "Project management and acceptance testing",
+        "quantity": "8",
+        "unitPrice": "90,00 \u20ac",
+        "vatRate": "19%",
+        "total": "720,00 \u20ac"
+      },
+      {
+        "description": "Annual hosting and maintenance package",
+        "quantity": "1",
+        "unitPrice": "240,00 \u20ac",
+        "vatRate": "19%",
+        "total": "240,00 \u20ac"
+      }
     ],
     "totals": {
-      "subtotal": "6.120,00 €",
-      "vat": "1.162,80 €",
-      "total": "7.282,80 €"
+      "subtotal": "6.120,00 \u20ac",
+      "vat": "1.162,80 \u20ac",
+      "total": "7.282,80 \u20ac"
     }
   }
 }

@@ -104,7 +104,15 @@ class SchemaWalker {
 
             SerialKind.ENUM -> {
                 registerEnum(descriptor)
-                refTo(defName(descriptor))
+                val ref = refTo(defName(descriptor))
+                // Namespaced (x-) so json-schema-to-typescript keeps the enum's named alias clean —
+                // a standard `default` sibling of `$ref` makes it emit duplicate aliases (DividerStyle1).
+                propertyAnnotations
+                    .filterIsInstance<SchemaEnumDefault>()
+                    .firstOrNull()
+                    ?.value
+                    ?.let { JsonObject(ref + ("x-pdfUaDefault" to JsonPrimitive(it))) }
+                    ?: ref
             }
 
             StructureKind.LIST -> {
@@ -254,7 +262,7 @@ class SchemaWalker {
             val elementAnnotations = descriptor.getElementAnnotations(i)
             if (elementAnnotations.any { it is SchemaIgnore }) continue
 
-            properties[elementName] = valueSchema(elementDesc, elementAnnotations)
+            properties[elementName] = applyGroup(valueSchema(elementDesc, elementAnnotations), elementAnnotations)
             // Required = no default + not nullable. We approximate with `!isElementOptional`.
             if (!descriptor.isElementOptional(i) && !elementDesc.isNullable) {
                 required += elementName
@@ -331,7 +339,7 @@ class SchemaWalker {
             val elementAnnotations = descriptor.getElementAnnotations(i)
             val skip = elementAnnotations.any { it is SchemaIgnore } || elementName == "type"
             if (skip) continue
-            properties[elementName] = valueSchema(elementDesc, elementAnnotations)
+            properties[elementName] = applyGroup(valueSchema(elementDesc, elementAnnotations), elementAnnotations)
             if (!descriptor.isElementOptional(i) && !elementDesc.isNullable) {
                 required += elementName
             }
@@ -409,20 +417,20 @@ class SchemaWalker {
     private fun List<Annotation>.applyStringConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
         filterIsInstance<SchemaPattern>().firstOrNull()?.let { builder.put("pattern", it.value) }
-        filterIsInstance<SchemaStringDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaStringDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
         filterIsInstance<SchemaMinLength>().firstOrNull()?.let { builder.put("minLength", it.value) }
     }
 
     private fun List<Annotation>.applyIntConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
-        filterIsInstance<SchemaIntDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaIntDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
         filterIsInstance<SchemaMin>().firstOrNull()?.let { builder.put("minimum", it.value.toDouble()) }
         filterIsInstance<SchemaMax>().firstOrNull()?.let { builder.put("maximum", it.value.toDouble()) }
     }
 
     private fun List<Annotation>.applyBoolConstraints(builder: kotlinx.serialization.json.JsonObjectBuilder) {
         filterIsInstance<SchemaDescription>().firstOrNull()?.let { builder.put("description", it.value) }
-        filterIsInstance<SchemaBoolDefault>().firstOrNull()?.let { builder.put("default", it.value) }
+        filterIsInstance<SchemaBoolDefault>().firstOrNull()?.let { builder.put("x-pdfUaDefault", it.value) }
     }
 
     private fun titleFor(descriptor: SerialDescriptor): String = descriptor.serialName.removeSuffix("?").substringAfterLast('.')
@@ -438,6 +446,15 @@ class SchemaWalker {
      * marker) whose `serialName` contains `<PageSize>`.
      */
     private fun SerialDescriptor.isPageSize(): Boolean = serialName.endsWith("<PageSize>")
+}
+
+/** Adds the `x-pdfUaGroup` UI hint to a property's schema when a [SchemaGroup] annotation is present. */
+private fun applyGroup(
+    schema: JsonObject,
+    annotations: List<Annotation>,
+): JsonObject {
+    val group = annotations.filterIsInstance<SchemaGroup>().firstOrNull()?.value ?: return schema
+    return JsonObject(schema + ("x-pdfUaGroup" to JsonPrimitive(group)))
 }
 
 /** Rewrites a non-null primitive schema's scalar `type` to the nullable `[type, "null"]` form. */
