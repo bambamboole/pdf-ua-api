@@ -55,4 +55,40 @@ class CodeBlockTest {
         assertEquals(false, content.supports(Symbology.GS1_DATABAR))
         assertEquals(false, content.supports(Symbology.QR))
     }
+
+    @Test
+    fun renderEmitsInlineSvgWithAutoAltText() {
+        val block =
+            CodeBlock(
+                symbology = Symbology.EAN13,
+                content = RawContent(value = "501234567890"),
+            )
+        val svg = block.render().serialize()
+        assertEquals(true, svg.contains("role=\"img\""), "expected role attribute in: ${svg.take(80)}")
+        assertEquals(true, svg.contains("aria-label=\"EAN-13 barcode: 501234567890\""))
+        assertEquals(true, svg.contains("<rect"))
+    }
+
+    @Test
+    fun renderCssConstrainsHeight() {
+        val block =
+            CodeBlock(
+                symbology = Symbology.QR,
+                content = TextContent(text = "HELLO"),
+                height = "20mm",
+            )
+        val css = block.renderCss("block-1")
+        assertEquals(true, css.isNotEmpty())
+    }
+
+    @Test
+    fun decodesCodeBlockByTypeDiscriminator() {
+        val block =
+            json.decodeFromString(
+                Block.serializer(),
+                """{"type":"code","symbology":"qr","content":{"type":"url","url":"https://example.com"}}""",
+            )
+        val code = assertIs<CodeBlock>(block)
+        assertEquals(Symbology.QR, code.symbology)
+    }
 }

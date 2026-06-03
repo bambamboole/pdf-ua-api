@@ -191,15 +191,315 @@
       ],
       "additionalProperties": false
     },
-    "dividerStyle": {
+    "symbology": {
       "type": "string",
-      "title": "DividerStyle",
+      "title": "Symbology",
       "enum": [
-        "solid",
-        "dashed",
-        "dotted",
-        "double",
-        "none"
+        "qr",
+        "datamatrix",
+        "aztec",
+        "pdf417",
+        "code128",
+        "code39",
+        "ean13",
+        "ean8",
+        "upca",
+        "upce",
+        "itf14",
+        "codabar",
+        "gs1-128",
+        "gs1-datamatrix",
+        "gs1-qr",
+        "gs1-databar",
+        "gs1-databar-expanded"
+      ]
+    },
+    "epc": {
+      "type": "object",
+      "title": "Epc",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "epc"
+        },
+        "name": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "iban": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "bic": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "amount": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Amount in euros, such as 12.50.",
+          "x-pdfUaGroup": "content"
+        },
+        "purpose": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "remittance": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "iban"
+      ],
+      "additionalProperties": false
+    },
+    "gs1Element": {
+      "type": "object",
+      "title": "Gs1Element",
+      "properties": {
+        "ai": {
+          "type": "string",
+          "description": "GS1 Application Identifier, such as 01 or 3103.",
+          "x-pdfUaGroup": "content"
+        },
+        "value": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "ai",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "gs1": {
+      "type": "object",
+      "title": "Gs1",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "gs1"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gs1Element"
+          },
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "elements"
+      ],
+      "additionalProperties": false
+    },
+    "raw": {
+      "type": "object",
+      "title": "Raw",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "raw"
+        },
+        "value": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "text": {
+      "type": "object",
+      "title": "Text",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "url": {
+      "type": "object",
+      "title": "Url",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "url"
+        },
+        "url": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "vcard": {
+      "type": "object",
+      "title": "Vcard",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "vcard"
+        },
+        "firstName": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "lastName": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "org": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "firstName",
+        "lastName"
+      ],
+      "additionalProperties": false
+    },
+    "wifiSecurity": {
+      "type": "string",
+      "title": "WifiSecurity",
+      "enum": [
+        "WPA",
+        "WEP",
+        "nopass"
+      ]
+    },
+    "wifi": {
+      "type": "object",
+      "title": "Wifi",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "wifi"
+        },
+        "ssid": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "password": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "security": {
+          "$ref": "#/$defs/wifiSecurity",
+          "x-pdfUaDefault": "WPA",
+          "x-pdfUaGroup": "content"
+        },
+        "hidden": {
+          "type": "boolean",
+          "x-pdfUaDefault": false,
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "ssid"
+      ],
+      "additionalProperties": false
+    },
+    "codeContent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/epc"
+        },
+        {
+          "$ref": "#/$defs/gs1"
+        },
+        {
+          "$ref": "#/$defs/raw"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "$ref": "#/$defs/vcard"
+        },
+        {
+          "$ref": "#/$defs/wifi"
+        }
       ]
     },
     "typographyConfig": {
@@ -311,6 +611,60 @@
       },
       "additionalProperties": false,
       "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
+    },
+    "codeBlock": {
+      "type": "object",
+      "title": "CodeBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "code"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "symbology": {
+          "$ref": "#/$defs/symbology",
+          "x-pdfUaGroup": "content"
+        },
+        "content": {
+          "$ref": "#/$defs/codeContent",
+          "x-pdfUaGroup": "content"
+        },
+        "height": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Rendered code height as a CSS length, such as 20mm or 96px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaGroup": "layout"
+        },
+        "config": {
+          "$ref": "#/$defs/blockConfig"
+        }
+      },
+      "required": [
+        "type",
+        "symbology",
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "dividerStyle": {
+      "type": "string",
+      "title": "DividerStyle",
+      "enum": [
+        "solid",
+        "dashed",
+        "dotted",
+        "double",
+        "none"
+      ]
     },
     "dividerBlock": {
       "type": "object",
