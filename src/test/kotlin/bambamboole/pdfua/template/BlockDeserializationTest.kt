@@ -442,11 +442,11 @@ class BlockDeserializationTest {
     fun decodesCodeBlockWithStructuredContent() {
         val input =
             """
-            {"type":"code","id":"pay","symbology":"qr","height":"24mm",
+            {"type":"barcode","id":"pay","symbology":"qr","height":"24mm",
              "content":{"type":"epc","name":"ACME GmbH","iban":"DE89370400440532013000","amount":"12.50"}}
             """.trimIndent()
         val block = json.decodeFromString(Block.serializer(), input)
-        val code = assertIs<CodeBlock>(block)
+        val code = assertIs<BarcodeBlock>(block)
         assertEquals("pay", code.id)
         assertEquals(Symbology.QR, code.symbology)
         val epc = assertIs<EpcContent>(code.content)

@@ -44,7 +44,7 @@ class TemplatePdfRenderServiceTest {
         val request =
             Json.decodeFromString(
                 RenderRequest.serializer(),
-                """{"template":{"version":2,"config":{"page":{"size":{"format":"A4"}}},"rows":[{"blocks":[{"type":"code","symbology":"ean13","content":{"type":"raw","value":"not-a-number"}}]}]}}""",
+                """{"template":{"version":2,"config":{"page":{"size":{"format":"A4"}}},"rows":[{"blocks":[{"type":"barcode","symbology":"ean13","content":{"type":"raw","value":"not-a-number"}}]}]}}""",
             )
         val result = TemplatePdfRenderService().render(request.template, request.data)
         assertIs<TemplatePdfRenderResult.ValidationFailed>(result)

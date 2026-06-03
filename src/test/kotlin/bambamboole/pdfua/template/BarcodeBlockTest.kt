@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class CodeBlockTest {
+class BarcodeBlockTest {
     private val json = Json
 
     @Test
@@ -19,7 +19,7 @@ class CodeBlockTest {
     fun urlContentDecodesByTypeDiscriminator() {
         val content =
             json.decodeFromString(
-                CodeContent.serializer(),
+                BarcodeContent.serializer(),
                 """{"type":"url","url":"https://example.com"}""",
             )
         val url = assertIs<UrlContent>(content)
@@ -59,7 +59,7 @@ class CodeBlockTest {
     @Test
     fun renderEmitsInlineSvgWithAutoAltText() {
         val block =
-            CodeBlock(
+            BarcodeBlock(
                 symbology = Symbology.EAN13,
                 content = RawContent(value = "501234567890"),
             )
@@ -72,7 +72,7 @@ class CodeBlockTest {
     @Test
     fun renderCssConstrainsHeight() {
         val block =
-            CodeBlock(
+            BarcodeBlock(
                 symbology = Symbology.QR,
                 content = TextContent(text = "HELLO"),
                 height = "20mm",
@@ -82,13 +82,13 @@ class CodeBlockTest {
     }
 
     @Test
-    fun decodesCodeBlockByTypeDiscriminator() {
+    fun decodesBarcodeBlockByTypeDiscriminator() {
         val block =
             json.decodeFromString(
                 Block.serializer(),
-                """{"type":"code","symbology":"qr","content":{"type":"url","url":"https://example.com"}}""",
+                """{"type":"barcode","symbology":"qr","content":{"type":"url","url":"https://example.com"}}""",
             )
-        val code = assertIs<CodeBlock>(block)
+        val code = assertIs<BarcodeBlock>(block)
         assertEquals(Symbology.QR, code.symbology)
     }
 

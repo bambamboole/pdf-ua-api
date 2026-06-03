@@ -4,13 +4,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class CodeBlockValidationTest {
+class BarcodeBlockValidationTest {
     private val root = ValidationPath().child("block")
 
     @Test
     fun rejectsIncompatibleSymbologyAndContent() {
         val block =
-            CodeBlock(
+            BarcodeBlock(
                 symbology = Symbology.CODE128,
                 content = EpcContent(name = "ACME", iban = "DE89370400440532013000"),
             )
@@ -21,7 +21,7 @@ class CodeBlockValidationTest {
     @Test
     fun acceptsCompatibleSymbologyAndContent() {
         val block =
-            CodeBlock(
+            BarcodeBlock(
                 symbology = Symbology.QR,
                 content = EpcContent(name = "ACME", iban = "DE89370400440532013000", amount = "9.99"),
             )
@@ -31,7 +31,7 @@ class CodeBlockValidationTest {
     @Test
     fun rejectsInvalidHeight() {
         val block =
-            CodeBlock(
+            BarcodeBlock(
                 symbology = Symbology.QR,
                 content = TextContent(text = "HI"),
                 height = "20 metres",

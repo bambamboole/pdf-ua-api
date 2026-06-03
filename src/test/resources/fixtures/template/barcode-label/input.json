@@ -14,13 +14,13 @@
       {
         "blocks": [
           {
-            "type": "code",
+            "type": "barcode",
             "symbology": "ean13",
             "height": "18mm",
             "content": { "type": "raw", "value": "501234567890" }
           },
           {
-            "type": "code",
+            "type": "barcode",
             "symbology": "qr",
             "height": "28mm",
             "content": { "type": "url", "url": "https://example.com/track/ABC123" }
@@ -30,7 +30,7 @@
       {
         "blocks": [
           {
-            "type": "code",
+            "type": "barcode",
             "symbology": "gs1-128",
             "height": "18mm",
             "content": {

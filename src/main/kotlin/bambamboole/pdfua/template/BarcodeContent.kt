@@ -26,7 +26,7 @@ private val GS1_AI_SYMBOLOGIES =
     setOf(Symbology.GS1_128, Symbology.GS1_DATAMATRIX, Symbology.GS1_QR, Symbology.GS1_DATABAR_EXPANDED)
 
 @Serializable
-sealed interface CodeContent {
+sealed interface BarcodeContent {
     /** The string encoded into the symbol. */
     fun toPayload(): String
 
@@ -36,7 +36,7 @@ sealed interface CodeContent {
     /** Whether this payload may be encoded in [symbology]. */
     fun supports(symbology: Symbology): Boolean
 
-    fun applyData(values: JsonElement): CodeContent
+    fun applyData(values: JsonElement): BarcodeContent
 
     fun validate(path: ValidationPath): List<ValidationIssue> = emptyList()
 
@@ -50,14 +50,14 @@ sealed interface CodeContent {
 @SerialName("raw")
 data class RawContent(
     @SchemaGroup(SchemaGroups.CONTENT) val value: String,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = value
 
     override fun describe(): String = value.take(DESCRIBE_MAX)
 
     override fun supports(symbology: Symbology): Boolean = true
 
-    override fun applyData(values: JsonElement): CodeContent = copy(value = values.string("value") ?: value)
+    override fun applyData(values: JsonElement): BarcodeContent = copy(value = values.string("value") ?: value)
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         if (value.isBlank()) {
@@ -80,14 +80,14 @@ data class RawContent(
 @SerialName("text")
 data class TextContent(
     @SchemaGroup(SchemaGroups.CONTENT) val text: String,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = text
 
     override fun describe(): String = text.take(DESCRIBE_MAX)
 
     override fun supports(symbology: Symbology): Boolean = symbology in MATRIX_2D
 
-    override fun applyData(values: JsonElement): CodeContent = copy(text = values.string("text") ?: text)
+    override fun applyData(values: JsonElement): BarcodeContent = copy(text = values.string("text") ?: text)
 
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         if (text.isBlank()) {
@@ -110,14 +110,14 @@ data class TextContent(
 @SerialName("url")
 data class UrlContent(
     @SchemaGroup(SchemaGroups.CONTENT) val url: String,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = url
 
     override fun describe(): String = url.take(DESCRIBE_MAX)
 
     override fun supports(symbology: Symbology): Boolean = symbology in MATRIX_2D
 
-    override fun applyData(values: JsonElement): CodeContent = copy(url = values.string("url") ?: url)
+    override fun applyData(values: JsonElement): BarcodeContent = copy(url = values.string("url") ?: url)
 
     override fun validate(path: ValidationPath): List<ValidationIssue> {
         val scheme = runCatching { URI.create(url).scheme?.lowercase() }.getOrNull()
@@ -150,7 +150,7 @@ data class EpcContent(
     @SchemaGroup(SchemaGroups.CONTENT) val purpose: String? = null,
     @SchemaGroup(SchemaGroups.CONTENT) val reference: String? = null,
     @SchemaGroup(SchemaGroups.CONTENT) val remittance: String? = null,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = epcPayload(name, iban, bic, amount, purpose, reference, remittance)
 
     override fun describe(): String =
@@ -162,7 +162,7 @@ data class EpcContent(
 
     override fun supports(symbology: Symbology): Boolean = symbology == Symbology.QR
 
-    override fun applyData(values: JsonElement): CodeContent =
+    override fun applyData(values: JsonElement): BarcodeContent =
         copy(
             name = values.string("name") ?: name,
             iban = values.string("iban") ?: iban,
@@ -207,14 +207,14 @@ data class VCardContent(
     @SchemaGroup(SchemaGroups.CONTENT) val phone: String? = null,
     @SchemaGroup(SchemaGroups.CONTENT) val email: String? = null,
     @SchemaGroup(SchemaGroups.CONTENT) val url: String? = null,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = vCardPayload(firstName, lastName, org, title, phone, email, url)
 
     override fun describe(): String = "contact card for $firstName $lastName"
 
     override fun supports(symbology: Symbology): Boolean = symbology == Symbology.QR
 
-    override fun applyData(values: JsonElement): CodeContent =
+    override fun applyData(values: JsonElement): BarcodeContent =
         copy(
             firstName = values.string("firstName") ?: firstName,
             lastName = values.string("lastName") ?: lastName,
@@ -254,14 +254,14 @@ data class WifiContent(
     @SchemaBoolDefault(false)
     @SchemaGroup(SchemaGroups.CONTENT)
     val hidden: Boolean = false,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = wifiPayload(ssid, password, security, hidden)
 
     override fun describe(): String = "Wi-Fi network $ssid"
 
     override fun supports(symbology: Symbology): Boolean = symbology == Symbology.QR
 
-    override fun applyData(values: JsonElement): CodeContent =
+    override fun applyData(values: JsonElement): BarcodeContent =
         copy(
             ssid = values.string("ssid") ?: ssid,
             password = values.string("password") ?: password,
@@ -298,14 +298,14 @@ data class Gs1Element(
 @SerialName("gs1")
 data class Gs1Content(
     @SchemaGroup(SchemaGroups.CONTENT) val elements: List<Gs1Element>,
-) : CodeContent {
+) : BarcodeContent {
     override fun toPayload(): String = elements.joinToString("") { "[${it.ai}]${it.value}" }
 
     override fun describe(): String = "GS1 data (${elements.joinToString(", ") { "(${it.ai})" }})"
 
     override fun supports(symbology: Symbology): Boolean = symbology in GS1_AI_SYMBOLOGIES
 
-    override fun applyData(values: JsonElement): CodeContent = this
+    override fun applyData(values: JsonElement): BarcodeContent = this
 
     override fun validateData(
         value: JsonElement,

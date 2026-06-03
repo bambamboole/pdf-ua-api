@@ -477,7 +477,7 @@
       ],
       "additionalProperties": false
     },
-    "codeContent": {
+    "barcodeContent": {
       "oneOf": [
         {
           "$ref": "#/$defs/epc"
@@ -612,13 +612,13 @@
       "additionalProperties": false,
       "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
     },
-    "codeBlock": {
+    "barcodeBlock": {
       "type": "object",
-      "title": "CodeBlock",
+      "title": "BarcodeBlock",
       "properties": {
         "type": {
           "type": "string",
-          "const": "code"
+          "const": "barcode"
         },
         "id": {
           "type": [
@@ -632,7 +632,7 @@
           "x-pdfUaGroup": "content"
         },
         "content": {
-          "$ref": "#/$defs/codeContent",
+          "$ref": "#/$defs/barcodeContent",
           "x-pdfUaGroup": "content"
         },
         "height": {

@@ -1214,7 +1214,7 @@
                 ],
                 "additionalProperties": false
             },
-            "codeContent": {
+            "barcodeContent": {
                 "oneOf": [
                     {
                         "$ref": "#/components/schemas/epc"
@@ -1349,13 +1349,13 @@
                 "additionalProperties": false,
                 "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
             },
-            "codeBlock": {
+            "barcodeBlock": {
                 "type": "object",
-                "title": "CodeBlock",
+                "title": "BarcodeBlock",
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "code"
+                        "const": "barcode"
                     },
                     "id": {
                         "type": [
@@ -1369,7 +1369,7 @@
                         "x-pdfUaGroup": "content"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/codeContent",
+                        "$ref": "#/components/schemas/barcodeContent",
                         "x-pdfUaGroup": "content"
                     },
                     "height": {
@@ -2439,7 +2439,7 @@
                         ],
                         "additionalProperties": false
                     },
-                    "codeContent": {
+                    "barcodeContent": {
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/epc"
@@ -2574,13 +2574,13 @@
                         "additionalProperties": false,
                         "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
                     },
-                    "codeBlock": {
+                    "barcodeBlock": {
                         "type": "object",
-                        "title": "CodeBlock",
+                        "title": "BarcodeBlock",
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "const": "code"
+                                "const": "barcode"
                             },
                             "id": {
                                 "type": [
@@ -2594,7 +2594,7 @@
                                 "x-pdfUaGroup": "content"
                             },
                             "content": {
-                                "$ref": "#/components/schemas/codeContent",
+                                "$ref": "#/components/schemas/barcodeContent",
                                 "x-pdfUaGroup": "content"
                             },
                             "height": {

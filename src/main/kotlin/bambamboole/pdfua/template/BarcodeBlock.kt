@@ -11,12 +11,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
-@SerialName("code")
-data class CodeBlock(
+@SerialName("barcode")
+data class BarcodeBlock(
     @SchemaDescription("Stable block identifier used for runtime data overrides.")
     override val id: String? = null,
     @SchemaGroup(SchemaGroups.CONTENT) val symbology: Symbology,
-    @SchemaGroup(SchemaGroups.CONTENT) val content: CodeContent,
+    @SchemaGroup(SchemaGroups.CONTENT) val content: BarcodeContent,
     @SchemaDescription("Rendered code height as a CSS length, such as 20mm or 96px.")
     @SchemaPattern(CSS_LENGTH_PATTERN)
     @SchemaGroup(SchemaGroups.LAYOUT)
