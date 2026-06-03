@@ -1,0 +1,49 @@
+{
+  "template": {
+    "version": 2,
+    "config": {
+      "page": { "size": { "format": "A4" } },
+      "typography": { "family": "Inter", "size": 10 }
+    },
+    "rows": [
+      {
+        "blocks": [
+          { "type": "heading", "text": "Shipping Label", "level": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "code",
+            "symbology": "ean13",
+            "height": "18mm",
+            "content": { "type": "raw", "value": "501234567890" }
+          },
+          {
+            "type": "code",
+            "symbology": "qr",
+            "height": "28mm",
+            "content": { "type": "url", "url": "https://example.com/track/ABC123" }
+          }
+        ]
+      },
+      {
+        "blocks": [
+          {
+            "type": "code",
+            "symbology": "gs1-128",
+            "height": "18mm",
+            "content": {
+              "type": "gs1",
+              "elements": [
+                { "ai": "01", "value": "09521234543213" },
+                { "ai": "10", "value": "ABC123" }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "data": {}
+}
