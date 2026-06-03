@@ -91,4 +91,14 @@ class CodeBlockTest {
         val code = assertIs<CodeBlock>(block)
         assertEquals(Symbology.QR, code.symbology)
     }
+
+    @Test
+    fun epcContentApplyDataOverridesScalarFields() {
+        val original = EpcContent(name = "ACME GmbH", iban = "DE89370400440532013000", amount = "12.50")
+        val updated = original.applyData(json.parseToJsonElement("""{"amount":"99.00","name":"NewCo"}"""))
+        val epc = assertIs<EpcContent>(updated)
+        assertEquals("99.00", epc.amount)
+        assertEquals("NewCo", epc.name)
+        assertEquals("DE89370400440532013000", epc.iban)
+    }
 }

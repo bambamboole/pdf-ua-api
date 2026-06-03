@@ -307,6 +307,15 @@ data class Gs1Content(
 
     override fun applyData(values: JsonElement): CodeContent = this
 
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        return allowedKeys(obj, emptySet(), path)
+    }
+
     override fun validate(path: ValidationPath): List<ValidationIssue> =
         buildList {
             if (elements.isEmpty()) {

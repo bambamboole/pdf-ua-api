@@ -1,8 +1,10 @@
 package bambamboole.pdfua.services
 
+import bambamboole.pdfua.http.controller.RenderRequest
 import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.TextBlock
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -35,5 +37,16 @@ class TemplatePdfRenderServiceTest {
 
         val failure = assertIs<TemplatePdfRenderResult.ValidationFailed>(result)
         assertEquals(1, failure.issues.size)
+    }
+
+    @Test
+    fun invalidBarcodeContentReturnsValidationFailedNotException() {
+        val request =
+            Json.decodeFromString(
+                RenderRequest.serializer(),
+                """{"template":{"version":2,"config":{"page":{"size":{"format":"A4"}}},"rows":[{"blocks":[{"type":"code","symbology":"ean13","content":{"type":"raw","value":"not-a-number"}}]}]}}""",
+            )
+        val result = TemplatePdfRenderService().render(request.template, request.data)
+        assertIs<TemplatePdfRenderResult.ValidationFailed>(result)
     }
 }
