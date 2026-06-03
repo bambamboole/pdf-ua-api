@@ -5,6 +5,7 @@ import bambamboole.pdfua.css.CssDeclaration
 import bambamboole.pdfua.css.css
 import bambamboole.pdfua.css.safeCssWidth
 import bambamboole.pdfua.html.Html
+import bambamboole.pdfua.template.barcode.BarcodeException
 import bambamboole.pdfua.template.barcode.BarcodeRenderer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -60,6 +61,18 @@ data class BarcodeBlock(
         value: JsonElement,
         path: ValidationPath,
     ): List<ValidationIssue> = content.validateData(value, path)
+
+    override fun validateRenderable(path: ValidationPath): List<ValidationIssue> {
+        if (!content.supports(symbology) || content.validate(path.child("content")).isNotEmpty()) {
+            return emptyList()
+        }
+        return try {
+            BarcodeRenderer.toSvg(symbology, content.toPayload())
+            emptyList()
+        } catch (e: BarcodeException) {
+            listOf(issue(path, ValidationCodes.INVALID_VALUE, e.message ?: "Barcode could not be encoded"))
+        }
+    }
 }
 
 /**

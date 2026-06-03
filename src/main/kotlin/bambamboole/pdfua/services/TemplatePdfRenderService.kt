@@ -5,9 +5,7 @@ import bambamboole.pdfua.pdf.PdfRenderOptions
 import bambamboole.pdfua.pdf.PdfRenderer
 import bambamboole.pdfua.pdf.PdfResult
 import bambamboole.pdfua.template.Template
-import bambamboole.pdfua.template.ValidationCodes
 import bambamboole.pdfua.template.ValidationIssue
-import bambamboole.pdfua.template.barcode.BarcodeException
 import bambamboole.pdfua.template.validate
 import com.openhtmltopdf.extend.FSStreamFactory
 import kotlinx.serialization.json.JsonElement
@@ -25,20 +23,7 @@ class TemplatePdfRenderService(
             return TemplatePdfRenderResult.ValidationFailed(issues)
         }
 
-        val html =
-            try {
-                TemplateRenderer.render(template, data)
-            } catch (e: BarcodeException) {
-                return TemplatePdfRenderResult.ValidationFailed(
-                    listOf(
-                        ValidationIssue(
-                            path = "$",
-                            code = ValidationCodes.INVALID_VALUE,
-                            message = e.message ?: "Barcode rendering failed",
-                        ),
-                    ),
-                )
-            }
+        val html = TemplateRenderer.render(template, data)
 
         val result =
             PdfRenderer.convertHtmlToPdf(

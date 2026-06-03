@@ -185,6 +185,8 @@ fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> =
                     val blockPath = rowsPath.index(rowIndex).child("blocks").index(blockIndex)
                     addAll(block.validate(blockPath))
                     addAll(cssLengthIssues(block.config.width, blockPath.child("config").child("width")))
+                    val effectiveBlock = block.id?.let { id -> data[id]?.let(block::applyData) } ?: block
+                    addAll(effectiveBlock.validateRenderable(blockPath))
                     val id = block.id ?: return@forEachIndexed
                     if (!seenIds.add(id)) {
                         add(

@@ -32,6 +32,12 @@ sealed interface Block {
         value: JsonElement,
         path: ValidationPath,
     ): List<ValidationIssue> = emptyList()
+
+    /**
+     * Validates that the (already data-resolved) block can actually be produced — e.g. that a barcode
+     * encodes. Called by [Template.validate] on the effective block so runtime data overrides are honoured.
+     */
+    fun validateRenderable(path: ValidationPath): List<ValidationIssue> = emptyList()
 }
 
 internal val SAFE_KEY_VALUE_FIELD_KEY = Regex("^[A-Za-z][A-Za-z0-9_]*$")
