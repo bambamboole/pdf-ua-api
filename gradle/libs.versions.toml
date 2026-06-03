@@ -26,6 +26,7 @@ kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-j
 openhtmltopdfCore = { module = "io.github.openhtmltopdf:openhtmltopdf-core", version.ref = "openhtmltopdf" }
 openhtmltopdfPdfbox = { module = "io.github.openhtmltopdf:openhtmltopdf-pdfbox", version.ref = "openhtmltopdf" }
 openhtmltopdfJava2d = { module = "io.github.openhtmltopdf:openhtmltopdf-java2d", version.ref = "openhtmltopdf" }
+openhtmltopdfSvgSupport = { module = "io.github.openhtmltopdf:openhtmltopdf-svg-support", version.ref = "openhtmltopdf" }
 
 # HTML Parser
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }

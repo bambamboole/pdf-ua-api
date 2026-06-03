@@ -131,6 +131,7 @@ class BlockDeserializationTest {
         assertTrue(output.startsWith("<svg "))
         assertTrue(output.contains("role=\"img\""))
         assertTrue(output.contains("aria-label=\"Logo\""))
+        assertTrue(output.contains("alt=\"Logo\""))
         assertTrue(output.contains("<rect"))
         assertTrue(!output.contains("<script"))
         assertTrue(!output.contains("foreignObject"))
