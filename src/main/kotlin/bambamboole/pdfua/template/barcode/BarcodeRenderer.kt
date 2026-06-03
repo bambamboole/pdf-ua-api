@@ -13,6 +13,7 @@ import uk.org.okapibarcode.backend.Ean
 import uk.org.okapibarcode.backend.OkapiException
 import uk.org.okapibarcode.backend.Pdf417
 import uk.org.okapibarcode.backend.QrCode
+import uk.org.okapibarcode.backend.SwissQrCode
 import uk.org.okapibarcode.backend.Symbol
 import uk.org.okapibarcode.backend.Upc
 import uk.org.okapibarcode.graphics.Color
@@ -49,6 +50,7 @@ object BarcodeRenderer {
         return out.toString(Charsets.UTF_8)
     }
 
+    @Suppress("CyclomaticComplexMethod")
     private fun createSymbol(symbology: Symbology): Symbol =
         when (symbology) {
             Symbology.QR, Symbology.GS1_QR -> QrCode()
@@ -65,5 +67,6 @@ object BarcodeRenderer {
             Symbology.CODABAR -> Codabar()
             Symbology.GS1_DATABAR -> DataBar14()
             Symbology.GS1_DATABAR_EXPANDED -> DataBarExpanded()
+            Symbology.SWISS_QR -> SwissQrCode()
         }
 }

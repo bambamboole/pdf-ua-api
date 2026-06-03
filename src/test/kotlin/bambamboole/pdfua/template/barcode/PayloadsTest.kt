@@ -72,4 +72,67 @@ class PayloadsTest {
             )
         assertEquals("""WIFI:T:WPA;S:My\;Net;P:p\:a\"ss;H:true;;""", payload)
     }
+
+    @Test
+    fun qrrCheckDigitMatchesSixExample() {
+        // SIX worked example QRR reference 210000000003139471430009017; final digit 7 is the check digit.
+        assertEquals(7, qrrCheckDigit("21000000000313947143000901"))
+    }
+
+    @Test
+    fun isQrIbanDetectsIidRange() {
+        assertEquals(true, isQrIban("CH4431999123000889012")) // IID 31999
+        assertEquals(false, isQrIban("CH9300762011623852957")) // IID 00762
+    }
+
+    @Test
+    fun swissQrPayloadFollowsSpcV0200Layout() {
+        val payload =
+            swissQrPayload(
+                iban = "CH4431999123000889012",
+                creditor = SwissAddress("Robert Schneider AG", "Rue du Lac", "1268/2/22", "2501", "Biel", "CH"),
+                amount = "1949.75",
+                currency = "CHF",
+                debtor = SwissAddress("Pia-Maria Rutschmann-Schnyder", "Grosse Marktgasse", "28", "9400", "Rorschach", "CH"),
+                referenceType = SwissReferenceType.QRR,
+                reference = "210000000003139471430009017",
+                message = "Instruction of 15.09.2019",
+            )
+        assertEquals(
+            listOf(
+                "SPC",
+                "0200",
+                "1",
+                "CH4431999123000889012",
+                "S",
+                "Robert Schneider AG",
+                "Rue du Lac",
+                "1268/2/22",
+                "2501",
+                "Biel",
+                "CH",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "1949.75",
+                "CHF",
+                "S",
+                "Pia-Maria Rutschmann-Schnyder",
+                "Grosse Marktgasse",
+                "28",
+                "9400",
+                "Rorschach",
+                "CH",
+                "QRR",
+                "210000000003139471430009017",
+                "Instruction of 15.09.2019",
+                "EPD",
+            ).joinToString("\n"),
+            payload,
+        )
+    }
 }

@@ -26,6 +26,17 @@ class BarcodeRendererTest {
             Symbology.GS1_QR to "[01]09521234543213",
             Symbology.GS1_DATABAR to "9521234543213",
             Symbology.GS1_DATABAR_EXPANDED to "[01]09521234543213[3103]000123",
+            Symbology.SWISS_QR to
+                swissQrPayload(
+                    iban = "CH4431999123000889012",
+                    creditor = SwissAddress("Robert Schneider AG", "Rue du Lac", "1268/2/22", "2501", "Biel", "CH"),
+                    amount = "1949.75",
+                    currency = "CHF",
+                    debtor = null,
+                    referenceType = SwissReferenceType.QRR,
+                    reference = "210000000003139471430009017",
+                    message = null,
+                ),
         )
 
     @Test

@@ -58,4 +58,7 @@ enum class Symbology(
 
     @SerialName("gs1-databar-expanded")
     GS1_DATABAR_EXPANDED("GS1 DataBar Expanded barcode", true),
+
+    @SerialName("swiss-qr")
+    SWISS_QR("Swiss QR code", false),
 }
