@@ -1,0 +1,38 @@
+{
+  "template": {
+    "version": 2,
+    "config": {
+      "page": { "size": { "format": "A4" } },
+      "typography": { "family": "Inter", "size": 10 }
+    },
+    "rows": [
+      { "blocks": [ { "type": "heading", "text": "Payment part", "level": 1 } ] },
+      {
+        "blocks": [
+          {
+            "type": "barcode",
+            "symbology": "swiss-qr",
+            "height": "46mm",
+            "content": {
+              "type": "swiss",
+              "creditorIban": "CH4431999123000889012",
+              "creditor": {
+                "name": "Robert Schneider AG",
+                "street": "Rue du Lac",
+                "buildingNumber": "1268/2/22",
+                "postalCode": "2501",
+                "town": "Biel",
+                "country": "CH"
+              },
+              "amount": "1949.75",
+              "currency": "CHF",
+              "referenceType": "QRR",
+              "reference": "210000000003139471430009017"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "data": {}
+}

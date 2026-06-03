@@ -439,6 +439,22 @@ class BlockDeserializationTest {
     }
 
     @Test
+    fun decodesSwissQrBarcodeBlock() {
+        val input =
+            """
+            {"type":"barcode","symbology":"swiss-qr","content":{"type":"swiss",
+             "creditorIban":"CH4431999123000889012",
+             "creditor":{"name":"ACME","postalCode":"2501","town":"Biel","country":"CH"},
+             "referenceType":"NON"}}
+            """.trimIndent()
+        val block = json.decodeFromString(Block.serializer(), input)
+        val barcode = assertIs<BarcodeBlock>(block)
+        assertEquals(Symbology.SWISS_QR, barcode.symbology)
+        val swiss = assertIs<SwissQrContent>(barcode.content)
+        assertEquals("CH4431999123000889012", swiss.creditorIban)
+    }
+
+    @Test
     fun decodesCodeBlockWithStructuredContent() {
         val input =
             """
