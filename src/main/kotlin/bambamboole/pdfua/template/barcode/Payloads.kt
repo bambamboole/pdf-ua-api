@@ -159,14 +159,14 @@ fun swissQrPayload(
             add("SPC")
             add("0200")
             add("1")
-            add(iban)
+            add(iban.replace(" ", "").uppercase())
             addAll(structuredAddressLines(creditor))
             repeat(7) { add("") } // Ultimate creditor (reserved, empty)
             add(amount.orEmpty())
             add(currency)
             addAll(debtor?.let(::structuredAddressLines) ?: List(7) { "" })
             add(referenceType.token)
-            add(reference.orEmpty())
+            add(reference?.replace(" ", "").orEmpty())
             add(message.orEmpty())
             add("EPD")
         }
@@ -181,5 +181,5 @@ private fun structuredAddressLines(address: SwissAddress): List<String> =
         address.buildingNumber.orEmpty(),
         address.postalCode,
         address.town,
-        address.country,
+        address.country.uppercase(),
     )

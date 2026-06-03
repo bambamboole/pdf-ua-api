@@ -86,6 +86,25 @@ class PayloadsTest {
     }
 
     @Test
+    fun swissQrPayloadNormalizesIbanReferenceAndCountry() {
+        val payload =
+            swissQrPayload(
+                iban = "ch44 3199 9123 0008 89012",
+                creditor = SwissAddress("ACME", postalCode = "2501", town = "Biel", country = "ch"),
+                amount = null,
+                currency = "CHF",
+                debtor = null,
+                referenceType = SwissReferenceType.QRR,
+                reference = "21 00000000 03139471 43000901 7",
+                message = null,
+            )
+        val lines = payload.split("\n")
+        assertEquals("CH4431999123000889012", lines[3]) // IBAN: spaces stripped, uppercased
+        assertEquals("CH", lines[10]) // creditor country uppercased
+        assertEquals("210000000003139471430009017", lines[28]) // reference: spaces stripped
+    }
+
+    @Test
     fun swissQrPayloadFollowsSpcV0200Layout() {
         val payload =
             swissQrPayload(
