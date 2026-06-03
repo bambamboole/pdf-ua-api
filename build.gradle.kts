@@ -97,6 +97,9 @@ dependencies {
     // HTML Parser
     implementation(libs.jsoup)
 
+    // Barcode / QR generation
+    implementation(libs.okapibarcode)
+
     // Hyphenation
     implementation(libs.hypherator)
 
