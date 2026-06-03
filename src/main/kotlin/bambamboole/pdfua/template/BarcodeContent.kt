@@ -1,7 +1,12 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.template.barcode.SwissAddress
+import bambamboole.pdfua.template.barcode.SwissReferenceType
 import bambamboole.pdfua.template.barcode.WifiSecurity
 import bambamboole.pdfua.template.barcode.epcPayload
+import bambamboole.pdfua.template.barcode.isQrIban
+import bambamboole.pdfua.template.barcode.qrrCheckDigit
+import bambamboole.pdfua.template.barcode.swissQrPayload
 import bambamboole.pdfua.template.barcode.vCardPayload
 import bambamboole.pdfua.template.barcode.wifiPayload
 import kotlinx.serialization.SerialName
@@ -17,6 +22,14 @@ private val MATRIX_2D =
 private const val EPC_NAME_MAX = 70
 
 private val IBAN_PATTERN = Regex("^[A-Z]{2}\\d{2}[A-Z0-9]{1,30}$")
+
+private const val SWISS_NAME_MAX = 70
+private const val QRR_CHECK_PREFIX = 26
+private val SWISS_IBAN_PATTERN = Regex("^(CH|LI)\\d{2}[A-Z0-9]{17}$")
+private val SWISS_AMOUNT_PATTERN = Regex("^\\d{1,9}(\\.\\d{1,2})?$")
+private val QRR_PATTERN = Regex("^\\d{27}$")
+private val SWISS_COUNTRY_PATTERN = Regex("^[A-Za-z]{2}$")
+private val SWISS_CURRENCIES = setOf("CHF", "EUR")
 private val AMOUNT_PATTERN = Regex("^\\d+(\\.\\d{1,2})?$")
 private val GS1_AI_PATTERN = Regex("^\\d{2,4}$")
 
@@ -332,3 +345,128 @@ data class Gs1Content(
             }
         }
 }
+
+@Serializable
+@SerialName("swiss")
+data class SwissQrContent(
+    @SchemaGroup(SchemaGroups.CONTENT) val creditorIban: String,
+    @SchemaGroup(SchemaGroups.CONTENT) val creditor: SwissAddress,
+    @SchemaDescription("Amount in the given currency, such as 1949.75.")
+    @SchemaGroup(SchemaGroups.CONTENT)
+    val amount: String? = null,
+    @SchemaStringDefault("CHF")
+    @SchemaGroup(SchemaGroups.CONTENT)
+    val currency: String = "CHF",
+    @SchemaGroup(SchemaGroups.CONTENT) val debtor: SwissAddress? = null,
+    @SchemaEnumDefault("NON")
+    @SchemaGroup(SchemaGroups.CONTENT)
+    val referenceType: SwissReferenceType = SwissReferenceType.NON,
+    @SchemaGroup(SchemaGroups.CONTENT) val reference: String? = null,
+    @SchemaGroup(SchemaGroups.CONTENT) val message: String? = null,
+) : BarcodeContent {
+    override fun toPayload(): String = swissQrPayload(creditorIban, creditor, amount, currency, debtor, referenceType, reference, message)
+
+    override fun describe(): String =
+        buildString {
+            append("Swiss QR-bill to ").append(creditor.name)
+            amount?.let { append(" for ").append(currency).append(' ').append(it) }
+        }
+
+    override fun supports(symbology: Symbology): Boolean = symbology == Symbology.SWISS_QR
+
+    override fun applyData(values: JsonElement): BarcodeContent =
+        copy(
+            amount = values.string("amount") ?: amount,
+            reference = values.string("reference") ?: reference,
+            message = values.string("message") ?: message,
+        )
+
+    override fun validate(path: ValidationPath): List<ValidationIssue> =
+        buildList {
+            val compactIban = creditorIban.replace(" ", "").uppercase()
+            if (!SWISS_IBAN_PATTERN.matches(compactIban)) {
+                add(issue(path.child("creditorIban"), ValidationCodes.INVALID_VALUE, "IBAN must be a 21-character CH or LI IBAN"))
+            }
+            if (currency !in SWISS_CURRENCIES) {
+                add(issue(path.child("currency"), ValidationCodes.INVALID_VALUE, "Currency must be CHF or EUR"))
+            }
+            amount?.let {
+                if (!SWISS_AMOUNT_PATTERN.matches(it)) {
+                    add(issue(path.child("amount"), ValidationCodes.INVALID_VALUE, "Invalid amount: $it"))
+                }
+            }
+            addAll(swissReferenceIssues(referenceType, reference, compactIban, path))
+            addAll(swissAddressIssues(creditor, path.child("creditor")))
+            debtor?.let { addAll(swissAddressIssues(it, path.child("debtor"))) }
+        }
+
+    override fun validateData(
+        value: JsonElement,
+        path: ValidationPath,
+    ): List<ValidationIssue> {
+        val (obj, errs) = requireObject(value, path)
+        if (obj == null) return errs
+        val keys = setOf("amount", "reference", "message")
+        return allowedKeys(obj, keys, path) + keys.flatMap { optionalStringField(obj, it, path) }
+    }
+}
+
+private fun swissReferenceIssues(
+    referenceType: SwissReferenceType,
+    reference: String?,
+    compactIban: String,
+    path: ValidationPath,
+): List<ValidationIssue> =
+    buildList {
+        val qrIban = isQrIban(compactIban)
+        val typePath = path.child("referenceType")
+        val refPath = path.child("reference")
+        when (referenceType) {
+            SwissReferenceType.QRR -> {
+                if (!qrIban) {
+                    add(issue(typePath, ValidationCodes.INVALID_VALUE, "QRR reference requires a QR-IBAN"))
+                }
+                val ref = reference?.replace(" ", "")
+                if (ref == null || !QRR_PATTERN.matches(ref) || qrrCheckDigit(ref.take(QRR_CHECK_PREFIX)) != (ref.last() - '0')) {
+                    add(issue(refPath, ValidationCodes.INVALID_VALUE, "Invalid QRR reference (27 digits with a valid check digit)"))
+                }
+            }
+
+            SwissReferenceType.SCOR -> {
+                if (qrIban) {
+                    add(issue(typePath, ValidationCodes.INVALID_VALUE, "A QR-IBAN requires a QRR reference"))
+                }
+                if (reference.isNullOrBlank()) {
+                    add(issue(refPath, ValidationCodes.INVALID_VALUE, "SCOR reference cannot be blank"))
+                }
+            }
+
+            SwissReferenceType.NON -> {
+                if (qrIban) {
+                    add(issue(typePath, ValidationCodes.INVALID_VALUE, "A QR-IBAN requires a QRR reference"))
+                }
+                if (!reference.isNullOrBlank()) {
+                    add(issue(refPath, ValidationCodes.INVALID_VALUE, "Reference type NON must not carry a reference"))
+                }
+            }
+        }
+    }
+
+private fun swissAddressIssues(
+    address: SwissAddress,
+    path: ValidationPath,
+): List<ValidationIssue> =
+    buildList {
+        if (address.name.isBlank() || address.name.length > SWISS_NAME_MAX) {
+            add(issue(path.child("name"), ValidationCodes.INVALID_VALUE, "Name must be 1-70 characters"))
+        }
+        if (address.postalCode.isBlank()) {
+            add(issue(path.child("postalCode"), ValidationCodes.INVALID_VALUE, "Postal code cannot be blank"))
+        }
+        if (address.town.isBlank()) {
+            add(issue(path.child("town"), ValidationCodes.INVALID_VALUE, "Town cannot be blank"))
+        }
+        if (!SWISS_COUNTRY_PATTERN.matches(address.country)) {
+            add(issue(path.child("country"), ValidationCodes.INVALID_VALUE, "Country must be a 2-letter code"))
+        }
+    }

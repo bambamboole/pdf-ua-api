@@ -211,7 +211,8 @@
         "gs1-datamatrix",
         "gs1-qr",
         "gs1-databar",
-        "gs1-databar-expanded"
+        "gs1-databar-expanded",
+        "swiss-qr"
       ]
     },
     "epc": {
@@ -332,6 +333,119 @@
       "required": [
         "type",
         "value"
+      ],
+      "additionalProperties": false
+    },
+    "swissAddress": {
+      "type": "object",
+      "title": "SwissAddress",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "buildingNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "town": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "postalCode",
+        "town",
+        "country"
+      ],
+      "additionalProperties": false
+    },
+    "swissReferenceType": {
+      "type": "string",
+      "title": "SwissReferenceType",
+      "enum": [
+        "QRR",
+        "SCOR",
+        "NON"
+      ]
+    },
+    "swiss": {
+      "type": "object",
+      "title": "Swiss",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "swiss"
+        },
+        "creditorIban": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "creditor": {
+          "$ref": "#/$defs/swissAddress",
+          "x-pdfUaGroup": "content"
+        },
+        "amount": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Amount in the given currency, such as 1949.75.",
+          "x-pdfUaGroup": "content"
+        },
+        "currency": {
+          "type": "string",
+          "x-pdfUaDefault": "CHF",
+          "x-pdfUaGroup": "content"
+        },
+        "debtor": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/swissAddress"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "referenceType": {
+          "$ref": "#/$defs/swissReferenceType",
+          "x-pdfUaDefault": "NON",
+          "x-pdfUaGroup": "content"
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": [
+        "type",
+        "creditorIban",
+        "creditor"
       ],
       "additionalProperties": false
     },
@@ -487,6 +601,9 @@
         },
         {
           "$ref": "#/$defs/raw"
+        },
+        {
+          "$ref": "#/$defs/swiss"
         },
         {
           "$ref": "#/$defs/text"

@@ -1,5 +1,7 @@
 package bambamboole.pdfua.template
 
+import bambamboole.pdfua.template.barcode.SwissAddress
+import bambamboole.pdfua.template.barcode.SwissReferenceType
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -100,5 +102,67 @@ class BarcodeBlockTest {
         assertEquals("99.00", epc.amount)
         assertEquals("NewCo", epc.name)
         assertEquals("DE89370400440532013000", epc.iban)
+    }
+
+    @Test
+    fun swissQrContentBuildsPayloadAndDescribes() {
+        val content =
+            SwissQrContent(
+                creditorIban = "CH4431999123000889012",
+                creditor = SwissAddress("Robert Schneider AG", "Rue du Lac", "1268/2/22", "2501", "Biel", "CH"),
+                amount = "1949.75",
+                referenceType = SwissReferenceType.QRR,
+                reference = "210000000003139471430009017",
+            )
+        assertEquals(true, content.toPayload().startsWith("SPC\n0200\n1\nCH4431999123000889012"))
+        assertEquals("Swiss QR-bill to Robert Schneider AG for CHF 1949.75", content.describe())
+        assertEquals(true, content.supports(Symbology.SWISS_QR))
+        assertEquals(false, content.supports(Symbology.QR))
+    }
+
+    @Test
+    fun swissQrContentAcceptsValidQrIbanWithQrr() {
+        val content =
+            SwissQrContent(
+                creditorIban = "CH4431999123000889012",
+                creditor = SwissAddress("ACME", postalCode = "2501", town = "Biel", country = "CH"),
+                referenceType = SwissReferenceType.QRR,
+                reference = "210000000003139471430009017",
+            )
+        assertEquals(emptyList(), content.validate(ValidationPath().child("content")))
+    }
+
+    @Test
+    fun swissQrContentRejectsQrIbanWithoutQrr() {
+        val content =
+            SwissQrContent(
+                creditorIban = "CH4431999123000889012",
+                creditor = SwissAddress("ACME", postalCode = "2501", town = "Biel", country = "CH"),
+                referenceType = SwissReferenceType.NON,
+            )
+        assertEquals(true, content.validate(ValidationPath().child("content")).isNotEmpty())
+    }
+
+    @Test
+    fun swissQrContentRejectsBadQrrChecksum() {
+        val content =
+            SwissQrContent(
+                creditorIban = "CH4431999123000889012",
+                creditor = SwissAddress("ACME", postalCode = "2501", town = "Biel", country = "CH"),
+                referenceType = SwissReferenceType.QRR,
+                reference = "210000000003139471430009018",
+            )
+        assertEquals(true, content.validate(ValidationPath().child("content")).any { it.path.endsWith("reference") })
+    }
+
+    @Test
+    fun swissQrContentRejectsNonSwissIban() {
+        val content =
+            SwissQrContent(
+                creditorIban = "DE89370400440532013000",
+                creditor = SwissAddress("ACME", postalCode = "2501", town = "Biel", country = "CH"),
+                referenceType = SwissReferenceType.NON,
+            )
+        assertEquals(true, content.validate(ValidationPath().child("content")).any { it.path.endsWith("creditorIban") })
     }
 }
