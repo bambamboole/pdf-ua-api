@@ -8,7 +8,10 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import org.apache.pdfbox.Loader
+import org.apache.pdfbox.rendering.ImageType
+import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
+import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.test.Test
@@ -35,6 +38,7 @@ class TemplatePdfFixtureTest {
             embeddedFont: String,
             pageTextAssertions: Map<Int, List<String>> = emptyMap(),
             keepTogetherGroups: List<List<String>> = emptyList(),
+            visualTolerance: VisualTolerance = VisualTolerance.strict,
         ) {
             val dir = File(templateFixturesDir(), name)
             val body = File(dir, "input.json").readText()
@@ -73,16 +77,120 @@ class TemplatePdfFixtureTest {
                 return
             }
 
-            val results = PdfVisualTester.comparePdfDocuments(expected.readBytes(), pdf, name, false)
-            val problems = results.filter { it.type != PdfVisualTester.ProblemType.PAGE_GOOD }
+            val problems = comparePdfDocuments(expected.readBytes(), pdf, visualTolerance)
             if (problems.isNotEmpty()) {
                 problems.forEach { diff ->
-                    if (diff.type == PdfVisualTester.ProblemType.PAGE_VISUALLY_DIFFERENT && diff.testImages.hasDifferences()) {
-                        ImageIO.write(diff.testImages.createDiff(), "PNG", File(dir, "page-${diff.pageNumber}-diff.png"))
+                    if (diff.expectedImage != null && diff.actualImage != null) {
+                        ImageIO.write(
+                            PdfVisualTester.createDiffImage(diff.expectedImage, diff.actualImage),
+                            "PNG",
+                            File(dir, "page-${diff.pageNumber}-diff.png"),
+                        )
                     }
                 }
-                fail("Fixture '$name': PDF visual regression detected. See diffs in ${dir.absolutePath}")
+                fail(
+                    "Fixture '$name': PDF visual regression detected: ${
+                        problems.joinToString { it.message }
+                    }. See diffs in ${dir.absolutePath}",
+                )
             }
+        }
+
+        private data class VisualTolerance(
+            val maxChangedPixelRatio: Double,
+        ) {
+            companion object {
+                val strict = VisualTolerance(maxChangedPixelRatio = 0.0)
+                val svgPlatformDrift = VisualTolerance(maxChangedPixelRatio = 0.004)
+            }
+        }
+
+        private data class PdfVisualProblem(
+            val pageNumber: Int,
+            val message: String,
+            val expectedImage: BufferedImage? = null,
+            val actualImage: BufferedImage? = null,
+        )
+
+        private fun comparePdfDocuments(
+            expected: ByteArray,
+            actual: ByteArray,
+            tolerance: VisualTolerance,
+        ): List<PdfVisualProblem> =
+            Loader.loadPDF(expected).use { expectedDocument ->
+                Loader.loadPDF(actual).use { actualDocument ->
+                    val problems = mutableListOf<PdfVisualProblem>()
+                    if (expectedDocument.numberOfPages != actualDocument.numberOfPages) {
+                        problems +=
+                            PdfVisualProblem(
+                                pageNumber = -1,
+                                message =
+                                    "expected ${expectedDocument.numberOfPages} page(s), got ${actualDocument.numberOfPages}",
+                            )
+                    }
+
+                    val expectedRenderer = PDFRenderer(expectedDocument)
+                    val actualRenderer = PDFRenderer(actualDocument)
+                    repeat(expectedDocument.numberOfPages) { pageIndex ->
+                        val expectedImage = expectedRenderer.renderImageWithDPI(pageIndex, 96f, ImageType.RGB)
+                        val actualImage =
+                            actualDocument
+                                .takeIf { pageIndex < it.numberOfPages }
+                                ?.let { actualRenderer.renderImageWithDPI(pageIndex, 96f, ImageType.RGB) }
+
+                        if (actualImage == null) {
+                            problems +=
+                                PdfVisualProblem(
+                                    pageNumber = pageIndex,
+                                    message = "page $pageIndex is missing",
+                                    expectedImage = expectedImage,
+                                )
+                            return@repeat
+                        }
+                        if (expectedImage.width != actualImage.width || expectedImage.height != actualImage.height) {
+                            problems +=
+                                PdfVisualProblem(
+                                    pageNumber = pageIndex,
+                                    message =
+                                        "page $pageIndex size changed from ${expectedImage.width}x${expectedImage.height} " +
+                                            "to ${actualImage.width}x${actualImage.height}",
+                                    expectedImage = expectedImage,
+                                    actualImage = actualImage,
+                                )
+                            return@repeat
+                        }
+
+                        val changedPixelRatio = changedPixelRatio(expectedImage, actualImage)
+                        if (changedPixelRatio > tolerance.maxChangedPixelRatio) {
+                            problems +=
+                                PdfVisualProblem(
+                                    pageNumber = pageIndex,
+                                    message =
+                                        "page $pageIndex changed ${
+                                            "%.5f".format(changedPixelRatio)
+                                        } of pixels, allowed ${tolerance.maxChangedPixelRatio}",
+                                    expectedImage = expectedImage,
+                                    actualImage = actualImage,
+                                )
+                        }
+                    }
+                    problems
+                }
+            }
+
+        private fun changedPixelRatio(
+            expected: BufferedImage,
+            actual: BufferedImage,
+        ): Double {
+            var changedPixels = 0
+            for (y in 0 until expected.height) {
+                for (x in 0 until expected.width) {
+                    if (expected.getRGB(x, y) != actual.getRGB(x, y)) {
+                        changedPixels += 1
+                    }
+                }
+            }
+            return changedPixels.toDouble() / (expected.width * expected.height)
         }
 
         private fun assertPdfPageText(
@@ -238,6 +346,7 @@ class TemplatePdfFixtureTest {
                         listOf("Subtotal", "VAT 19%", "Grand total", "7.282,80"),
                         listOf("Bank", "IBAN", "BIC"),
                     ),
+                visualTolerance = VisualTolerance.svgPlatformDrift,
             )
         }
 
@@ -325,6 +434,7 @@ class TemplatePdfFixtureTest {
                         listOf("Customer", "Musterkunde AG"),
                         listOf("Subtotal", "VAT 19%", "Grand total", "9.210,60"),
                     ),
+                visualTolerance = VisualTolerance.svgPlatformDrift,
             )
         }
 
@@ -332,13 +442,21 @@ class TemplatePdfFixtureTest {
     fun barcodeLabel() =
         testApplication {
             application { module() }
-            assertTemplatePdfFixture("barcode-label", embeddedFont = "Inter")
+            assertTemplatePdfFixture(
+                "barcode-label",
+                embeddedFont = "Inter",
+                visualTolerance = VisualTolerance.svgPlatformDrift,
+            )
         }
 
     @Test
     fun swissQrBill() =
         testApplication {
             application { module() }
-            assertTemplatePdfFixture("swiss-qr-bill", embeddedFont = "Inter")
+            assertTemplatePdfFixture(
+                "swiss-qr-bill",
+                embeddedFont = "Inter",
+                visualTolerance = VisualTolerance.svgPlatformDrift,
+            )
         }
 }

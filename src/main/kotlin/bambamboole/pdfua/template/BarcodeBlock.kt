@@ -76,7 +76,7 @@ data class BarcodeBlock(
 }
 
 /**
- * Injects role="img" and an escaped aria-label into the root <svg> tag of Okapi output.
+ * Injects accessible text into the root <svg> tag of Okapi output.
  * Handles both `<svg attr...>` and `<svg>` forms.
  */
 private fun withAccessibility(
@@ -87,5 +87,5 @@ private fun withAccessibility(
     if (openTag < 0) return svg
     val insertAt = openTag + "<svg".length
     val escaped = Html.escape(altText)
-    return svg.substring(0, insertAt) + " role=\"img\" aria-label=\"$escaped\"" + svg.substring(insertAt)
+    return svg.substring(0, insertAt) + " role=\"img\" aria-label=\"$escaped\" alt=\"$escaped\"" + svg.substring(insertAt)
 }

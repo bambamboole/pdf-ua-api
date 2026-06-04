@@ -7,6 +7,7 @@ import bambamboole.pdfua.template.FileAttachment
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.render.DefaultObjectDrawerFactory
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.cos.COSArray
 import org.apache.pdfbox.cos.COSName
@@ -82,6 +83,7 @@ object PdfRenderer {
                 val builder = PdfRendererBuilder()
                 configurePdfUA(builder, html, options)
                 builder.withProducer(producer)
+                builder.useSVGDrawer(BatikSVGDrawer())
                 if (assetResolver != null) {
                     builder.useHttpStreamImplementation(assetResolver)
                 }

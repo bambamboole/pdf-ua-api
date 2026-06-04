@@ -68,6 +68,7 @@ class BarcodeBlockTest {
         val svg = block.render().serialize()
         assertEquals(true, svg.contains("role=\"img\""), "expected role attribute in: ${svg.take(80)}")
         assertEquals(true, svg.contains("aria-label=\"EAN-13 barcode: 501234567890\""))
+        assertEquals(true, svg.contains("alt=\"EAN-13 barcode: 501234567890\""))
         assertEquals(true, svg.contains("<rect"))
     }
 

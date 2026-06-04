@@ -5,6 +5,8 @@ import bambamboole.pdfua.template.Row
 import bambamboole.pdfua.template.Template
 import bambamboole.pdfua.template.TextBlock
 import kotlinx.serialization.json.Json
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.text.PDFTextStripper
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -73,5 +75,25 @@ class TemplatePdfRenderServiceTest {
         val result = TemplatePdfRenderService().render(request.template, request.data)
         // Declared content is invalid for EAN-13, but the runtime data override is valid, so it must render.
         assertIs<TemplatePdfRenderResult.Success>(result)
+    }
+
+    @Test
+    fun rendersBarcodeSvgAsGraphicWithoutVisibleDescText() {
+        val request =
+            Json.decodeFromString(
+                RenderRequest.serializer(),
+                """{"template":{"version":2,"rows":[{"blocks":[{"type":"barcode","symbology":"qr","content":{"type":"raw","value":"Example"},"height":"24mm"}]}]}}""",
+            )
+
+        val result = TemplatePdfRenderService().render(request.template, request.data)
+
+        val success = assertIs<TemplatePdfRenderResult.Success>(result)
+        Loader.loadPDF(success.pdf.bytes).use { document ->
+            val extractedText = PDFTextStripper().getText(document)
+            assertTrue(
+                "Example" !in extractedText,
+                "Barcode SVG description text must not be rendered as visible PDF text.",
+            )
+        }
     }
 }

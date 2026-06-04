@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.openhtmltopdfCore)
     implementation(libs.openhtmltopdfPdfbox)
     implementation(libs.openhtmltopdfJava2d)
+    implementation(libs.openhtmltopdfSvgSupport)
 
     // HTML Parser
     implementation(libs.jsoup)

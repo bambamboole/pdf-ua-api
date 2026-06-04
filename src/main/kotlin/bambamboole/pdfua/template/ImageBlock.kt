@@ -138,6 +138,7 @@ private val SAFE_SVG_ATTRIBUTES =
         "clip-path",
         "role",
         "aria-label",
+        "alt",
     )
 
 private sealed class SvgSource {
@@ -195,6 +196,7 @@ private fun inlineSanitizedSvg(
     if (alt.isNotEmpty()) {
         root.setAttribute("role", "img")
         root.setAttribute("aria-label", alt)
+        root.setAttribute("alt", alt)
     }
     return serializeElement(root)
 }
