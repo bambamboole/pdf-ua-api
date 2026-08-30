@@ -205,6 +205,14 @@ fun Template.validate(data: Map<String, JsonElement>): List<ValidationIssue> =
 
         walkRows(rows, root.child("rows"))
         walkRows(
+            config.page.header.rows,
+            root
+                .child("config")
+                .child("page")
+                .child("header")
+                .child("rows"),
+        )
+        walkRows(
             config.page.footer.rows,
             root
                 .child("config")

@@ -19,13 +19,14 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; pag
 .data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
+.row-heading { -fs-page-break-min-height: 24mm; page-break-inside: avoid; }
 .block-2 svg { max-height: 18mm; height: auto; }
 .block-3 svg { max-height: 28mm; height: auto; }
 .block-4 svg { max-height: 18mm; height: auto; }
 </style>
 </head>
 <body>
-<table class="row" role="presentation"><tr><td><div class="block-1"><h1>Shipping Label</h1></div></td></tr></table>
+<table class="row row-heading" role="presentation"><tr><td><div class="block-1"><h1>Shipping Label</h1></div></td></tr></table>
 <table class="row" role="presentation"><tr><td><div class="block-2"><svg role="img" aria-label="EAN-13 barcode: 501234567890" alt="EAN-13 barcode: 501234567890" width="190" height="100" version="1.1" xmlns="http://www.w3.org/2000/svg">
    <desc>501234567890</desc>
    <g id="barcode" fill="#000000">

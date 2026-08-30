@@ -1199,6 +1199,29 @@
       ],
       "additionalProperties": false
     },
+    "pageHeaderConfig": {
+      "type": "object",
+      "title": "PageHeaderConfig",
+      "properties": {
+        "repeat": {
+          "type": "boolean",
+          "x-pdfUaDefault": true
+        },
+        "skipFirstPage": {
+          "type": "boolean",
+          "description": "Suppress the repeated header on the first page, which usually carries its own title block.",
+          "x-pdfUaDefault": false
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "tsType": "{ repeat?: boolean; skipFirstPage?: boolean; rows?: Row[] }"
+    },
     "pageFooterConfig": {
       "type": "object",
       "title": "PageFooterConfig",
@@ -1244,12 +1267,15 @@
             }
           ]
         },
+        "header": {
+          "$ref": "#/$defs/pageHeaderConfig"
+        },
         "footer": {
           "$ref": "#/$defs/pageFooterConfig"
         }
       },
       "additionalProperties": false,
-      "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }"
+      "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; header?: PageHeaderConfig; footer?: PageFooterConfig }"
     },
     "templateConfig": {
       "type": "object",

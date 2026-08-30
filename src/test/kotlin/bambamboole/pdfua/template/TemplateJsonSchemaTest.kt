@@ -116,7 +116,7 @@ class TemplateJsonSchemaTest {
         val pageConfig = definitions["pageConfig"]!!.jsonObject
         assertEquals(
             "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; " +
-                "background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
+                "background?: PageBackgroundConfig | null; header?: PageHeaderConfig; footer?: PageFooterConfig }",
             pageConfig["tsType"]!!.jsonPrimitive.content,
         )
         assertEquals(

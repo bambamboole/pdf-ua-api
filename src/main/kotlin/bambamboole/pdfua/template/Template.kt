@@ -36,7 +36,7 @@ data class Row(
 @Serializable
 @SchemaTsType(
     "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; " +
-        "background?: PageBackgroundConfig | null; footer?: PageFooterConfig }",
+        "background?: PageBackgroundConfig | null; header?: PageHeaderConfig; footer?: PageFooterConfig }",
 )
 data class PageConfig(
     val size: PageSize = PresetPageSize(),
@@ -44,6 +44,7 @@ data class PageConfig(
     val margins: SpacingConfig = SpacingConfig(SIDE_MARGIN_MM, SIDE_MARGIN_MM, SIDE_MARGIN_MM, BOTTOM_MARGIN_MM),
     val pageNumbers: PageNumbersConfig = PageNumbersConfig(),
     val background: PageBackgroundConfig? = null,
+    val header: PageHeaderConfig = PageHeaderConfig(),
     val footer: PageFooterConfig = PageFooterConfig(),
 ) {
     companion object {
@@ -76,6 +77,16 @@ data class PageBackgroundConfig(
     @SchemaMinLength(1)
     val src: String,
     @SchemaEnumDefault("auto") val type: PageBackgroundType = PageBackgroundType.AUTO,
+)
+
+@Serializable
+@SchemaTsType("{ repeat?: boolean; skipFirstPage?: boolean; rows?: Row[] }")
+data class PageHeaderConfig(
+    @SchemaBoolDefault(true) val repeat: Boolean = true,
+    @SchemaDescription("Suppress the repeated header on the first page, which usually carries its own title block.")
+    @SchemaBoolDefault(false)
+    val skipFirstPage: Boolean = false,
+    val rows: List<Row> = emptyList(),
 )
 
 @Serializable
