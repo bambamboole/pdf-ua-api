@@ -15,10 +15,12 @@ import bambamboole.pdfua.template.Align
 import bambamboole.pdfua.template.BaseBlockConfig
 import bambamboole.pdfua.template.Block
 import bambamboole.pdfua.template.CustomPageSize
+import bambamboole.pdfua.template.HeadingBlock
 import bambamboole.pdfua.template.Orientation
 import bambamboole.pdfua.template.PageBackgroundConfig
 import bambamboole.pdfua.template.PageConfig
 import bambamboole.pdfua.template.PageFooterConfig
+import bambamboole.pdfua.template.PageHeaderConfig
 import bambamboole.pdfua.template.PageNumbersConfig
 import bambamboole.pdfua.template.PageSize
 import bambamboole.pdfua.template.PresetPageSize
@@ -85,7 +87,8 @@ object TemplateRenderer {
 
         fun renderRow(row: Row): Html =
             html {
-                tag("table", "class" to "row", "role" to "presentation") {
+                val rowClass = if (row.blocks.any { it is HeadingBlock }) "row row-heading" else "row"
+                tag("table", "class" to rowClass, "role" to "presentation") {
                     tag("tr") {
                         row.blocks.forEach { block ->
                             val cellWidth = if (row.blocks.size > 1) safeCssWidth(block.config.width) else null
@@ -97,9 +100,10 @@ object TemplateRenderer {
                 }
             }
 
+        val headerHtml = repeatedHeaderHtml(template.config.page.header, ::renderRow)
         val footerHtml = repeatedFooterHtml(template.config.page.footer, template.config.page.pageNumbers, ::renderRow)
         val rowsHtml = template.rows.map { renderRow(it) }
-        return wrapDocument(footerHtml, rowsHtml, template, css).serialize()
+        return wrapDocument(headerHtml, footerHtml, rowsHtml, template, css).serialize()
     }
 
     private fun emitPositioningCss(
@@ -166,6 +170,7 @@ object TemplateRenderer {
     }
 
     private fun wrapDocument(
+        headerHtml: Html,
         footerHtml: Html,
         rowsHtml: List<Html>,
         template: Template,
@@ -196,6 +201,10 @@ object TemplateRenderer {
                         html(backgroundHtml)
                         raw("\n")
                     }
+                    if (headerHtml.serialize().isNotEmpty()) {
+                        html(headerHtml)
+                        raw("\n")
+                    }
                     if (footerHtml.serialize().isNotEmpty()) {
                         html(footerHtml)
                         raw("\n")
@@ -206,6 +215,18 @@ object TemplateRenderer {
                     }
                 }
                 raw("\n")
+            }
+        }
+    }
+
+    private fun repeatedHeaderHtml(
+        header: PageHeaderConfig,
+        renderRow: (Row) -> Html,
+    ): Html {
+        if (!header.hasRepeatedRows()) return Html.EMPTY
+        return html {
+            tag("header", "class" to "page-header page-header-repeated", "role" to "banner") {
+                header.rows.forEach { html(renderRow(it)) }
             }
         }
     }
@@ -245,11 +266,13 @@ object TemplateRenderer {
         css: CssRegistry,
         page: PageConfig,
     ) {
+        val hasRepeatedHeader = page.header.hasRepeatedRows()
         val hasRepeatedFooter = page.footer.hasRepeatedRows()
+        val topMarginReserve = if (hasRepeatedHeader) 8 else 0
         val bottomMarginReserve = if (hasRepeatedFooter) 8 else 0
         css.css("@page") {
             rule("size", pageSizeCss(page.size))
-            rule("margin", marginShorthand(page.margins, bottomMarginReserve))
+            rule("margin", marginShorthand(page.margins, topMarginReserve, bottomMarginReserve))
         }
         page.background?.let {
             css.css(".pagebg") {
@@ -257,6 +280,27 @@ object TemplateRenderer {
             }
             css.nestedCss("@page", "@top-left") {
                 rule("content", "element(pagebg)")
+            }
+        }
+        if (hasRepeatedHeader) {
+            css.css(".page-header") {
+                rule("font-size", "8pt")
+                rule("color", "#6b7280")
+            }
+            css.css(".page-header .row") {
+                rule("margin", "0")
+            }
+            css.css(".page-header-repeated") {
+                rule("position", "running(pageHeader)")
+                rule("width", "100%")
+            }
+            css.nestedCss("@page", "@top-center") {
+                rule("content", "element(pageHeader)")
+            }
+            if (page.header.skipFirstPage) {
+                css.nestedCss("@page :first", "@top-center") {
+                    rule("content", "normal")
+                }
             }
         }
         if (hasRepeatedFooter) {
@@ -300,14 +344,17 @@ object TemplateRenderer {
 
     private fun marginShorthand(
         margins: SpacingConfig,
+        topReserve: Int = 0,
         bottomReserve: Int = 0,
     ): String {
-        val top = margins.top ?: 0
+        val top = (margins.top ?: 0) + topReserve
         val right = margins.right ?: 0
         val bottom = (margins.bottom ?: 0) + bottomReserve
         val left = margins.left ?: 0
         return "${top}mm ${right}mm ${bottom}mm ${left}mm"
     }
+
+    private fun PageHeaderConfig.hasRepeatedRows(): Boolean = repeat && rows.isNotEmpty()
 
     private fun PageFooterConfig.hasRepeatedRows(): Boolean = repeat && rows.isNotEmpty()
 
@@ -408,6 +455,12 @@ object TemplateRenderer {
         css.css("h1, h2, h3, h4, h5, h6") {
             rule("page-break-after", "avoid")
             rule("break-after", "avoid")
+        }
+        // OpenHTMLToPDF does not implement page-break-after: avoid, so a heading row instead
+        // demands enough room for itself plus the start of what follows before it may begin.
+        css.css(".row-heading") {
+            rule("-fs-page-break-min-height", "24mm")
+            rule("page-break-inside", "avoid")
         }
     }
 }

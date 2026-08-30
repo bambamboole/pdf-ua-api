@@ -85,6 +85,33 @@ class TemplateValidationTest {
     }
 
     @Test
+    fun duplicateBlockIdAcrossBodyAndHeaderFlagged() {
+        val template =
+            Template(
+                version = 2,
+                rows = listOf(Row(listOf(TextBlock(id = "shared", text = "a")))),
+                config =
+                    TemplateConfig(
+                        page =
+                            PageConfig(
+                                header =
+                                    PageHeaderConfig(
+                                        rows = listOf(Row(listOf(TextBlock(id = "shared", text = "b")))),
+                                    ),
+                            ),
+                    ),
+            )
+
+        val errs = template.validate(emptyMap()).filter { it.code == ValidationCodes.DUPLICATE_BLOCK_ID }
+
+        assertEquals(1, errs.size)
+        assertEquals(
+            "\$.template.config.page.header.rows[0].blocks[0].id",
+            errs[0].path,
+        )
+    }
+
+    @Test
     fun blocksWithNullIdsDoNotConflict() {
         val template =
             Template(

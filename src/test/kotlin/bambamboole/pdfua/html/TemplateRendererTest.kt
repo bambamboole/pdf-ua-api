@@ -17,6 +17,7 @@ import bambamboole.pdfua.template.PageBackgroundType
 import bambamboole.pdfua.template.PageConfig
 import bambamboole.pdfua.template.PageFooterConfig
 import bambamboole.pdfua.template.PageFormat
+import bambamboole.pdfua.template.PageHeaderConfig
 import bambamboole.pdfua.template.PageNumbersConfig
 import bambamboole.pdfua.template.PresetPageSize
 import bambamboole.pdfua.template.Row
@@ -272,6 +273,91 @@ class TemplateRendererTest {
 
         assertTrue(html.contains("<p>Runtime footer</p>"))
         assertTrue(!html.contains("Original footer"))
+    }
+
+    @Test
+    fun rendersRepeatedHeaderBeforeBodyAndReservesTopMargin() {
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        header =
+                            PageHeaderConfig(
+                                rows = listOf(Row(listOf(TextBlock(text = "Repeated header")))),
+                            ),
+                    ),
+            )
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
+
+        assertTrue(html.contains("@page { size: 210mm 297mm; margin: 28mm 20mm 20mm 25mm; }"))
+        assertTrue(html.contains(".page-header-repeated { position: running(pageHeader); width: 100%; }"))
+        assertTrue(html.contains("@top-center { content: element(pageHeader); }"))
+        assertTrue(!html.contains("@page :first"), "header must repeat on every page unless skipFirstPage is set")
+        assertTrue(
+            html.indexOf("""<header class="page-header page-header-repeated" role="banner">""") <
+                html.indexOf("<p>Body</p>"),
+            "repeated header must be a first body child so OpenHTMLToPDF can apply it to all pages",
+        )
+        assertTrue(html.contains("""<header class="page-header page-header-repeated" role="banner"><table class="row" role="presentation"><tr><td><div class="block-1"><p>Repeated header</p></div></td></tr></table></header>"""))
+    }
+
+    @Test
+    fun suppressesRepeatedHeaderOnFirstPageWhenConfigured() {
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        header =
+                            PageHeaderConfig(
+                                skipFirstPage = true,
+                                rows = listOf(Row(listOf(TextBlock(text = "Repeated header")))),
+                            ),
+                    ),
+            )
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg))
+
+        assertTrue(html.contains("@page :first { @top-center { content: normal; } }"))
+    }
+
+    @Test
+    fun appliesRuntimeDataInsideRepeatedHeader() {
+        val cfg =
+            TemplateConfig(
+                page =
+                    PageConfig(
+                        header =
+                            PageHeaderConfig(
+                                rows = listOf(Row(listOf(TextBlock(id = "header", text = "Original header")))),
+                            ),
+                    ),
+            )
+        val data = mapOf("header" to JsonObject(mapOf("text" to JsonPrimitive("Runtime header"))))
+
+        val html = TemplateRenderer.render(template(TextBlock(text = "Body"), config = cfg), data)
+
+        assertTrue(html.contains("<p>Runtime header</p>"))
+        assertTrue(!html.contains("Original header"))
+    }
+
+    @Test
+    fun marksHeadingRowsToKeepThemWithTheirContent() {
+        val html =
+            TemplateRenderer.render(
+                Template(
+                    version = 2,
+                    rows =
+                        listOf(
+                            Row(listOf(HeadingBlock(text = "Section"))),
+                            Row(listOf(TextBlock(text = "Body"))),
+                        ),
+                ),
+            )
+
+        assertTrue(html.contains("""<table class="row row-heading" role="presentation"><tr><td><div class="block-1"><h2>Section</h2></div></td></tr></table>"""))
+        assertTrue(html.contains(""".row-heading { -fs-page-break-min-height: 24mm; page-break-inside: avoid; }"""))
+        assertTrue(!html.contains("""<table class="row row-heading" role="presentation"><tr><td><div class="block-2">"""), "rows without a heading keep the plain row class")
     }
 
     @Test

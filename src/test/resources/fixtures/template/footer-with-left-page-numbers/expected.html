@@ -24,6 +24,7 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; pag
 .data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .key-value, .data-table thead, .data-table tr { page-break-inside: avoid; break-inside: avoid; }
+.row-heading { -fs-page-break-min-height: 24mm; page-break-inside: avoid; }
 .block-1 { font-size: 8pt; color: #6b7280; }
 .block-2 { margin-left: auto; text-align: right; font-size: 8pt; color: #6b7280; }
 .block-2 .key-value td:first-child { width: 20mm; }
@@ -31,7 +32,7 @@ h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; pag
 </head>
 <body>
 <footer class="page-footer page-footer-repeated" role="contentinfo"><table class="row" role="presentation"><tr><td style="width: 70%;"><div class="block-1"><p>Acme Industries GmbH · Hauptstraße 42 · 10115 Berlin · Germany</p></div></td><td style="width: 30%;"><div class="block-2"><table class="key-value"><tbody><tr><td>Registry</td><td>HRB 654321 B</td></tr><tr><td>Tax no.</td><td>DE987654321</td></tr></tbody></table></div></td></tr></table></footer>
-<table class="row" role="presentation"><tr><td><div class="block-3"><h1>Left page numbers + repeated footer</h1></div></td></tr></table>
+<table class="row row-heading" role="presentation"><tr><td><div class="block-3"><h1>Left page numbers + repeated footer</h1></div></td></tr></table>
 <table class="row" role="presentation"><tr><td><div class="block-4"><p>Page 1 content. This fixture exists to verify whether the @bottom-left page-number margin box collides with the left-most content of the running footer that lives in @bottom-center.</p></div></td></tr></table>
 <table class="row" role="presentation"><tr><td><div class="block-5"><div style="page-break-before: always;"><h2>Page 2</h2><p>The repeated footer appears below on every page; the page number should sit in the bottom-left margin box.</p></div></div></td></tr></table>
 </body>
