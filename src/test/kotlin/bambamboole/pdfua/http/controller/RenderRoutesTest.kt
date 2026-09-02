@@ -328,6 +328,110 @@ class RenderRoutesTest {
         }
 
     @Test
+    fun declaresXmpSchemasFromTheTemplateAndStaysPdfACompliant() =
+        testApplication {
+            application { module() }
+
+            val attachmentContent = Base64.getEncoder().encodeToString("<invoice/>".toByteArray())
+            val body =
+                """
+                {"template":{"version":2,
+                  "attachments":[{"name":"factur-x.xml","content":"$attachmentContent","mimeType":"text/xml"}],
+                  "xmpSchemas":[{
+                    "namespace":"urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#",
+                    "prefix":"fx",
+                    "name":"Factur-X PDFA Extension Schema",
+                    "properties":[
+                      {"name":"DocumentType","value":"INVOICE"},
+                      {"name":"DocumentFileName","value":"factur-x.xml"},
+                      {"name":"Version","value":"1.0"},
+                      {"name":"ConformanceLevel","value":"EN 16931"}
+                    ]
+                  }],
+                  "rows":[{"blocks":[{"type":"text","text":"Invoice"}]}]
+                }}
+                """.trimIndent()
+
+            val response =
+                client.post("/render/template") {
+                    contentType(ContentType.Application.Json)
+                    accept(ContentType.Application.Json)
+                    setBody(body)
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val responseBody = Json.parseToJsonElement(response.bodyAsText()).jsonObject
+            val validation = responseBody.getValue("validation").jsonObject
+            assertEquals("true", validation.getValue("isCompliant").jsonPrimitive.content)
+
+            val pdf = Base64.getDecoder().decode(responseBody.getValue("pdf").jsonPrimitive.content)
+            Loader.loadPDF(pdf).use { document ->
+                val xmp =
+                    document.documentCatalog.metadata
+                        .exportXMPMetadata()
+                        .use { it.readBytes() }
+                        .decodeToString()
+                assertTrue("urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#" in xmp)
+                assertTrue("<fx:DocumentFileName>factur-x.xml</fx:DocumentFileName>" in xmp)
+                assertTrue("<fx:ConformanceLevel>EN 16931</fx:ConformanceLevel>" in xmp)
+                assertTrue(
+                    document.documentCatalog.names.embeddedFiles.names
+                        .containsKey("factur-x.xml"),
+                )
+            }
+        }
+
+    @Test
+    fun declaresXmpSchemasOnHtmlRenders() =
+        testApplication {
+            application { module() }
+
+            val body =
+                """
+                {"html":"<html><head><title>Doc</title></head><body>Hello</body></html>",
+                 "xmpSchemas":[{"namespace":"https://example.test/ns/","prefix":"ex","name":"Example",
+                   "properties":[{"name":"DocumentId","value":"42"}]}]}
+                """.trimIndent()
+
+            val response =
+                client.post("/render/html") {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            Loader.loadPDF(response.readRawBytes()).use { document ->
+                val xmp =
+                    document.documentCatalog.metadata
+                        .exportXMPMetadata()
+                        .use { it.readBytes() }
+                        .decodeToString()
+                assertTrue("<ex:DocumentId>42</ex:DocumentId>" in xmp)
+            }
+        }
+
+    @Test
+    fun rejectsAnXmpSchemaWithAReservedPrefix() =
+        testApplication {
+            application { module() }
+
+            val body =
+                """
+                {"html":"<html><body>Hello</body></html>",
+                 "xmpSchemas":[{"namespace":"https://example.test/ns/","prefix":"dc","name":"Clash",
+                   "properties":[{"name":"title","value":"x"}]}]}
+                """.trimIndent()
+
+            val response =
+                client.post("/render/html") {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+    @Test
     fun rejectsUnsupportedVersion() =
         testApplication {
             application { module() }

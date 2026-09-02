@@ -17,6 +17,7 @@ import bambamboole.pdfua.services.TemplatePdfRenderService
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.TemplateJsonSchema
 import bambamboole.pdfua.template.ValidationIssue
+import bambamboole.pdfua.template.XmpSchema
 import bambamboole.pdfua.template.toJsonValidationIssue
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.ktor.server.application.*
@@ -90,6 +91,53 @@ private val fileAttachmentsSchema: JsonObject =
         }
     }
 
+private val xmpSchemasSchema: JsonObject =
+    buildJsonObject {
+        put("type", "array")
+        put(
+            "description",
+            "XMP extension schemas to declare in the PDF/A metadata and fill with values, e.g. the Factur-X schema " +
+                "of an embedded e-invoice.",
+        )
+        putJsonObject("items") {
+            put("type", "object")
+            putJsonObject("properties") {
+                putJsonObject("namespace") { put("type", "string") }
+                putJsonObject("prefix") { put("type", "string") }
+                putJsonObject("name") { put("type", "string") }
+                putJsonObject("properties") {
+                    put("type", "array")
+                    putJsonObject("items") {
+                        put("type", "object")
+                        putJsonObject("properties") {
+                            putJsonObject("name") { put("type", "string") }
+                            putJsonObject("value") { put("type", "string") }
+                            putJsonObject("valueType") {
+                                put("type", "string")
+                                put("default", "Text")
+                            }
+                            putJsonObject("category") {
+                                put("type", "string")
+                                put("default", "external")
+                            }
+                            putJsonObject("description") { put("type", "string") }
+                        }
+                        putJsonArray("required") {
+                            add("name")
+                            add("value")
+                        }
+                    }
+                }
+            }
+            putJsonArray("required") {
+                add("namespace")
+                add("prefix")
+                add("name")
+                add("properties")
+            }
+        }
+    }
+
 private val renderTemplateInputSchema: ToolSchema =
     ToolSchema(
         schema = JSON_SCHEMA_DRAFT,
@@ -119,6 +167,7 @@ private val renderHtmlInputSchema: ToolSchema =
                     put("description", "Base URL for resolving relative asset references (http or https).")
                 }
                 put("attachments", fileAttachmentsSchema)
+                put("xmpSchemas", xmpSchemasSchema)
                 put("embedColorProfile", embedColorProfileSchema)
             },
         required = listOf("html"),
@@ -134,6 +183,7 @@ private val renderUrlInputSchema: ToolSchema =
                     put("description", "Public http or https URL whose HTML should be rendered.")
                 }
                 put("attachments", fileAttachmentsSchema)
+                put("xmpSchemas", xmpSchemasSchema)
                 put("embedColorProfile", embedColorProfileSchema)
             },
         required = listOf("url"),
@@ -227,6 +277,7 @@ private fun handleRenderHtml(
                 html = renderRequest.html,
                 baseUrl = renderRequest.baseUrl?.also(::validateBaseUrl) ?: "",
                 attachments = renderRequest.attachments,
+                xmpSchemas = renderRequest.xmpSchemas,
                 embedColorProfile = renderRequest.embedColorProfile,
                 pdfProducer = pdfProducer,
                 assetResolver = assetResolver,
@@ -252,6 +303,7 @@ private fun handleRenderUrl(
                         html = fetch.html,
                         baseUrl = fetch.finalUrl,
                         attachments = renderRequest.attachments,
+                        xmpSchemas = renderRequest.xmpSchemas,
                         embedColorProfile = renderRequest.embedColorProfile,
                         pdfProducer = pdfProducer,
                         assetResolver = assetResolver,
@@ -265,6 +317,7 @@ private fun renderHtmlToPdf(
     html: String,
     baseUrl: String,
     attachments: List<FileAttachment>?,
+    xmpSchemas: List<XmpSchema>?,
     embedColorProfile: Boolean,
     pdfProducer: String,
     assetResolver: FSStreamFactory?,
@@ -276,6 +329,7 @@ private fun renderHtmlToPdf(
             assetResolver = assetResolver,
             baseUrl = baseUrl,
             attachments = attachments,
+            xmpSchemas = xmpSchemas,
             options = PdfRenderOptions(embedColorProfile = embedColorProfile),
         ),
     )

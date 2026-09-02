@@ -122,10 +122,16 @@ object TemplateJsonSchema {
             put("templateVersion", TEMPLATE_VERSION)
             put("renderEndpoint", RENDER_ENDPOINT)
             putJsonArray("templateFields") {
-                listOf("version", "config", "fonts", "attachments", "rows").forEach(::add)
+                listOf("version", "config", "fonts", "attachments", "xmpSchemas", "rows").forEach(::add)
             }
             putJsonArray("attachmentFields") {
                 listOf("name", "content", "mimeType", "description", "relationship").forEach(::add)
+            }
+            putJsonArray("xmpSchemaFields") {
+                listOf("namespace", "prefix", "name", "properties").forEach(::add)
+            }
+            putJsonArray("xmpPropertyFields") {
+                listOf("name", "value", "valueType", "category", "description").forEach(::add)
             }
             putJsonArray("externalFontFields") {
                 listOf("src", "weight", "style").forEach(::add)

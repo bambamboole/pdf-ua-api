@@ -4,6 +4,7 @@ import bambamboole.pdfua.fonts.BundledFonts
 import bambamboole.pdfua.fonts.useBundledFontsFor
 import bambamboole.pdfua.hyphenation.LocaleAwareHyphenator
 import bambamboole.pdfua.template.FileAttachment
+import bambamboole.pdfua.template.XmpSchema
 import com.openhtmltopdf.extend.FSStreamFactory
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.render.DefaultObjectDrawerFactory
@@ -42,6 +43,29 @@ object PdfRenderer {
     private const val MAX_ATTACHMENTS = 10
     private const val ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
     private const val ATTACHMENT_OUTPUT_RESERVE_DIVISOR = 4
+    private const val MAX_XMP_SCHEMAS = 10
+    private const val MAX_XMP_PROPERTIES = 50
+    private val xmpNameFormat = Regex("[A-Za-z_][A-Za-z0-9_.-]*")
+    private val reservedXmpPrefixes =
+        setOf(
+            "pdfaid",
+            "pdfuaid",
+            "pdfaExtension",
+            "pdfaSchema",
+            "pdfaProperty",
+            "pdfaType",
+            "pdfaField",
+            "dc",
+            "xmp",
+            "xmpMM",
+            "xmpRights",
+            "pdf",
+            "rdf",
+            "x",
+        )
+    private val xmpValueTypes =
+        setOf("Text", "Integer", "Real", "Boolean", "Date", "URI", "URL", "Lang Alt", "MIMEType", "AgentName", "ProperName")
+    private val xmpCategories = setOf("internal", "external")
 
     private val colorProfileBytes: ByteArray by lazy {
         logger.info("Loading sRGB color profile")
@@ -64,6 +88,7 @@ object PdfRenderer {
         assetResolver: FSStreamFactory? = null,
         baseUrl: String = "",
         attachments: List<FileAttachment>? = null,
+        xmpSchemas: List<XmpSchema>? = null,
         options: PdfRenderOptions = PdfRenderOptions(),
     ): PdfResult {
         if (html.isBlank()) {
@@ -71,6 +96,9 @@ object PdfRenderer {
         }
         if (!attachments.isNullOrEmpty()) {
             validateAttachments(attachments)
+        }
+        if (!xmpSchemas.isNullOrEmpty()) {
+            validateXmpSchemas(xmpSchemas)
         }
 
         val jsoupDoc = Jsoup.parse(html)
@@ -96,8 +124,56 @@ object PdfRenderer {
                 outputStream.toByteArray()
             }
 
-        val finalBytes = if (attachments.isNullOrEmpty()) pdfBytes else addAttachments(pdfBytes, attachments)
-        return embedDocumentId(finalBytes)
+        val withAttachments = if (attachments.isNullOrEmpty()) pdfBytes else addAttachments(pdfBytes, attachments)
+        val withXmpSchemas = if (xmpSchemas.isNullOrEmpty()) withAttachments else addXmpSchemas(withAttachments, xmpSchemas)
+        return embedDocumentId(withXmpSchemas)
+    }
+
+    private fun validateXmpSchemas(schemas: List<XmpSchema>) {
+        require(schemas.size <= MAX_XMP_SCHEMAS) { "Maximum $MAX_XMP_SCHEMAS XMP schemas allowed" }
+        val prefixes = mutableSetOf<String>()
+        for (schema in schemas) {
+            require(xmpNameFormat.matches(schema.prefix)) { "Invalid XMP prefix '${schema.prefix}'" }
+            require(schema.prefix !in reservedXmpPrefixes) { "XMP prefix '${schema.prefix}' is reserved" }
+            require(prefixes.add(schema.prefix)) { "Duplicate XMP prefix '${schema.prefix}'" }
+            require(schema.namespace.endsWith("#") || schema.namespace.endsWith("/")) {
+                "XMP namespace '${schema.namespace}' must end with '#' or '/'"
+            }
+            require(schema.name.isNotBlank()) { "XMP schema name cannot be blank" }
+            validateXmpProperties(schema)
+        }
+    }
+
+    private fun validateXmpProperties(schema: XmpSchema) {
+        require(schema.properties.isNotEmpty()) { "XMP schema '${schema.prefix}' needs at least one property" }
+        require(schema.properties.size <= MAX_XMP_PROPERTIES) {
+            "XMP schema '${schema.prefix}' exceeds $MAX_XMP_PROPERTIES properties"
+        }
+        val names = mutableSetOf<String>()
+        for (property in schema.properties) {
+            require(xmpNameFormat.matches(property.name)) { "Invalid XMP property name '${property.name}'" }
+            require(names.add(property.name)) { "Duplicate XMP property '${schema.prefix}:${property.name}'" }
+            require(property.valueType in xmpValueTypes) {
+                "Invalid XMP value type '${property.valueType}', must be one of: $xmpValueTypes"
+            }
+            require(property.category in xmpCategories) {
+                "Invalid XMP category '${property.category}', must be one of: $xmpCategories"
+            }
+        }
+    }
+
+    private fun addXmpSchemas(
+        pdfBytes: ByteArray,
+        schemas: List<XmpSchema>,
+    ): ByteArray {
+        Loader.loadPDF(pdfBytes).use { document ->
+            XmpExtensionSchemas.apply(document, schemas)
+            logger.info("Declared ${schemas.size} XMP extension schema(s) in PDF")
+            return ByteArrayOutputStream(pdfBytes.size + pdfBytes.size / ATTACHMENT_OUTPUT_RESERVE_DIVISOR).use { outputStream ->
+                document.save(outputStream)
+                outputStream.toByteArray()
+            }
+        }
     }
 
     private fun embedDocumentId(pdfBytes: ByteArray): PdfResult {
