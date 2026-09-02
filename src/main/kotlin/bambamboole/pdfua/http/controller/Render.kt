@@ -16,6 +16,7 @@ import bambamboole.pdfua.services.TemplatePdfRenderResult
 import bambamboole.pdfua.services.TemplatePdfRenderService
 import bambamboole.pdfua.template.FileAttachment
 import bambamboole.pdfua.template.Template
+import bambamboole.pdfua.template.XmpSchema
 import bambamboole.pdfua.template.toJsonValidationIssue
 import com.openhtmltopdf.extend.FSStreamFactory
 import io.ktor.http.*
@@ -58,6 +59,7 @@ data class RenderRequest(
 data class RenderUrlRequest(
     val url: String,
     val attachments: List<FileAttachment>? = null,
+    val xmpSchemas: List<XmpSchema>? = null,
     val embedColorProfile: Boolean = true,
 )
 
@@ -192,6 +194,7 @@ private suspend fun RoutingContext.renderHtml(
             assetResolver = assetResolver,
             baseUrl = baseUrl,
             attachments = request.attachments,
+            xmpSchemas = request.xmpSchemas,
             options = PdfRenderOptions(embedColorProfile = request.embedColorProfile),
         )
 
@@ -256,6 +259,7 @@ private suspend fun RoutingContext.renderUrl(
     respondRenderedUrl(
         result = fetcher.fetch(request.url),
         attachments = request.attachments,
+        xmpSchemas = request.xmpSchemas,
         embedColorProfile = request.embedColorProfile,
         pdfProducer = pdfProducer,
         assetResolver = assetResolver,
@@ -266,6 +270,7 @@ private suspend fun RoutingContext.renderUrl(
 private suspend fun RoutingContext.respondRenderedUrl(
     result: FetchResult,
     attachments: List<FileAttachment>?,
+    xmpSchemas: List<XmpSchema>?,
     embedColorProfile: Boolean,
     pdfProducer: String,
     assetResolver: FSStreamFactory?,
@@ -284,6 +289,7 @@ private suspend fun RoutingContext.respondRenderedUrl(
                     assetResolver = assetResolver,
                     baseUrl = result.finalUrl,
                     attachments = attachments,
+                    xmpSchemas = xmpSchemas,
                     options = PdfRenderOptions(embedColorProfile = embedColorProfile),
                 )
             respondPdfOrUpload(pdfResult, uploader)

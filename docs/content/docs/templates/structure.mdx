@@ -27,6 +27,7 @@ The `template` object is built from these fields:
 - **`fonts`** — optional map of custom font families to load by URL. See
   [External Fonts](/templates/external-fonts/).
 - **`attachments`** — optional PDF/A-3 file attachments embedded into the output.
+- **`xmpSchemas`** — optional XMP extension schemas declared in the PDF/A metadata and filled with values. Each entry names a `namespace` (ending in `#` or `/`), a `prefix`, a schema `name`, and `properties` (`name`, `value`, optional `valueType` default `Text`, `category` default `external`, `description`). This is how an embedded e-invoice becomes a valid Factur-X/ZUGFeRD or XRechnung PDF: attach the XML and declare the `fx` schema with `DocumentType`, `DocumentFileName`, `Version`, and `ConformanceLevel`.
 - **`rows`** — the ordered list of rows that make up the body of the document. Each row
   contains one or more `blocks` that lay out side by side using each block's `config.width`.
 

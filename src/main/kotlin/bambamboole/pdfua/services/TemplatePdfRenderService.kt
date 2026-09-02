@@ -31,6 +31,7 @@ class TemplatePdfRenderService(
                 producer = pdfProducer,
                 assetResolver = assetResolver,
                 attachments = template.attachments,
+                xmpSchemas = template.xmpSchemas,
                 options = PdfRenderOptions(embedColorProfile = template.config.embedColorProfile),
             )
 

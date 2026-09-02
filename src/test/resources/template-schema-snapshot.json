@@ -1355,6 +1355,71 @@
       ],
       "additionalProperties": false
     },
+    "xmpProperty": {
+      "type": "object",
+      "title": "XmpProperty",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "valueType": {
+          "type": "string",
+          "description": "PDF/A value type of the property.",
+          "x-pdfUaDefault": "Text"
+        },
+        "category": {
+          "type": "string",
+          "description": "Whether the value is derived from the file (internal) or supplied by the author (external).",
+          "x-pdfUaDefault": "external"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Description written into the extension declaration; defaults to the property name."
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "xmpSchema": {
+      "type": "object",
+      "title": "XmpSchema",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Schema namespace URI; must end with '#' or '/'."
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Namespace prefix used for the property elements, e.g. fx."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable schema name written into the PDF/A extension declaration."
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/xmpProperty"
+          }
+        }
+      },
+      "required": [
+        "namespace",
+        "prefix",
+        "name",
+        "properties"
+      ],
+      "additionalProperties": false
+    },
     "fontWeight": {
       "type": "string",
       "title": "FontWeight",
@@ -1376,6 +1441,7 @@
       "config",
       "fonts",
       "attachments",
+      "xmpSchemas",
       "rows"
     ],
     "attachmentFields": [
@@ -1384,6 +1450,19 @@
       "mimeType",
       "description",
       "relationship"
+    ],
+    "xmpSchemaFields": [
+      "namespace",
+      "prefix",
+      "name",
+      "properties"
+    ],
+    "xmpPropertyFields": [
+      "name",
+      "value",
+      "valueType",
+      "category",
+      "description"
     ],
     "externalFontFields": [
       "src",

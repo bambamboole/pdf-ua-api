@@ -22,12 +22,20 @@ class TemplateJsonSchemaTest {
         assertEquals("2", metadata["templateVersion"]?.jsonPrimitive?.content)
         assertEquals("/render/template", metadata["renderEndpoint"]?.jsonPrimitive?.content)
         assertEquals(
-            listOf("version", "config", "fonts", "attachments", "rows"),
+            listOf("version", "config", "fonts", "attachments", "xmpSchemas", "rows"),
             metadata["templateFields"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
         assertEquals(
             listOf("name", "content", "mimeType", "description", "relationship"),
             metadata["attachmentFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("namespace", "prefix", "name", "properties"),
+            metadata["xmpSchemaFields"]!!.jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(
+            listOf("name", "value", "valueType", "category", "description"),
+            metadata["xmpPropertyFields"]!!.jsonArray.map { it.jsonPrimitive.content },
         )
 
         val presets = metadata["pageFormats"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content }

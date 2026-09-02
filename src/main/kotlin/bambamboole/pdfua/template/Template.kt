@@ -12,6 +12,7 @@ data class Template(
     val config: TemplateConfig = TemplateConfig(),
     val fonts: Map<String, FontFace> = emptyMap(),
     val attachments: List<FileAttachment> = emptyList(),
+    val xmpSchemas: List<XmpSchema> = emptyList(),
     val rows: List<Row> = emptyList(),
 )
 

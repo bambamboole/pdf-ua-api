@@ -152,6 +152,6 @@ Takes a `template` object (see [Template structure](/templates/structure/)) plus
 }
 ```
 
-All three tools also accept an optional `attachments` array to embed files in the PDF/A-3 container.
+All three tools also accept an optional `attachments` array to embed files in the PDF/A-3 container and an optional `xmpSchemas` array to declare custom XMP extension schemas (for example the Factur-X schema of an embedded e-invoice) in the PDF/A metadata.
 On a validation error the tool result is flagged as an error with a structured `error` payload (for
 example `validation_failed` with the offending issues), so the agent can correct the input and retry.
