@@ -9,6 +9,12 @@ data class JwtConfig(
     val audience: String?,
 )
 
+data class SentryConfig(
+    val dsn: String,
+    val environment: String?,
+    val release: String?,
+)
+
 data class AppConfig(
     val apiKey: String?,
     val jwt: JwtConfig?,
@@ -28,6 +34,7 @@ data class AppConfig(
     val rateLimitWindowSeconds: Long,
     val rateLimitTrustForwardedFor: Boolean,
     val corsAllowedOrigins: Set<String>,
+    val sentry: SentryConfig?,
 ) {
     private object Defaults {
         const val PDF_PRODUCER = "pdf-ua-api.com"
@@ -66,6 +73,7 @@ data class AppConfig(
                 rateLimitWindowSeconds = config.long("rateLimit.windowSeconds", Defaults.RATE_LIMIT_WINDOW_SECONDS),
                 rateLimitTrustForwardedFor = config.bool("rateLimit.trustForwardedFor", Defaults.RATE_LIMIT_TRUST_FORWARDED_FOR),
                 corsAllowedOrigins = parseCsvSet(config.optional("cors.allowedOrigins")),
+                sentry = parseSentry(config),
             )
         }
     }
@@ -105,6 +113,15 @@ private fun parseCsvSet(raw: String?): Set<String> =
         ?.filter { it.isNotBlank() }
         ?.toSet()
         ?: emptySet()
+
+private fun parseSentry(config: ApplicationConfig): SentryConfig? =
+    config.optional("sentry.dsn")?.let { dsn ->
+        SentryConfig(
+            dsn = dsn,
+            environment = config.optional("sentry.environment"),
+            release = config.optional("sentry.release"),
+        )
+    }
 
 private fun parseJwt(config: ApplicationConfig): JwtConfig? {
     val issuer = config.optional("jwt.issuer")

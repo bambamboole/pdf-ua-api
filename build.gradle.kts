@@ -111,6 +111,10 @@ dependencies {
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
 
+    // Error reporting
+    implementation(libs.sentry)
+    implementation(libs.sentryLogback)
+
     // PDF Validation
     implementation(libs.verapdfValidation)
     implementation(libs.verapdfCore)

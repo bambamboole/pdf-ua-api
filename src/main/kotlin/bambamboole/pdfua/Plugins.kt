@@ -21,10 +21,12 @@ import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.swagger.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.OpenApiDocSource
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.seconds
 
 fun Application.logging() {
@@ -46,11 +48,13 @@ fun Application.serialization() {
 }
 
 fun Application.statusPages() {
+    val logger = LoggerFactory.getLogger("bambamboole.pdfua.StatusPages")
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse(cause.message ?: "Invalid request"))
         }
         exception<Throwable> { call, cause ->
+            logger.error("Unhandled exception while handling {} {}", call.request.httpMethod.value, call.request.path(), cause)
             call.respond(HttpStatusCode.InternalServerError, ErrorResponse(cause.message ?: "Unknown error"))
         }
     }

@@ -8,6 +8,7 @@ kotlinxSerializationJSON = "1.10.0"
 openhtmltopdf = "1.1.37"
 logback = "1.5.28"
 logstashLogbackEncoder = "8.1"
+sentry = "8.16.0"
 verapdf = "1.28.2"
 jsoup = "1.18.3"
 hypherator = "1.1"
@@ -43,6 +44,10 @@ okapibarcode = { module = "uk.org.okapibarcode:okapibarcode", version.ref = "oka
 # Logging
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logstashLogbackEncoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogbackEncoder" }
+
+# Error reporting
+sentry = { module = "io.sentry:sentry", version.ref = "sentry" }
+sentryLogback = { module = "io.sentry:sentry-logback", version.ref = "sentry" }
 
 # Testing
 kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

@@ -1,6 +1,7 @@
 package bambamboole.pdfua
 
 import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.config.initErrorReporting
 import bambamboole.pdfua.http.controller.health
 import bambamboole.pdfua.http.controller.identify
 import bambamboole.pdfua.http.controller.render
@@ -44,6 +45,7 @@ internal fun loadVersion(): String {
 fun Application.bootstrap(jwkProvider: JwkProvider? = null) {
     val config = AppConfig.load(environment)
     val version = loadVersion()
+    initErrorReporting(config, version)
     LoggerFactory
         .getLogger("bambamboole.pdfua.Application")
         .info("PDF API version {} started", version)

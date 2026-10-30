@@ -1,5 +1,7 @@
 package bambamboole.pdfua
 
+import bambamboole.pdfua.config.AppConfig
+import bambamboole.pdfua.config.SentryConfig
 import bambamboole.pdfua.http.RenderHtmlRequest
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,6 +13,7 @@ import org.apache.pdfbox.Loader
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ApplicationConfigTest {
@@ -69,6 +72,33 @@ class ApplicationConfigTest {
             val exception = assertFailsWith<IllegalStateException> { startApplication() }
             assertTrue(exception.message!!.contains("JWT_ISSUER"))
         }
+
+    @Test
+    fun sentryIsDisabledWithoutDsn() {
+        val config = AppConfig.load(createTestEnvironment { config = MapApplicationConfig("sentry.dsn" to "") })
+
+        assertNull(config.sentry)
+    }
+
+    @Test
+    fun sentryConfigReadsDsnEnvironmentAndRelease() {
+        val config =
+            AppConfig.load(
+                createTestEnvironment {
+                    config =
+                        MapApplicationConfig(
+                            "sentry.dsn" to "https://public@errors.example.test/1",
+                            "sentry.environment" to "production",
+                            "sentry.release" to "pdf-ua-api@1.2.3",
+                        )
+                },
+            )
+
+        assertEquals(
+            SentryConfig(dsn = "https://public@errors.example.test/1", environment = "production", release = "pdf-ua-api@1.2.3"),
+            config.sentry,
+        )
+    }
 
     @Test
     fun yamlTrustPrivateHostsDefaultMatchesAppConfigDefault() {
