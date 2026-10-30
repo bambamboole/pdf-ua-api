@@ -54,3 +54,8 @@ rateLimit:
 
 logging:
   level: "$LOG_LEVEL:INFO"
+
+sentry:
+  dsn: "$SENTRY_DSN:"
+  environment: "$SENTRY_ENVIRONMENT:"
+  release: "$SENTRY_RELEASE:"

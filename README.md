@@ -93,6 +93,9 @@ For full compliance, include these meta tags:
 | `PDF_PRODUCER`     | `pdf-ua-api.com` | PDF producer metadata shown in generated PDFs                                                                   |
 | `MAX_REQUEST_SIZE` | `10485760`       | Maximum request size in bytes (default: 10MB)                                                                   |
 | `LOG_LEVEL`        | `INFO`           | Logging level: `DEBUG`, `INFO`, `WARN`, or `ERROR`                                                              |
+| `SENTRY_DSN`       | (none)           | Report errors to Sentry or a compatible server such as Rustrak; unset, nothing is sent                          |
+| `SENTRY_ENVIRONMENT` | (none)         | Environment of the reports, e.g. `production`                                                                   |
+| `SENTRY_RELEASE`   | `pdf-ua-api@<version>` | Release of the reports                                                                                    |
 
 Additional knobs (JWT, [rate limiting](https://pdf-ua-api.bambamboole.com/rate-limiting), CORS, asset/upload allow-lists, OpenTelemetry) are configurable via environment variables — see `src/main/resources/application.yaml` for the full list.
 
@@ -163,6 +166,17 @@ curl -X POST http://localhost:8080/validate \
 - No external resources (images must be base64)
 - CSS 2.1 only (no CSS3 animations, transforms)
 - Maximum request size: 10MB
+
+## Error reporting (Sentry)
+
+With `SENTRY_DSN` set, unhandled exceptions and `ERROR` logs are reported to [Sentry](https://sentry.io) or any server that speaks its protocol, such as [Rustrak](https://github.com/rustrak/rustrak). `INFO` logs become breadcrumbs of the next event. `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` tag the reports; the release defaults to the running version. Without a DSN nothing is sent.
+
+```bash
+docker run -p 8080:8080 \
+  -e SENTRY_DSN=https://public@errors.example.com/1 \
+  -e SENTRY_ENVIRONMENT=production \
+  bambamboole/pdf-ua-api:latest
+```
 
 ## Observability (OpenTelemetry)
 
